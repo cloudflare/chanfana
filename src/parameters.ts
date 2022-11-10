@@ -1,34 +1,16 @@
 import { ValidationError } from './exceptions'
-
-export interface ParameterType {
-  default?: string | number | boolean
-  description?: string
-  example?: string | number | boolean
-  enum?: Record<string, any>
-  enumCaseSensitive?: boolean
-}
-
-export interface StringParameterType extends ParameterType {
-  format?: string
-}
-
-export interface ParameterLocation extends ParameterType {
-  name?: string
-  required?: boolean
-}
-
-export interface Response {
-  description?: string
-}
+import { ParameterLocation, ParameterType, StringParameterType } from './types'
 
 export class BaseParameter {
   public static isParameter = true
   public isParameter = true
   type = null
   protected params: ParameterType
+  public generated: boolean
 
   constructor(params?: ParameterType) {
     this.params = params || {}
+    this.generated = true
   }
 
   getValue() {
@@ -283,8 +265,8 @@ export class Parameter {
   }
 
   getType(type: any, params: ParameterLocation) {
-    if (Array.isArray(type) && type.length > 0) {
-      return new Arr(this.getType(type[0], params), { ...params })
+    if (type.generated === true) {
+      return type
     }
 
     if (type.isParameter === true) {
@@ -310,6 +292,23 @@ export class Parameter {
 
     if (type.isEnum === true) {
       return new Str({ ...params, enum: type.values })
+    }
+
+    if (Array.isArray(type)) {
+      if (type.length === 0) {
+        throw new Error('Arr must have a type')
+      }
+
+      return new Arr(this.getType(type[0], params), { ...params })
+    }
+
+    if (typeof type === 'object') {
+      const parsed = {}
+      for (const [key, value] of Object.entries(type)) {
+        parsed[key] = this.getType(value, {})
+      }
+
+      return new Obj(parsed, params)
     }
 
     throw new Error(`${type} not implemented`)
@@ -343,6 +342,26 @@ export class Parameter {
     value = this.type.validate(value)
 
     return value
+  }
+}
+
+export class Resp extends Parameter {
+  constructor(location: string, rawType: any, params: ParameterLocation) {
+    super(location, rawType, params)
+  }
+
+  // @ts-ignore
+  getValue() {
+    const value = super.getValue()
+    const contentType = this.params?.contentType ? 'this.params?.contentType' : 'application/json'
+
+    const param = {
+      description: this.params.description || 'Successful Response',
+      content: {},
+    }
+
+    param.content[contentType] = { schema: value.schema }
+    return param
   }
 }
 
@@ -410,7 +429,7 @@ export function Required(param: Parameter): Parameter {
   return param
 }
 
-function removeUndefinedFields(obj: Record<string, any>): Record<string, any> {
+export function removeUndefinedFields(obj: Record<string, any>): Record<string, any> {
   for (const [key, value] of Object.entries(obj)) {
     if (typeof value === 'object' && !Array.isArray(value)) obj[key] = removeUndefinedFields(value)
 
@@ -420,4 +439,38 @@ function removeUndefinedFields(obj: Record<string, any>): Record<string, any> {
   }
 
   return obj
+}
+
+// TODO: fix
+export function Body({ description = null, contentType = 'application/json', schema = {} } = {}) {
+  const param = {
+    description: description,
+    content: {},
+  }
+
+  param.content[contentType] = { schema: schema }
+
+  return param
+}
+
+export function getFormatedParameters(params: Record<string, Parameter> | Parameter[]) {
+  const formated = []
+  const isArray = Array.isArray(params)
+
+  for (const [key, parameter] of Object.entries(params || {})) {
+    if (isArray && !parameter.params.name) {
+      throw new Error('Parameter must have a defined name when using as Array')
+    }
+
+    const name = parameter.params.name ? parameter.params.name : key
+
+    formated.push({
+      // TODO: check this type before assign
+      // @ts-ignore
+      ...parameter.getValue(),
+      name: name,
+    })
+  }
+
+  return formated
 }

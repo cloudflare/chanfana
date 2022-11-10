@@ -1,6 +1,6 @@
 {
   "name": "itty-router-openapi",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "OpenAPI schema generator and validator for Cloudflare Workers",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -62,6 +62,7 @@
     "url": "https://github.com/cloudflare/itty-router-openapi/issues"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^3.18.0",
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
     "@types/jest": "^27.0.1",
