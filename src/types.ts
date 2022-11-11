@@ -32,7 +32,8 @@ export interface OpenAPISchema {
 }
 
 export interface OpenAPIRouteSchema {
-  getSchema(schema?: OpenAPISchema)
+  getSchema(): OpenAPISchema
+  schema: OpenAPISchema
 }
 
 export interface ParameterType {

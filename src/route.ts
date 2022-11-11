@@ -11,18 +11,35 @@ export function route(options, func) {
 
 export class OpenAPIRoute implements OpenAPIRouteSchema {
   static isRoute = true
-  public static schema: OpenAPISchema
 
-  static getSchema(schema?: OpenAPISchema): Record<any, any> {
-    schema = schema ? schema : this.schema
+  static get schema(): OpenAPISchema {
+    throw new Error('Method not implemented.')
+  }
+
+  static getSchema(): OpenAPISchema {
+    return this.schema
+  }
+
+  get schema(): OpenAPISchema {
+    // @ts-ignore
+    return this.__proto__.constructor.schema
+  }
+
+  getSchema(): OpenAPISchema {
+    // @ts-ignore
+    return this.__proto__.constructor.getSchema()
+  }
+
+  static getParsedSchema(): Record<any, any> {
+    const schema = this.getSchema()
 
     const responses = {}
     if (schema.responses) {
-      Object.entries(schema.responses).forEach(function ([key, value]) {
+      for (const [key, value] of Object.entries(schema.responses)) {
         responses[key] = new Resp(null, value.schema, {
           description: value.description,
         }).getValue()
-      })
+      }
     }
 
     // Deep copy
@@ -31,16 +48,6 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
       parameters: schema.parameters ? getFormatedParameters(schema.parameters) : {},
       responses: responses,
     }
-  }
-
-  getSchema(schema?: OpenAPISchema): Record<any, any> {
-    // @ts-ignore
-    return this.__proto__.constructor.getSchema(schema)
-  }
-
-  get schema(): OpenAPISchema {
-    // @ts-ignore
-    return this.__proto__.constructor.schema
   }
 
   async execute(request, ...args) {
@@ -56,7 +63,6 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
   }
 
   validateRequest(request: Request): any {
-    // TODO: check parameters in the static getSchema are not validated here
     const params = this.getSchema().parameters
     const queryParams = extractQueryParameters(request)
 

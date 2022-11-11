@@ -28,8 +28,8 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
                 operationId = `${prop.toString()}_${handler.name}`
               }
 
-              if (handler.getSchema) {
-                schema = handler.getSchema()
+              if (handler.getParsedSchema) {
+                schema = handler.getParsedSchema()
                 break
               }
             }

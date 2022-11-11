@@ -1,9 +1,9 @@
 # itty-router-openapi
 
-This library provides an easy and compact OpenAPI 3 schema generator and validator 
+This library provides an easy and compact OpenAPI 3 schema generator and validator
 for [Cloudflare Workers](https://developers.cloudflare.com/workers/)
 
-`itty-router-openapi` as the name says is built on top of the awesome [itty-router](https://github.com/kwhitley/itty-router), 
+`itty-router-openapi` as the name says is built on top of the awesome [itty-router](https://github.com/kwhitley/itty-router),
 while improving some core features such as adding class based endpoints.
 
 This library was designed to provide a simple and iterative path for old `itty-router` applications to migrate to this new
@@ -22,9 +22,8 @@ Router.
 ## Installation
 
 ```
-npm install itty-router-openapi --save
+npm i @cloudflare/itty-router-openapi --save
 ```
-
 
 ## Migrating from existing `itty-router` applications
 
