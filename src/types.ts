@@ -18,7 +18,7 @@ export type OpenAPIRouterSchema = {
 export interface RouterOptions {
   base?: string
   routes?: RouteEntry<Request>[]
-  config?: Record<string, any>
+  schema?: Record<string, any>
 }
 
 export interface OpenAPISchema {

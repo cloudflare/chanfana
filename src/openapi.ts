@@ -6,7 +6,16 @@ import { OpenAPIRouterSchema, OpenAPISchema, RouterOptions } from './types'
 export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
   const OpenAPIPaths: Record<string, Record<string, any>> = {}
 
-  const router = Router({ base: options.base, routes: options.routes })
+  const router = Router({ base: options?.base, routes: options?.routes })
+
+  const openapiConfig = {
+    openapi: '3.0.2',
+    info: {
+      title: options?.schema?.info?.title || 'OpenAPI',
+      version: options?.schema?.info?.version || '1.0',
+    },
+    ...options?.schema,
+  }
 
   // @ts-ignore
   const routerProxy: OpenAPIRouter = new Proxy(router, {
@@ -83,7 +92,7 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
     },
   })
 
-  if (options?.config !== undefined) {
+  if (openapiConfig !== undefined) {
     router.get('/docs', () => {
       return new Response(SwaggerUI, {
         headers: {
@@ -103,7 +112,7 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
     router.get('/openapi.json', () => {
       return new Response(
         JSON.stringify({
-          ...options?.config,
+          ...openapiConfig,
           paths: OpenAPIPaths,
         }),
         {
