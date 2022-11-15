@@ -31,7 +31,7 @@ and procedures will probably changes during the initial weeks of publishing.
 npm i @cloudflare/itty-router-openapi --save
 ```
 
-## Questions and Answers
+## FAQ
 
 Q. Is this package production ready?
 
@@ -40,6 +40,7 @@ currently
 use by the Radar website to serve not only the user faced website but also the public API.
 
 ---
+
 Q. When will this package reach stable maturity?
 
 A. While `OpenAPIRouter` function and the `Route` class are not likely to change, internal procedures will be updated
@@ -62,7 +63,7 @@ internally convert
 into a readable http 400 error.
 
 ```ts
-import {OpenAPIRoute, Query, Int, Str} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRoute, Query, Int, Str } from '@cloudflare/itty-router-openapi'
 
 export class ToDoList extends OpenAPIRoute {
   static schema = {
@@ -80,19 +81,19 @@ export class ToDoList extends OpenAPIRoute {
         schema: {
           currentPage: new Int(),
           nextPage: new Int(),
-          results: [new Str({example: 'lorem'})]
+          results: [new Str({ example: 'lorem' })],
         },
       },
     },
   }
 
   async handle(request: Request, data: Record<string, any>) {
-    const {page} = data
+    const { page } = data
 
     return {
       currentPage: page,
       nextPage: page + 1,
-      results: ["lorem", "ipsum"]
+      results: ['lorem', 'ipsum'],
     }
   }
 }
@@ -101,17 +102,15 @@ export class ToDoList extends OpenAPIRoute {
 Then, ideally in a different file, you can register the routes normally
 
 ```ts
-import {OpenAPIRouter} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
 
 const router = OpenAPIRouter()
 router.get('/todos', ToDoList)
 
 // 404 for everything else
-router.all('*', () => new Response('Not Found.', {status: 404}))
+router.all('*', () => new Response('Not Found.', { status: 404 }))
 
-addEventListener('fetch', event =>
-  event.respondWith(router.handle(event.request))
-)
+addEventListener('fetch', (event) => event.respondWith(router.handle(event.request)))
 ```
 
 Now, when running `wrangler dev` and going to the `/docs` or `/redocs` path you are greeted with an openapi ui that you
@@ -151,17 +150,16 @@ Schema Types can be used both in parameters and responses.
 
 Available Schema Types:
 
-| Name |                    Arguments                  |
-|----------|:---------------------------------------------:|
-| `Num`   |       `description` `example` `default` `enum` `enumCaseSensitive`     | 
-| `Int` |       `description` `example` `default` `enum` `enumCaseSensitive`     |
-| `Str` |  `description` `example` `default` `enum` `enumCaseSensitive` `format` |
-| `DateTime` |       `description` `example` `default` `enum` `enumCaseSensitive`     |
-| `DateOnly` |       `description` `example` `default` `enum` `enumCaseSensitive`     | 
-| `Bool` |       `description` `example` `default` `enum` `enumCaseSensitive`     |
+| Name       |                               Arguments                               |
+| ---------- | :-------------------------------------------------------------------: |
+| `Num`      |     `description` `example` `default` `enum` `enumCaseSensitive`      |
+| `Int`      |     `description` `example` `default` `enum` `enumCaseSensitive`      |
+| `Str`      | `description` `example` `default` `enum` `enumCaseSensitive` `format` |
+| `DateTime` |     `description` `example` `default` `enum` `enumCaseSensitive`      |
+| `DateOnly` |     `description` `example` `default` `enum` `enumCaseSensitive`      |
+| `Bool`     |     `description` `example` `default` `enum` `enumCaseSensitive`      |
 
 In order to make use of the `enum` argument you should pass your Enum values to the `Enumeration` class, has shown bellow.
-
 
 Example parameters:
 
@@ -172,10 +170,13 @@ parameters = {
     default: 1,
     required: false,
   }),
-  search: Query(new Str({
-    description: 'Search query',
-    example: 'funny people',
-  }), {required: false}),
+  search: Query(
+    new Str({
+      description: 'Search query',
+      example: 'funny people',
+    }),
+    { required: false }
+  ),
 }
 ```
 
@@ -190,26 +191,26 @@ responses = {
           confidenceInfo: schemaDateRange,
           dateRange: schemaDateRange,
           aggInterval: schemaAggInterval,
-          lastUpdated: new DateTime()
+          lastUpdated: new DateTime(),
         },
         series: {
           timestamps: [new DateTime()],
-          values: [new Str({example: 0.56})]
-        }
-      }
-    }
-  }
+          values: [new Str({ example: 0.56 })],
+        },
+      },
+    },
+  },
 }
 ```
 
 Example Enumeration:
 
 ```ts
-import {Enumeration} from "@cloudflare/itty-router-openapi";
+import { Enumeration } from '@cloudflare/itty-router-openapi'
 
 const formatsEnum = new Enumeration({
-    json: 'json',
-    csv: 'csv',
+  json: 'json',
+  csv: 'csv',
 })
 
 parameters = {
@@ -253,3 +254,50 @@ export class ToDoList extends OpenAPIRoute {
   }
 ...
 ```
+
+
+### 2. Build your own Schema Type
+
+All schema types extend from the `BaseParameter` or other type and build on top of that.
+To build your own type just pick an already available type, like `Str` or extend from the base class.
+
+```ts
+
+export class Num extends BaseParameter {
+  type = 'number'
+
+  validate(value: any): any {
+    value = super.validate(value)
+
+    value = Number.parseFloat(value)
+
+    if (isNaN(value)) {
+      throw new ValidationError('is not a valid number')
+    }
+
+    return value
+  }
+}
+
+export class DateOnly extends Str {
+  type = 'string'
+  protected declare params: StringParameterType
+
+  constructor(params?: StringParameterType) {
+    super({
+      example: '2022-09-15',
+      ...params,
+      format: 'date',
+    })
+  }
+}
+```
+
+## Feedback and contributions
+
+Currently this package is maintained by the [Cloudflare Radar Team](https://radar.cloudflare.com/) and features are prioritized 
+based on future Radar needs
+
+Nonetheless you can still open pull requests or issues in this repository and they will get addressed
+
+You can also talk to us in the [Cloudflare Community](https://community.cloudflare.com/) or the [Cloudflare Discord Server](https://discord.gg/cloudflaredev)
