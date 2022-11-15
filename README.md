@@ -59,8 +59,9 @@ calling the
 the argument.
 
 If you try to send a value that is not a Integer in this field a `ValidationError` will be raised that the Route will
-internally convert
-into a readable http 400 error.
+internally convert into a readable http 400 error.
+
+Endpoints can return both `Response` instances or just an object that internally will be returned as a JSON Response. 
 
 ```ts
 import { OpenAPIRoute, Query, Int, Str } from '@cloudflare/itty-router-openapi'
