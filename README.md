@@ -127,15 +127,15 @@ After installing just replace the old `Router` function with the new `OpenAPIRou
 //const router = Router()
 
 // New router
-import {OpenAPIRouter} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
 
 const router = OpenAPIRouter()
 
 // Old routes remain the same
 router.get('/todos', () => new Response('Todos Index!'))
-router.get('/todos/:id', ({params}) => new Response(`Todo #${params.id}`))
+router.get('/todos/:id', ({ params }) => new Response(`Todo #${params.id}`))
 
-...
+// ...
 ```
 
 Now, when running the application and going to the `/docs` path, you will already see all your endpoints listed with the
@@ -222,6 +222,64 @@ parameters = {
 }
 ```
 
+## Parameters
+
+Currently there are support for both `Query` and `Path` parameters
+
+This is where you will use the Schema Types explained above
+
+Example Path Parameter
+
+```ts
+import { OpenAPIRoute, Path, Int, Str } from '@cloudflare/itty-router-openapi'
+
+export class ToDoFetch extends OpenAPIRoute {
+  static schema = {
+    tags: ['ToDo'],
+    summary: 'Fetch a ToDo',
+    parameters: {
+      todoId: Path(Int, {
+        description: 'ToDo ID',
+      }),
+    },
+  }
+
+  async handle(request: Request, data: Record<string, any>) {
+    const { todoId } = data
+    // ...
+  }
+}
+
+router.get('/todos/:todoId', ToDoFetch)
+```
+
+Example Query Parameter
+
+```ts
+import { OpenAPIRoute, Query, Int, Str } from '@cloudflare/itty-router-openapi'
+
+export class ToDoList extends OpenAPIRoute {
+  static schema = {
+    tags: ['ToDo'],
+    summary: 'Create a new Todo',
+    parameters: {
+      page: Query(Int, {
+        description: 'Page number',
+        default: 1,
+        required: false,
+      }),
+    },
+  }
+
+  async handle(request: Request, data: Record<string, any>) {
+    const { page } = data
+    // ...
+  }
+}
+
+router.get('/todos', ToDoList)
+```
+
 ## Advanced Usage
 
 ### 1. Using Typescript types
@@ -247,14 +305,14 @@ export class ToDoList extends OpenAPIRoute {
         schema: {
           currentPage: Number,
           nextPage: Number,
-          results: [String]
+          results: [String],
         },
       },
     },
   }
-...
+  // ...
+}
 ```
-
 
 ### 2. Build your own Schema Type
 
@@ -262,7 +320,6 @@ All schema types extend from the `BaseParameter` or other type and build on top 
 To build your own type just pick an already available type, like `Str` or extend from the base class.
 
 ```ts
-
 export class Num extends BaseParameter {
   type = 'number'
 
@@ -293,11 +350,57 @@ export class DateOnly extends Str {
 }
 ```
 
+### 3. Core openapi schema customizations
+
+Besides adding a schema to your endpoints, its also recomended to customize your schema.
+
+This can be done by passing the schema argument when creating your router, and all [OpenAPI Fixed Fields](https://swagger.io/specification/#schema) are available.
+
+The example bellow will change the schema title, and add a Bearer token authentication to all endpoints
+
+```ts
+const router = OpenAPIRouter({
+  schema: {
+    info: {
+      title: 'Radar Worker API',
+      version: '1.0',
+    },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
+  },
+})
+```
+
+### 4. Hiding routes in the OpenAPI schema
+
+Hiding routes can be archived by registering your endpoints in the original `itty-router`, as shown here
+
+```ts
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
+
+const router = OpenAPIRouter()
+
+router.original.get('/todos/:id', ({ params }) => new Response(`Todo #${params.id}`))
+```
+
+This endpoint will still be accessible, but will not be shown in the schema
+
 ## Feedback and contributions
 
-Currently this package is maintained by the [Cloudflare Radar Team](https://radar.cloudflare.com/) and features are prioritized 
+Currently this package is maintained by the [Cloudflare Radar Team](https://radar.cloudflare.com/) and features are prioritized
 based on future Radar needs
 
 Nonetheless you can still open pull requests or issues in this repository and they will get addressed
 
-You can also talk to us in the [Cloudflare Community](https://community.cloudflare.com/) or the [Cloudflare Discord Server](https://discord.gg/cloudflaredev)
+You can also talk to us in the [Cloudflare Community](https://community.cloudflare.com/) or the [Radar Discord Channel](https://discord.com/channels/595317990191398933/1035553707116478495)
