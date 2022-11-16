@@ -1,5 +1,5 @@
 import { ValidationError } from './exceptions'
-import { ParameterLocation, ParameterType, StringParameterType } from './types'
+import { ParameterBody, ParameterLocation, ParameterType, StringParameterType } from './types'
 
 export class BaseParameter {
   public static isParameter = true
@@ -314,7 +314,7 @@ export class Parameter {
     throw new Error(`${type} not implemented`)
   }
 
-  getValue() {
+  getValue(): Record<string, any> {
     const schema = removeUndefinedFields(this.type.getValue())
 
     return {
@@ -345,9 +345,31 @@ export class Parameter {
   }
 }
 
+export class Body extends Parameter {
+  paramsBody: ParameterBody
+
+  constructor(rawType: any, params?: ParameterBody) {
+    super(null, rawType, {})
+    this.paramsBody = params
+  }
+
+  getValue(): Record<string, any> {
+    const schema = removeUndefinedFields(this.type.getValue())
+
+    const param = {
+      description: this.paramsBody?.description,
+      content: {},
+    }
+
+    param.content[this.paramsBody?.contentType || 'application/json'] = { schema: schema }
+
+    return param
+  }
+}
+
 export class Resp extends Parameter {
-  constructor(location: string, rawType: any, params: ParameterLocation) {
-    super(location, rawType, params)
+  constructor(rawType: any, params: ParameterLocation) {
+    super(null, rawType, params)
   }
 
   // @ts-ignore
@@ -439,18 +461,6 @@ export function removeUndefinedFields(obj: Record<string, any>): Record<string, 
   }
 
   return obj
-}
-
-// TODO: fix
-export function Body({ description = null, contentType = 'application/json', schema = {} } = {}) {
-  const param = {
-    description: description,
-    content: {},
-  }
-
-  param.content[contentType] = { schema: schema }
-
-  return param
 }
 
 export function getFormatedParameters(params: Record<string, Parameter> | Parameter[]) {

@@ -1,8 +1,7 @@
 import { OpenAPIRouteSchema, OpenAPISchema } from './types'
-import { ApiException, InputValidationException } from './exceptions'
+import { ApiException } from './exceptions'
 import { Request } from 'itty-router'
-import { extractParameter, extractQueryParameters, getFormatedParameters, Parameter, Resp } from './parameters'
-import { resolveConfig } from 'prettier'
+import { extractParameter, extractQueryParameters, getFormatedParameters, Parameter, Resp, Body } from './parameters'
 
 export function route(options, func) {
   func.schema = options
@@ -32,10 +31,17 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
   static getParsedSchema(): Record<any, any> {
     const schema = this.getSchema()
 
+    let requestBody = null
+    if (schema.requestBody) {
+      requestBody = new Body(schema.requestBody.schema, {
+        description: schema.requestBody.description,
+      }).getValue()
+    }
+
     const responses = {}
     if (schema.responses) {
       for (const [key, value] of Object.entries(schema.responses)) {
-        responses[key] = new Resp(null, value.schema, {
+        responses[key] = new Resp(value.schema, {
           description: value.description,
         }).getValue()
       }
@@ -46,6 +52,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
       ...schema,
       parameters: schema.parameters ? getFormatedParameters(schema.parameters) : {},
       responses: responses,
+      ...(requestBody ? { requestBody: requestBody } : {}),
     }
   }
 

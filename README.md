@@ -61,7 +61,7 @@ the argument.
 If you try to send a value that is not a Integer in this field a `ValidationError` will be raised that the Route will
 internally convert into a readable http 400 error.
 
-Endpoints can return both `Response` instances or just an object that internally will be returned as a JSON Response. 
+Endpoints can return both `Response` instances or just an object that internally will be returned as a JSON Response.
 
 ```ts
 import { OpenAPIRoute, Query, Int, Str } from '@cloudflare/itty-router-openapi'
@@ -147,7 +147,7 @@ All of this while changing just one line in your existing code base!
 
 ## Schema Types
 
-Schema Types can be used both in parameters and responses.
+Schema Types can be used in parameters, requestBody and responses
 
 Available Schema Types:
 
@@ -200,6 +200,17 @@ responses = {
         },
       },
     },
+  },
+}
+```
+
+Example requestBody:
+
+```ts
+requestBody = {
+  schema: {
+    datasetId: new Int({ example: 3 }),
+    search: new Str(),
   },
 }
 ```

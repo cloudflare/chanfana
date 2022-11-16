@@ -54,6 +54,11 @@ export interface ParameterLocation extends ParameterType {
   contentType?: boolean
 }
 
+export interface ParameterBody {
+  description?: string
+  contentType?: string
+}
+
 export interface ResponseSchema {
   description?: string
   schema: Record<any, any>
