@@ -1,26 +1,17 @@
 # itty-router-openapi
 
-This library provides an easy and compact OpenAPI 3 schema generator and validator
-for [Cloudflare Workers](https://developers.cloudflare.com/workers/)
+This library provides an easy and compact OpenAPI 3 schema generator and validator for [Cloudflare Workers](https://developers.cloudflare.com/workers/).
 
-`itty-router-openapi` as the name says is built on top of the
-awesome [itty-router](https://github.com/kwhitley/itty-router),
-while improving some core features such as adding class based endpoints.
+`itty-router-openapi` is built on top of [itty-router](https://github.com/kwhitley/itty-router) and extends some of its core features, such as adding class-based endpoints. It also provides a simple and iterative path for migrating from old applications based on `itty-router`.
 
-This library was designed to provide a simple and iterative path for old `itty-router` applications to migrate to this
-new
-Router.
-
-This package is still is **development** functions and interfaces documented here are very likelly to never change, but
-internal functions
-and procedures will probably changes during the initial weeks of publishing.
+This package is still in **development**. Functions and interfaces documented here will likely never change, but other internal functions and procedures can change during the initial weeks after publishing.
 
 ## Features
 
 - [x] Drop-in replacement for existing itty-router applications
 - [x] OpenAPI 3 schema generator
 - [x] Fully written in typescript
-- [x] Class based endpoints
+- [x] Class-based endpoints
 - [x] Query parameters validator
 - [x] Path parameters validator
 - [ ] Body request validator
@@ -35,33 +26,29 @@ npm i @cloudflare/itty-router-openapi --save
 
 Q. Is this package production ready?
 
-A. Yes! This package was created during the [Cloudflare Radar 2.0](https://radar.cloudflare.com/) development and is
-currently
-use by the Radar website to serve not only the user faced website but also the public API.
+A. Yes. This package was created during the [Cloudflare Radar 2.0](https://radar.cloudflare.com/) development and is currently used by the Radar website to serve the web app and the public API.
 
 ---
 
 Q. When will this package reach stable maturity?
 
-A. While `OpenAPIRouter` function and the `Route` class are not likely to change, internal procedures will be updated
-during this initial
-beta release.
+A. While `OpenAPIRouter` function and the `Route` class are not likely to change, other internal functions and procedures can change during the initial weeks after publishing.
 
 ## Basic Usage
 
-Creating a new OpenAPI route is simple, just create a new class that extends the base `Route` and fill your schema
-parameters
-and add your code in the handle function.
+Creating a new OpenAPI route is simple:
 
-In the example bellow, the `ToDoList` route will have an Integer parameter called `page` that will be validated before
-calling the
-`handle()` function. Then inside the `handle()` function the page number will be available in the data object passed in
-the argument.
+ * Create a new class that extends the base `Route`.
+ * Fill your schema parameters.
+ * Add your code to the handle function.
 
-If you try to send a value that is not a Integer in this field a `ValidationError` will be raised that the Route will
-internally convert into a readable http 400 error.
+In the example below, the `ToDoList` route will have an Integer parameter called `page` that will be validated before calling the `handle()` function.
 
-Endpoints can return both `Response` instances or just an object that internally will be returned as a JSON Response.
+Then the page number will be available inside the `handle()` function in the data object passed in the argument.
+
+If you try to send a value that is not an Integer in this field, a `ValidationError` will be raised, and the Route will internally convert into a readable HTTP 400 error.
+
+Endpoints can return both `Response` instances or an object that internally will be returned as a JSON Response.
 
 ```ts
 import { OpenAPIRoute, Query, Int, Str } from '@cloudflare/itty-router-openapi'
@@ -100,7 +87,7 @@ export class ToDoList extends OpenAPIRoute {
 }
 ```
 
-Then, ideally in a different file, you can register the routes normally
+Then, ideally in a different file, you can register the routes normally:
 
 ```ts
 import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
@@ -114,13 +101,11 @@ router.all('*', () => new Response('Not Found.', { status: 404 }))
 addEventListener('fetch', (event) => event.respondWith(router.handle(event.request)))
 ```
 
-Now, when running `wrangler dev` and going to the `/docs` or `/redocs` path you are greeted with an openapi ui that you
-can call
-your endpoints from the comfort of your browser.
+Now `wrangler dev` and go to `/docs` or `/redocs` with your browser. You'll be greeted with an OpenAPI UI that you can use to call your endpoints.
 
 ## Migrating from existing `itty-router` applications
 
-After installing just replace the old `Router` function with the new `OpenAPIRouter` function.
+All it takes is changing one line of code. After installing `itty-router-openapi` replace `Router` with the new `OpenAPIRouter` function.
 
 ```ts
 // Old router
@@ -139,17 +124,13 @@ router.get('/todos/:id', ({ params }) => new Response(`Todo #${params.id}`))
 // ...
 ```
 
-Now, when running the application and going to the `/docs` path, you will already see all your endpoints listed with the
-query
-parameters parsed ready to be invoked.
+Now, when running the application, go to `/docs`. You will see your endpoints listed with the query parameters parsed and ready to be invoked.
 
-All of this while changing just one line in your existing code base!
+## Schema types
 
-## Schema Types
+Schema types can be used in parameters, requestBody and responses.
 
-Schema Types can be used in parameters, requestBody and responses
-
-Available Schema Types:
+Available schema types:
 
 | Name       |                               Arguments                               |
 | ---------- | :-------------------------------------------------------------------: |
@@ -160,7 +141,7 @@ Available Schema Types:
 | `DateOnly` |     `description` `example` `default` `enum` `enumCaseSensitive`      |
 | `Bool`     |     `description` `example` `default` `enum` `enumCaseSensitive`      |
 
-In order to make use of the `enum` argument you should pass your Enum values to the `Enumeration` class, has shown bellow.
+In order to make use of the `enum` argument you should pass your Enum values to the `Enumeration` class, as shown bellow.
 
 Example parameters:
 
@@ -236,11 +217,11 @@ parameters = {
 
 ## Parameters
 
-Currently there are support for both `Query` and `Path` parameters
+Currently there is support for both the `Query` and `Path` parameters.
 
-This is where you will use the Schema Types explained above
+This is where you will use the Schema types explained above.
 
-Example Path Parameter
+Example path parameter:
 
 ```ts
 import { OpenAPIRoute, Path, Int, Str } from '@cloudflare/itty-router-openapi'
@@ -265,7 +246,7 @@ export class ToDoFetch extends OpenAPIRoute {
 router.get('/todos/:todoId', ToDoFetch)
 ```
 
-Example Query Parameter
+Example query parameter:
 
 ```ts
 import { OpenAPIRoute, Query, Int, Str } from '@cloudflare/itty-router-openapi'
@@ -296,9 +277,7 @@ router.get('/todos', ToDoList)
 
 ### 1. Using Typescript types
 
-If you are planning on using this lib with typescript, then declaring schemas is even easier than javascript, because
-instead of importing the parameter types, you can just use the native typescript data types `String`, `Number`,
-or `Boolean`.
+If you are planning on using this lib with Typescript, then declaring schemas is even easier than with Javascript because instead of importing the parameter types, you can use the native Typescript data types `String`, `Number`, or `Boolean`.
 
 ```ts
 export class ToDoList extends OpenAPIRoute {
@@ -328,8 +307,7 @@ export class ToDoList extends OpenAPIRoute {
 
 ### 2. Build your own Schema Type
 
-All schema types extend from the `BaseParameter` or other type and build on top of that.
-To build your own type just pick an already available type, like `Str` or extend from the base class.
+All schema types extend from the `BaseParameter` or other type and build on top of that. To build your own type just pick an already available type, like `Str` or extend from the base class.
 
 ```ts
 export class Num extends BaseParameter {
@@ -364,9 +342,7 @@ export class DateOnly extends Str {
 
 ### 3. Core openapi schema customizations
 
-Besides adding a schema to your endpoints, its also recomended to customize your schema.
-
-This can be done by passing the schema argument when creating your router, and all [OpenAPI Fixed Fields](https://swagger.io/specification/#schema) are available.
+Besides adding a schema to your endpoints, its also recomended you customize your schema. This can be done by passing the schema argument when creating your router. All [OpenAPI Fixed Fields](https://swagger.io/specification/#schema) are available.
 
 The example bellow will change the schema title, and add a Bearer token authentication to all endpoints
 
@@ -396,7 +372,7 @@ const router = OpenAPIRouter({
 
 ### 4. Hiding routes in the OpenAPI schema
 
-Hiding routes can be archived by registering your endpoints in the original `itty-router`, as shown here
+Hiding routes can be archived by registering your endpoints in the original `itty-router`,as shown here:
 
 ```ts
 import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
@@ -406,13 +382,12 @@ const router = OpenAPIRouter()
 router.original.get('/todos/:id', ({ params }) => new Response(`Todo #${params.id}`))
 ```
 
-This endpoint will still be accessible, but will not be shown in the schema
+This endpoint will still be accessible, but will not be shown in the schema.
 
 ## Feedback and contributions
 
-Currently this package is maintained by the [Cloudflare Radar Team](https://radar.cloudflare.com/) and features are prioritized
-based on future Radar needs
+Currently this package is maintained by the [Cloudflare Radar Team](https://radar.cloudflare.com/) and features are prioritized based on the Radar roadmap.
 
-Nonetheless you can still open pull requests or issues in this repository and they will get addressed
+Nonetheless you can still open pull requests or issues in this repository and they will get reviewed.
 
 You can also talk to us in the [Cloudflare Community](https://community.cloudflare.com/) or the [Radar Discord Channel](https://discord.com/channels/595317990191398933/1035553707116478495)
