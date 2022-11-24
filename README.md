@@ -58,7 +58,7 @@ import { OpenAPIRoute, Query, Int, Str } from '@cloudflare/itty-router-openapi'
 export class ToDoList extends OpenAPIRoute {
   static schema = {
     tags: ['ToDo'],
-    summary: 'Create a new Todo',
+    summary: 'List all ToDos',
     parameters: {
       page: Query(Int, {
         description: 'Page number',
@@ -258,7 +258,7 @@ import { OpenAPIRoute, Query, Int, Str } from '@cloudflare/itty-router-openapi'
 export class ToDoList extends OpenAPIRoute {
   static schema = {
     tags: ['ToDo'],
-    summary: 'Create a new Todo',
+    summary: 'List all ToDos',
     parameters: {
       page: Query(Int, {
         description: 'Page number',
@@ -349,7 +349,7 @@ If you are planning on using this lib with Typescript, then declaring schemas is
 export class ToDoList extends OpenAPIRoute {
   static schema = {
     tags: ['ToDo'],
-    summary: 'Create a new Todo',
+    summary: 'List all ToDos',
     parameters: {
       page: Query(Number, {
         description: 'Page number',

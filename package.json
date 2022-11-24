@@ -1,6 +1,6 @@
 {
   "name": "@cloudflare/itty-router-openapi",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "OpenAPI schema generator and validator for Cloudflare Workers",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
