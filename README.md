@@ -46,6 +46,8 @@ In the example below, the `ToDoList` route will have an Integer parameter called
 
 Then the page number will be available inside the `handle()` function in the data object passed in the argument.
 
+Take notice that the `data` object is always the **last argument** the `handle()` function receives.
+
 If you try to send a value that is not an Integer in this field, a `ValidationError` will be raised, and the Route will internally convert into a readable HTTP 400 error.
 
 Endpoints can return both `Response` instances or an object that internally will be returned as a JSON Response.
@@ -223,6 +225,8 @@ This is where you will use the Schema types explained above.
 
 Example path parameter:
 
+*Notice the parameter key needs to be the same name as in the route path*
+
 ```ts
 import { OpenAPIRoute, Path, Int, Str } from '@cloudflare/itty-router-openapi'
 
@@ -275,7 +279,73 @@ router.get('/todos', ToDoList)
 
 ## Advanced Usage
 
-### 1. Using Typescript types
+### 1. Cloudflare ES6 Module Worker
+
+In the Module Worker format, the parameters binding is different. 
+
+Instead of the worker only having access to the `event` argument, that argument is splitted into `request`, `env`, `context`.
+And as said above, the `data` object (that contains the validated parameters) is always the **last argument** the `handle()`
+function receives.
+
+
+```ts
+import { OpenAPIRouter, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
+
+export class ToDoList extends OpenAPIRoute {
+  static schema = { ... }
+
+  async handle(request: Request, env, context, data: Record<string, any>) {
+    const { page } = data
+
+    return {
+      currentPage: page,
+      nextPage: page + 1,
+      results: ['lorem', 'ipsum'],
+    }
+  }
+}
+
+const router = OpenAPIRouter()
+router.get('/todos', ToDoList)
+
+export default {
+  fetch: router.handle
+}
+```
+
+
+Otherwise, if you don't need the new `env` and `context` parameters, you can remove theses like the next example
+
+```ts
+import { OpenAPIRouter, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
+
+export class ToDoList extends OpenAPIRoute {
+  static schema = { ... }
+
+  async handle(request: Request, data: Record<string, any>) {
+    const { page } = data
+
+    return {
+      currentPage: page,
+      nextPage: page + 1,
+      results: ['lorem', 'ipsum'],
+    }
+  }
+}
+
+const router = OpenAPIRouter()
+router.get('/todos', ToDoList)
+
+export default {
+  fetch: (request) => router.handle(request)
+}
+```
+
+
+Learn more about [Cloudflare Module Worker format here](https://developers.cloudflare.com/workers/runtime-apis/fetch-event#syntax-module-worker).
+
+
+### 2. Using Typescript types
 
 If you are planning on using this lib with Typescript, then declaring schemas is even easier than with Javascript because instead of importing the parameter types, you can use the native Typescript data types `String`, `Number`, or `Boolean`.
 
@@ -305,7 +375,7 @@ export class ToDoList extends OpenAPIRoute {
 }
 ```
 
-### 2. Build your own Schema Type
+### 3. Build your own Schema Type
 
 All schema types extend from the `BaseParameter` or other type and build on top of that. To build your own type just pick an already available type, like `Str` or extend from the base class.
 
@@ -340,7 +410,7 @@ export class DateOnly extends Str {
 }
 ```
 
-### 3. Core openapi schema customizations
+### 4. Core openapi schema customizations
 
 Besides adding a schema to your endpoints, its also recomended you customize your schema. This can be done by passing the schema argument when creating your router. All [OpenAPI Fixed Fields](https://swagger.io/specification/#schema) are available.
 
@@ -370,7 +440,7 @@ const router = OpenAPIRouter({
 })
 ```
 
-### 4. Hiding routes in the OpenAPI schema
+### 5. Hiding routes in the OpenAPI schema
 
 Hiding routes can be archived by registering your endpoints in the original `itty-router`,as shown here:
 
