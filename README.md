@@ -38,15 +38,15 @@ A. While `OpenAPIRouter` function and the `Route` class are not likely to change
 
 Creating a new OpenAPI route is simple:
 
- * Create a new class that extends the base `Route`.
- * Fill your schema parameters.
- * Add your code to the handle function.
+- Create a new class that extends the base `Route`.
+- Fill your schema parameters.
+- Add your code to the handle function.
 
 In the example below, the `ToDoList` route will have an Integer parameter called `page` that will be validated before calling the `handle()` function.
 
 Then the page number will be available inside the `handle()` function in the data object passed in the argument.
 
-Take notice that the `data` object is always the **last argument** the `handle()` function receives.
+Take notice that the `data` object is always the **last argument** that the `handle()` function receives.
 
 If you try to send a value that is not an Integer in this field, a `ValidationError` will be raised, and the Route will internally convert into a readable HTTP 400 error.
 
@@ -225,7 +225,7 @@ This is where you will use the Schema types explained above.
 
 Example path parameter:
 
-*Notice the parameter key needs to be the same name as in the route path*
+Notice that parameter key needs to be the same name as the route path
 
 ```ts
 import { OpenAPIRoute, Path, Int, Str } from '@cloudflare/itty-router-openapi'
@@ -281,12 +281,11 @@ router.get('/todos', ToDoList)
 
 ### 1. Cloudflare ES6 Module Worker
 
-In the Module Worker format, the parameters binding is different. 
+In the Module Worker format, the parameters binding is different.
 
-Instead of the worker only having access to the `event` argument, that argument is splitted into `request`, `env`, `context`.
-And as said above, the `data` object (that contains the validated parameters) is always the **last argument** the `handle()`
+Instead of the worker only having access to the `event` argument, that argument is split into `request`, `env`, `context`.
+And as said above, the `data` object (that contains the validated parameters) is always the **last argument** that the `handle()`
 function receives.
-
 
 ```ts
 import { OpenAPIRouter, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
@@ -312,7 +311,6 @@ export default {
   fetch: router.handle
 }
 ```
-
 
 Otherwise, if you don't need the new `env` and `context` parameters, you can remove theses like the next example
 
@@ -341,9 +339,7 @@ export default {
 }
 ```
 
-
 Learn more about [Cloudflare Module Worker format here](https://developers.cloudflare.com/workers/runtime-apis/fetch-event#syntax-module-worker).
-
 
 ### 2. Using Typescript types
 
