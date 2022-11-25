@@ -323,8 +323,10 @@ export class ToDoCreate extends OpenAPIRoute {
             title: String,
             description: new Str({required: false}),
             type: new Enumeration({
+              values: {
                 nextWeek: 'nextWeek',
                 nextMonth: 'nextMonth',
+              }
             })
         },
         responses: {
