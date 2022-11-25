@@ -145,7 +145,7 @@ Available schema types:
 
 In order to make use of the `enum` argument you should pass your Enum values to the `Enumeration` class, as shown bellow.
 
-Example parameters:
+#### Example parameters:
 
 ```ts
 parameters = {
@@ -164,7 +164,7 @@ parameters = {
 }
 ```
 
-Example responses:
+#### Example responses:
 
 ```ts
 responses = {
@@ -187,7 +187,7 @@ responses = {
 }
 ```
 
-Example requestBody:
+#### Example requestBody:
 
 ```ts
 requestBody = {
@@ -196,7 +196,7 @@ requestBody = {
 }
 ```
 
-Example Enumeration:
+#### Example Enumeration:
 
 ```ts
 import { Enumeration } from '@cloudflare/itty-router-openapi'
@@ -205,6 +205,26 @@ const formatsEnum = new Enumeration({
   json: 'json',
   csv: 'csv',
 })
+
+parameters = {
+  format: Query(formatsEnum, {
+    description: 'Format the response should be returned',
+    default: 'json',
+    required: false,
+  }),
+}
+```
+
+#### Example Enumeration not case sensitive:
+
+This way, the client can call any combination of upper and lower caracters and it will still be a valid input.
+```ts
+import { Enumeration } from '@cloudflare/itty-router-openapi'
+
+const formatsEnum = new Enumeration({
+  json: 'json',
+  csv: 'csv',
+}, { enumCaseSensitive: false })
 
 parameters = {
   format: Query(formatsEnum, {
