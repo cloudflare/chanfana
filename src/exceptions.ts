@@ -1,4 +1,6 @@
 export class ApiException extends Error {
+  key: string
+
   constructor(message: any) {
     super(message)
     this.message = message

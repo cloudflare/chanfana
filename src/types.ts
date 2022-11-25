@@ -42,6 +42,7 @@ export interface ParameterType {
   example?: string | number | boolean
   enum?: Record<string, any>
   enumCaseSensitive?: boolean
+  required?: boolean
 }
 
 export interface StringParameterType extends ParameterType {
@@ -62,4 +63,9 @@ export interface ParameterBody {
 export interface ResponseSchema {
   description?: string
   schema: Record<any, any>
+}
+
+export interface RouteValidated {
+  data: Record<string, any>
+  errors: Record<string, any>
 }

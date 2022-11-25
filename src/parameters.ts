@@ -5,12 +5,14 @@ export class BaseParameter {
   public static isParameter = true
   public isParameter = true
   type = null
-  protected params: ParameterType
+  public params: ParameterType
   public generated: boolean
 
   constructor(params?: ParameterType) {
     this.params = params || {}
     this.generated = true
+
+    if (this.params.required === undefined) this.params.required = true
   }
 
   getValue() {
@@ -90,7 +92,16 @@ export class Obj extends BaseParameter {
   validate(value: any): any {
     value = super.validate(value)
 
-    // TODO
+    for (const [key, param] of Object.entries(this.fields)) {
+      try {
+        value[key] = param.validate(value[key])
+      } catch (e) {
+        // @ts-ignore
+        e.key = (e.key || '') + `.${key}`
+
+        throw e
+      }
+    }
 
     return value
   }
@@ -101,14 +112,22 @@ export class Obj extends BaseParameter {
       type: 'object',
       properties: {},
     }
+    const required = []
 
     for (const [key, value] of Object.entries(this.fields)) {
-      // TODO: remove hack
+      if (value.params?.required === true) {
+        required.push(key)
+      }
+
       if (value.getValue) {
         result.properties[key] = value.getValue()
       } else {
         result.properties[key] = value
       }
+    }
+
+    if (required.length > 0) {
+      result['required'] = required
     }
 
     return result
@@ -149,7 +168,7 @@ export class Int extends Num {
 
 export class Str extends BaseParameter {
   type = 'string'
-  protected declare params: StringParameterType
+  public declare params: StringParameterType
 
   constructor(params?: StringParameterType) {
     super(params)
@@ -194,7 +213,7 @@ export class Str extends BaseParameter {
 
 export class DateTime extends Str {
   type = 'string'
-  protected declare params: StringParameterType
+  public declare params: StringParameterType
 
   constructor(params?: StringParameterType) {
     super({
@@ -207,7 +226,7 @@ export class DateTime extends Str {
 
 export class DateOnly extends Str {
   type = 'string'
-  protected declare params: StringParameterType
+  public declare params: StringParameterType
 
   constructor(params?: StringParameterType) {
     super({
@@ -237,12 +256,13 @@ export class Bool extends BaseParameter {
   }
 }
 
-export class Enumeration {
+export class Enumeration extends Str {
   public isEnum = true
   public values: Record<string, any>
   public keys: any
 
-  constructor(values: Record<string, any>) {
+  constructor(values: Record<string, any>, params?: StringParameterType) {
+    super({ ...(params || {}), enum: values })
     this.keys = Object.keys(values)
     this.values = values
   }
@@ -288,10 +308,6 @@ export class Parameter {
 
     if (type === Date) {
       return new DateTime()
-    }
-
-    if (type.isEnum === true) {
-      return new Str({ ...params, enum: type.values })
     }
 
     if (Array.isArray(type)) {

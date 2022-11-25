@@ -9,7 +9,6 @@ on:
       - '.editorconfig'
     branches:
       - main
-      - master
   pull_request:
     paths-ignore:
       - 'docs/**'
@@ -18,7 +17,6 @@ on:
       - '.editorconfig'
     branches:
       - main
-      - master
 
 jobs:
   test:
@@ -37,5 +35,7 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Install modules
         run: yarn
-      - name: Run tests
-        run: yarn test
+      - name: Run build
+        run: yarn build
+#      - name: Run tests
+#        run: yarn test

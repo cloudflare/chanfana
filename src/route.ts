@@ -1,4 +1,4 @@
-import { OpenAPIRouteSchema, OpenAPISchema } from './types'
+import { OpenAPIRouteSchema, OpenAPISchema, RouteValidated } from './types'
 import { ApiException } from './exceptions'
 import { Request } from 'itty-router'
 import { extractParameter, extractQueryParameters, getFormatedParameters, Parameter, Resp, Body } from './parameters'
@@ -33,9 +33,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
 
     let requestBody = null
     if (schema.requestBody) {
-      requestBody = new Body(schema.requestBody.schema, {
-        description: schema.requestBody.description,
-      }).getValue()
+      requestBody = new Body(schema.requestBody).getValue()
     }
 
     const responses = {}
@@ -77,7 +75,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
   }
 
   async execute(...args) {
-    const { data, errors } = this.validateRequest(args[0])
+    const { data, errors } = await this.validateRequest(args[0])
 
     if (Object.keys(errors).length > 0) {
       return this.handleValidationError(errors)
@@ -94,8 +92,9 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     return resp
   }
 
-  validateRequest(request: Request): any {
+  async validateRequest(request: Request): Promise<RouteValidated> {
     const params = this.getSchema().parameters || {}
+    const requestBody = this.getSchema().requestBody
     const queryParams = extractQueryParameters(request)
 
     const validatedObj = {}
@@ -111,6 +110,16 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
         validatedObj[name] = param.validate(rawData)
       } catch (e) {
         validationErrors[name] = (e as ApiException).message
+      }
+    }
+
+    if (request.method.toLowerCase() !== 'get' && requestBody) {
+      const json = await request.json()
+
+      try {
+        validatedObj['body'] = new Body(requestBody).validate(json)
+      } catch (e) {
+        validationErrors['body' + (e as ApiException).key] = (e as ApiException).message
       }
     }
 
