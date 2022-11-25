@@ -33,9 +33,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
 
     let requestBody = null
     if (schema.requestBody) {
-      requestBody = new Body(schema.requestBody.schema, {
-        description: schema.requestBody.description,
-      }).getValue()
+      requestBody = new Body(schema.requestBody).getValue()
     }
 
     const responses = {}
@@ -119,7 +117,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
       const json = await request.json()
 
       try {
-        validatedObj['body'] = new Body(requestBody.schema).validate(json)
+        validatedObj['body'] = new Body(requestBody).validate(json)
       } catch (e) {
         validationErrors['body' + (e as ApiException).key] = (e as ApiException).message
       }

@@ -14,7 +14,7 @@ This package is still in **development**. Functions and interfaces documented he
 - [x] Class-based endpoints
 - [x] Query parameters validator
 - [x] Path parameters validator
-- [ ] Body request validator
+- [x] Body request validator
 
 ## Installation
 
@@ -191,10 +191,8 @@ Example requestBody:
 
 ```ts
 requestBody = {
-  schema: {
-    datasetId: new Int({ example: 3 }),
-    search: new Str(),
-  },
+  datasetId: new Int({ example: 3 }),
+  search: new Str(),
 }
 ```
 
@@ -276,6 +274,58 @@ export class ToDoList extends OpenAPIRoute {
 
 router.get('/todos', ToDoList)
 ```
+
+## Request Body Validation
+
+The `requestBody` is defined the same way as the normal `parameters`. 
+The validated data will be available inside the `body` property in the `data` argument.
+
+Remember that `requestBody` is only available when the route method is not `GET`.
+
+```ts
+export class ToDoCreate extends OpenAPIRoute {
+    static schema = {
+        tags: ['ToDo'],
+        summary: 'Create a new Todo',
+        requestBody: {
+            title: String,
+            description: new Str({required: false}),
+            type: new Enumeration({
+                nextWeek: 'nextWeek',
+                nextMonth: 'nextMonth',
+            })
+        },
+        responses: {
+            '200': {
+                schema: {
+                    todo: {
+                        id: Number,
+                        title: String,
+                    },
+                },
+            },
+        },
+    }
+
+    async handle(request: Request, data: Record<string, any>) {
+        const { body } = data
+      
+        // Actually insert the data somewhere
+        
+        return {
+            todo: {
+                id: 123,
+                title: body.title,
+            },
+        }
+    }
+}
+
+...
+
+router.post('/todos', ToDoCreate)
+```
+
 
 ## Advanced Usage
 
