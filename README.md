@@ -277,7 +277,7 @@ router.get('/todos', ToDoList)
 
 ## Request Body Validation
 
-The `requestBody` is defined the same way as the normal `parameters`. 
+The `requestBody` is defined the same way as the normal `parameters`.
 The validated data will be available inside the `body` property in the `data` argument.
 
 Remember that `requestBody` is only available when the route method is not `GET`.
@@ -309,9 +309,9 @@ export class ToDoCreate extends OpenAPIRoute {
 
     async handle(request: Request, data: Record<string, any>) {
         const { body } = data
-      
+
         // Actually insert the data somewhere
-        
+
         return {
             todo: {
                 id: 123,
@@ -325,7 +325,6 @@ export class ToDoCreate extends OpenAPIRoute {
 
 router.post('/todos', ToDoCreate)
 ```
-
 
 ## Advanced Usage
 
