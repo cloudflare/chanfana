@@ -95,7 +95,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
   }
 
   validateRequest(request: Request): any {
-    const params = this.getSchema().parameters
+    const params = this.getSchema().parameters || {}
     const queryParams = extractQueryParameters(request)
 
     const validatedObj = {}
