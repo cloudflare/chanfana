@@ -114,13 +114,22 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     }
 
     if (request.method.toLowerCase() !== 'get' && requestBody) {
-      const json = await request.json()
+      let json
+      let loaded = false
 
       try {
-        validatedObj['body'] = new Body(requestBody).validate(json)
+        json = await request.json()
+        loaded = true
       } catch (e) {
-        validationErrors['body' + (e as ApiException).key] = (e as ApiException).message
+        validationErrors['body'] = (e as ApiException).message
       }
+
+      if (loaded)
+        try {
+          validatedObj['body'] = new Body(requestBody).validate(json)
+        } catch (e) {
+          validationErrors['body' + (e as ApiException).key] = (e as ApiException).message
+        }
     }
 
     return {
