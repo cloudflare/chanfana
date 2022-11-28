@@ -132,16 +132,23 @@ Now, when running the application, go to `/docs`. You will see your endpoints li
 
 Schema types can be used in parameters, requestBody and responses.
 
-Available schema types:
+All of theses Types can be imported like `import { Email } from '@cloudflare/itty-router-openapi'`
 
-| Name       |                               Arguments                               |
-| ---------- | :-------------------------------------------------------------------: |
-| `Num`      |     `description` `example` `default` `enum` `enumCaseSensitive`      |
-| `Int`      |     `description` `example` `default` `enum` `enumCaseSensitive`      |
-| `Str`      | `description` `example` `default` `enum` `enumCaseSensitive` `format` |
-| `DateTime` |     `description` `example` `default` `enum` `enumCaseSensitive`      |
-| `DateOnly` |     `description` `example` `default` `enum` `enumCaseSensitive`      |
-| `Bool`     |     `description` `example` `default` `enum` `enumCaseSensitive`      |
+| Name          |                           Arguments                            |
+| ------------- | :------------------------------------------------------------: |
+| `Num`         |               `description` `example` `default`                |
+| `Int`         |               `description` `example` `default`                |
+| `Str`         |           `description` `example` `default` `format`           |
+| `Enumeration` | `description` `example` `default` `values` `enumCaseSensitive` |
+| `DateTime`    |               `description` `example` `default`                |
+| `DateOnly`    |               `description` `example` `default`                |
+| `Bool`        |               `description` `example` `default`                |
+| `Regex`       |   `description` `example` `default` `pattern` `patternError`   |
+| `Email`       |               `description` `example` `default`                |
+| `Uuid`        |               `description` `example` `default`                |
+| `Hostname`    |               `description` `example` `default`                |
+| `Ipv4`        |               `description` `example` `default`                |
+| `Ipv6`        |               `description` `example` `default`                |
 
 In order to make use of the `enum` argument you should pass your Enum values to the `Enumeration` class, as shown bellow.
 
@@ -198,19 +205,20 @@ requestBody = {
 
 #### Example Enumeration:
 
+Enumerations like the other types can be defined both inline or as a variable outside the schema.
+
 ```ts
 import { Enumeration } from '@cloudflare/itty-router-openapi'
 
-const formatsEnum = new Enumeration({
-  json: 'json',
-  csv: 'csv',
-})
-
 parameters = {
-  format: Query(formatsEnum, {
+  format: Query(Enumeration, {
     description: 'Format the response should be returned',
     default: 'json',
     required: false,
+    values: {
+      json: 'json',
+      csv: 'csv',
+    },
   }),
 }
 ```
@@ -218,13 +226,17 @@ parameters = {
 #### Example Enumeration not case sensitive:
 
 This way, the client can call any combination of upper and lower caracters and it will still be a valid input.
+
 ```ts
 import { Enumeration } from '@cloudflare/itty-router-openapi'
 
 const formatsEnum = new Enumeration({
-  json: 'json',
-  csv: 'csv',
-}, { enumCaseSensitive: false })
+  enumCaseSensitive: false,
+  values: {
+    json: 'json',
+    csv: 'csv',
+  },
+})
 
 parameters = {
   format: Query(formatsEnum, {
@@ -311,8 +323,10 @@ export class ToDoCreate extends OpenAPIRoute {
             title: String,
             description: new Str({required: false}),
             type: new Enumeration({
+              values: {
                 nextWeek: 'nextWeek',
                 nextMonth: 'nextMonth',
+              }
             })
         },
         responses: {

@@ -1,5 +1,12 @@
 import { ValidationError } from './exceptions'
-import { ParameterBody, ParameterLocation, ParameterType, StringParameterType } from './types'
+import {
+  EnumerationParameterType,
+  ParameterBody,
+  ParameterLocation,
+  ParameterType,
+  RegexParameterType,
+  StringParameterType,
+} from './types'
 
 export class BaseParameter {
   public static isParameter = true
@@ -21,28 +28,10 @@ export class BaseParameter {
       description: this.params.description,
       example: this.params.example,
       default: this.params.default,
-      enum: this.params.enum ? Object.keys(this.params.enum) : undefined,
     }
   }
 
   validate(value: any): any {
-    if (this.params.enum) {
-      if (typeof value !== 'string') {
-        throw new ValidationError('is not one of available options')
-      }
-
-      if (this.params.enumCaseSensitive !== false) {
-        value = this.params.enum[value]
-      } else {
-        const key = Object.keys(this.params.enum).find((key) => key.toLowerCase() === value.toLowerCase())
-        value = this.params.enum[key]
-      }
-
-      if (value === undefined) {
-        throw new ValidationError('is not one of available options')
-      }
-    }
-
     return value
   }
 }
@@ -177,6 +166,10 @@ export class Str extends BaseParameter {
   validate(value: any): any {
     value = super.validate(value)
 
+    if (typeof value !== 'string') {
+      value = value.toString()
+    }
+
     if (this.params.format) {
       if (this.params.format === 'date-time') {
         value = new Date(value)
@@ -202,10 +195,8 @@ export class Str extends BaseParameter {
   }
 
   getValue() {
-    const value = super.getValue()
-
     return {
-      ...value,
+      ...super.getValue(),
       format: this.params.format,
     }
   }
@@ -220,6 +211,107 @@ export class DateTime extends Str {
       example: '2022-09-15T00:00:00Z',
       ...params,
       format: 'date-time',
+    })
+  }
+}
+
+export class Regex extends Str {
+  type = 'string'
+  public declare params: RegexParameterType
+
+  constructor(params: RegexParameterType) {
+    super(params)
+  }
+
+  validate(value: any): any {
+    value = super.validate(value)
+
+    if (!value.match(this.params.pattern)) {
+      if (this.params.patternError) {
+        throw new ValidationError(`is not a valid ${this.params.patternError}`)
+      }
+      throw new ValidationError(`does not match the pattern ${this.params.format}`)
+    }
+
+    return value
+  }
+
+  getValue() {
+    return {
+      ...super.getValue(),
+      pattern: this.params.pattern,
+    }
+  }
+}
+
+export class Email extends Regex {
+  type = 'string'
+  public declare params: RegexParameterType
+
+  constructor(params?: StringParameterType) {
+    super({
+      pattern: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$',
+      patternError: 'email',
+      ...params,
+      format: 'email',
+    })
+  }
+}
+
+export class Uuid extends Regex {
+  type = 'string'
+  public declare params: RegexParameterType
+
+  constructor(params?: StringParameterType) {
+    super({
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+      patternError: 'uuid',
+      ...params,
+      format: 'uuid',
+    })
+  }
+}
+
+export class Hostname extends Regex {
+  type = 'string'
+  public declare params: RegexParameterType
+
+  constructor(params?: StringParameterType) {
+    super({
+      pattern:
+        '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$',
+      patternError: 'hostname',
+      ...params,
+      format: 'hostname',
+    })
+  }
+}
+
+export class Ipv4 extends Regex {
+  type = 'string'
+  public declare params: RegexParameterType
+
+  constructor(params?: StringParameterType) {
+    super({
+      pattern: '^(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}$',
+      patternError: 'ipv4',
+      ...params,
+      format: 'ipv4',
+    })
+  }
+}
+
+export class Ipv6 extends Regex {
+  type = 'string'
+  public declare params: RegexParameterType
+
+  constructor(params?: StringParameterType) {
+    super({
+      pattern:
+        '^(?:(?:[a-fA-F\\d]{1,4}:){7}(?:[a-fA-F\\d]{1,4}|:)|(?:[a-fA-F\\d]{1,4}:){6}(?:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|:[a-fA-F\\d]{1,4}|:)|(?:[a-fA-F\\d]{1,4}:){5}(?::(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|(?::[a-fA-F\\d]{1,4}){1,2}|:)|(?:[a-fA-F\\d]{1,4}:){4}(?:(?::[a-fA-F\\d]{1,4}){0,1}:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|(?::[a-fA-F\\d]{1,4}){1,3}|:)|(?:[a-fA-F\\d]{1,4}:){3}(?:(?::[a-fA-F\\d]{1,4}){0,2}:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|(?::[a-fA-F\\d]{1,4}){1,4}|:)|(?:[a-fA-F\\d]{1,4}:){2}(?:(?::[a-fA-F\\d]{1,4}){0,3}:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|(?::[a-fA-F\\d]{1,4}){1,5}|:)|(?:[a-fA-F\\d]{1,4}:){1}(?:(?::[a-fA-F\\d]{1,4}){0,4}:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|(?::[a-fA-F\\d]{1,4}){1,6}|:)|(?::(?:(?::[a-fA-F\\d]{1,4}){0,5}:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|(?::[a-fA-F\\d]{1,4}){1,7}|:)))(?:%[0-9a-zA-Z]{1,})?$',
+      patternError: 'ipv6',
+      ...params,
+      format: 'ipv6',
     })
   }
 }
@@ -258,13 +350,39 @@ export class Bool extends BaseParameter {
 
 export class Enumeration extends Str {
   public isEnum = true
+  public declare params: EnumerationParameterType
   public values: Record<string, any>
   public keys: any
 
-  constructor(values: Record<string, any>, params?: StringParameterType) {
-    super({ ...(params || {}), enum: values })
-    this.keys = Object.keys(values)
-    this.values = values
+  constructor(params: EnumerationParameterType) {
+    super(params)
+    console.log(params.values)
+    this.keys = Object.keys(params.values)
+    this.values = params.values
+  }
+
+  validate(value: any): any {
+    value = super.validate(value)
+
+    if (this.params.enumCaseSensitive !== false) {
+      value = this.params.values[value]
+    } else {
+      const key = this.keys.find((key) => key.toLowerCase() === value.toLowerCase())
+      value = this.params.values[key]
+    }
+
+    if (value === undefined) {
+      throw new ValidationError('is not one of available options')
+    }
+
+    return value
+  }
+
+  getValue() {
+    return {
+      ...super.getValue(),
+      enum: this.keys,
+    }
   }
 }
 
