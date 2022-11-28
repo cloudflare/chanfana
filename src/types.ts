@@ -40,8 +40,6 @@ export interface ParameterType {
   default?: string | number | boolean
   description?: string
   example?: string | number | boolean
-  enum?: Record<string, any>
-  enumCaseSensitive?: boolean
   required?: boolean
 }
 
@@ -49,10 +47,26 @@ export interface StringParameterType extends ParameterType {
   format?: string
 }
 
-export interface ParameterLocation extends ParameterType {
+export interface EnumerationParameterType extends StringParameterType {
+  values: Record<string, any>
+  enumCaseSensitive?: boolean
+}
+
+export interface RegexParameterType extends StringParameterType {
+  pattern: string
+  patternError?: string
+}
+
+export interface ParameterLocation extends StringParameterType {
   name?: string
   required?: boolean
   contentType?: boolean
+
+  // Because this is a generic initializer, it must include all available options
+  values?: Record<string, any>
+  enumCaseSensitive?: boolean
+  pattern?: string
+  patternError?: string
 }
 
 export interface ParameterBody {
