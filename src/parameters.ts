@@ -356,7 +356,7 @@ export class Enumeration extends Str {
 
   constructor(params: EnumerationParameterType) {
     super(params)
-    console.log(params.values)
+
     this.keys = Object.keys(params.values)
     this.values = params.values
   }
