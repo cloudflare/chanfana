@@ -17,11 +17,19 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
     ...options?.schema,
   }
 
+  const schema = {
+    ...openapiConfig,
+    paths: OpenAPIPaths,
+  }
+
   // @ts-ignore
   const routerProxy: OpenAPIRouter = new Proxy(router, {
     get: (target, prop, receiver) => {
       if (prop === 'original') {
         return router
+      }
+      if (prop === 'schema') {
+        return schema
       }
 
       return (route: string, ...handlers: any) => {
@@ -110,18 +118,12 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
       })
     })
     router.get('/openapi.json', () => {
-      return new Response(
-        JSON.stringify({
-          ...openapiConfig,
-          paths: OpenAPIPaths,
-        }),
-        {
-          headers: {
-            'content-type': 'application/json;charset=UTF-8',
-          },
-          status: 200,
-        }
-      )
+      return new Response(JSON.stringify(schema), {
+        headers: {
+          'content-type': 'application/json;charset=UTF-8',
+        },
+        status: 200,
+      })
     })
   }
 
