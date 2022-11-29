@@ -48,7 +48,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     // Deep copy
     return {
       ...schema,
-      parameters: schema.parameters ? getFormatedParameters(schema.parameters) : {},
+      parameters: schema.parameters ? getFormatedParameters(schema.parameters) : [],
       responses: responses,
       ...(requestBody ? { requestBody: requestBody } : {}),
     }
