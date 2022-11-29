@@ -329,7 +329,7 @@ export class DateOnly extends Str {
   }
 }
 
-export class Bool extends BaseParameter {
+export class Bool extends Str {
   type = 'boolean'
   private validValues = ['true', 'false']
 
@@ -339,7 +339,7 @@ export class Bool extends BaseParameter {
     value = value.toLowerCase()
 
     if (!this.validValues.includes(value)) {
-      throw new ValidationError('is not a valid boolean, allowed values true or false')
+      throw new ValidationError('is not a valid boolean, allowed values are true or false')
     }
 
     value = value === 'true'
