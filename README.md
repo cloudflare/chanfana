@@ -6,9 +6,8 @@ This library provides an easy and compact OpenAPI 3 schema generator and validat
 
 This package is still in **development**. Functions and interfaces documented here will likely never change, but other internal functions and procedures can change during the initial weeks after publishing.
 
-A template repository is available at [cloudflare/templates](https://github.com/cloudflare/templates/tree/main/worker-openapi), 
+A template repository is available at [cloudflare/templates](https://github.com/cloudflare/templates/tree/main/worker-openapi),
 with a live demo [here](https://worker-openapi-example.radar.cloudflare.com/docs).
-
 
 ## Features
 
@@ -536,6 +535,26 @@ router.original.get('/todos/:id', ({ params }) => new Response(`Todo #${params.i
 ```
 
 This endpoint will still be accessible, but will not be shown in the schema.
+
+### 6. Accessing the `openapi.json` schema
+
+For CI/CD pipelines, you can read the complete `openapi.json` schemas by calling the `schema` property from the router instance.
+
+Here is an example of a nodejs script that would pick the schema, make some changes and write it to a file, to be able to
+be picked from a CI/CD pipeline.
+
+```ts
+import fs from 'fs'
+import { router } from '../src/router'
+
+// Get the Schema from itty-router-openapi
+const schema = router.schema
+
+// Optionaly: update the schema with some costumizations for publishing
+
+// Write the final schema
+fs.writeFileSync('./public-api.json', JSON.stringify(schema, null, 2))
+```
 
 ## Feedback and contributions
 
