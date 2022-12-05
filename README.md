@@ -6,6 +6,10 @@ This library provides an easy and compact OpenAPI 3 schema generator and validat
 
 This package is still in **development**. Functions and interfaces documented here will likely never change, but other internal functions and procedures can change during the initial weeks after publishing.
 
+A template repository is available at [cloudflare/templates](https://github.com/cloudflare/templates/tree/main/worker-openapi), 
+with a live demo [here](https://worker-openapi-example.radar.cloudflare.com/docs).
+
+
 ## Features
 
 - [x] Drop-in replacement for existing itty-router applications
