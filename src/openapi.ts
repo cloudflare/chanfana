@@ -35,7 +35,7 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
       return (route: string, ...handlers: any) => {
         if (prop !== 'handle') {
           if (prop !== 'all') {
-            const parsedRoute = route.replace(/:(\w+)/g, '{$1}')
+            const parsedRoute = (options?.base || '') + route.replace(/:(\w+)/g, '{$1}')
 
             let schema: OpenAPISchema = undefined
             let operationId: string = undefined
