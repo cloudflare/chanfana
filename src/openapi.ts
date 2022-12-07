@@ -15,6 +15,11 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
       version: options?.schema?.info?.version || '1.0',
     },
     ...options?.schema,
+    servers: [
+      {
+        url: options?.base ?? "/"
+      }
+    ]
   }
 
   const schema = {
@@ -68,12 +73,12 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
                 operationId: operationId,
                 parameters: params
                   ? getFormatedParameters(
-                      params.map((param) => {
-                        return Query(String, {
-                          name: param.replace(':', ''),
-                        })
+                    params.map((param) => {
+                      return Query(String, {
+                        name: param.replace(':', ''),
                       })
-                    )
+                    })
+                  )
                   : null,
               }
             }
