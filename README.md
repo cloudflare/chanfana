@@ -228,7 +228,7 @@ parameters = {
 
 #### Example Enumeration not case sensitive:
 
-This way, the client can call any combination of upper and lower caracters and it will still be a valid input.
+This way, the client can call any combination of upper and lower characters and it will still be a valid input.
 
 ```ts
 import { Enumeration } from '@cloudflare/itty-router-openapi'
