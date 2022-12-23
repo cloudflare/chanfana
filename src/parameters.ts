@@ -83,7 +83,7 @@ export class Obj extends BaseParameter {
 
     for (const [key, param] of Object.entries(this.fields)) {
       try {
-        if (value[key] === undefined && value[key] === null) {
+        if (value[key] === undefined || value[key] === null) {
           if (param.params.required) {
             throw new ValidationError('is required')
           }
