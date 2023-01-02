@@ -15,6 +15,10 @@ jobs:
         with:
           node-version: '14.x'
           registry-url: 'https://registry.npmjs.org'
+      - name: Set RELEASE_VERSION
+        run: echo "RELEASE_VERSION=0.0.1" >> $GITHUB_ENV
+      - name: Apply new version
+        run: node config/preparePublish.js
       - name: Install modules
         run: npm install
       - name: Build
