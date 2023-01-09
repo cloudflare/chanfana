@@ -48,6 +48,10 @@ export class Arr extends BaseParameter {
   validate(value: any): any {
     value = super.validate(value)
 
+    if (this.params.required === false && (value === null || value === '')) {
+      return null
+    }
+
     if (Array.isArray(value)) {
       value = value.map((val) => {
         return this.innerType.validate(val)
@@ -378,7 +382,12 @@ export class Enumeration extends Str {
     }
 
     if (value === undefined) {
-      throw new ValidationError('is not one of available options')
+      if (this.params.required === true) {
+        throw new ValidationError('is not one of available options')
+      }
+
+      // Parameter not required neither one of the available options
+      return null
     }
 
     return value
