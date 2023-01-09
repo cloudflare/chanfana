@@ -4,8 +4,6 @@ This library provides an easy and compact OpenAPI 3 schema generator and validat
 
 `itty-router-openapi` is built on top of [itty-router](https://github.com/kwhitley/itty-router) and extends some of its core features, such as adding class-based endpoints. It also provides a simple and iterative path for migrating from old applications based on `itty-router`.
 
-This package is still in **development**. Functions and interfaces documented here will likely never change, but other internal functions and procedures can change during the initial weeks after publishing.
-
 A template repository is available at [cloudflare/templates](https://github.com/cloudflare/templates/tree/main/worker-openapi),
 with a live demo [here](https://worker-openapi-example.radar.cloudflare.com/docs).
 
@@ -35,7 +33,7 @@ A. Yes. This package was created during the [Cloudflare Radar 2.0](https://radar
 
 Q. When will this package reach stable maturity?
 
-A. While `OpenAPIRouter` function and the `Route` class are not likely to change, other internal functions and procedures can change during the initial weeks after publishing.
+A. This package is already heavily used in [Cloudflare Radar](https://radar.cloudflare.com/), and we are committed to not introducing breaking changes to it.
 
 ## Basic Usage
 
