@@ -361,7 +361,7 @@ export class Bool extends Str {
 export class Enumeration extends Str {
   public isEnum = true
   public declare params: EnumerationParameterType
-  public values: Record<string, any>
+  public values: Record<string, unknown>
   public keys: any
 
   constructor(params: EnumerationParameterType) {
