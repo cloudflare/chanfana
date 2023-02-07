@@ -361,14 +361,16 @@ export class Bool extends Str {
 export class Enumeration extends Str {
   public isEnum = true
   public declare params: EnumerationParameterType
-  public values: Record<string, unknown>
+  public values: Record<string, any>
   public keys: any
 
   constructor(params: EnumerationParameterType) {
     super(params)
 
-    this.keys = Object.keys(params.values)
-    this.values = params.values
+    let {values} = params
+    if (Array.isArray(values)) values = Object.fromEntries(values.map((x) => [x, x]))
+    this.keys = Object.keys(values)
+    this.values = values
   }
 
   validate(value: any): any {
