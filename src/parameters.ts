@@ -367,8 +367,10 @@ export class Enumeration extends Str {
   constructor(params: EnumerationParameterType) {
     super(params)
 
-    this.keys = Object.keys(params.values)
-    this.values = params.values
+    let {values} = params
+    if (Array.isArray(values)) values = Object.fromEntries(values.map((x) => [x, x]))
+    this.keys = Object.keys(values)
+    this.values = values
   }
 
   validate(value: any): any {
