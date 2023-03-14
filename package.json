@@ -2,20 +2,25 @@
   "name": "@cloudflare/itty-router-openapi",
   "version": "0.0.1",
   "description": "OpenAPI schema generator and validator for Cloudflare Workers",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "umd:main": "dist/umd/index.js",
-  "types": "dist/types/index.d.js",
+  "main": "./dist/itty-router-openapi.js",
+  "types": "./dist/itty-router-openapi.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/itty-router-openapi.d.ts",
+      "import": "./dist/itty-router-openapi.mjs",
+      "require": "./dist/itty-router-openapi.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "postinstall": "husky install",
     "prepublishOnly": "pinst --disable",
     "postpublish": "pinst --enable",
-    "build": "npm run build:cjs && npm run build:esm && npm run build:umd && npm run build:types",
-    "build:cjs": "node tools/cleanup cjs && tsc -p config/tsconfig.cjs.json",
-    "build:esm": "node tools/cleanup esm && tsc -p config/tsconfig.esm.json",
-    "build:umd": "node tools/cleanup umd && webpack --config config/webpack.config.js",
-    "build:types": "node tools/cleanup types && tsc -p config/tsconfig.types.json",
-    "clean": "node tools/cleanup",
+    "build": "rollup -c",
     "package": "npm run build && npm pack",
     "test": "jest --no-cache --runInBand",
     "test:cov": "jest --coverage --no-cache --runInBand",
@@ -26,9 +31,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "dist"
-  ],
   "keywords": [
     "cloudflare",
     "worker",
@@ -76,10 +78,11 @@
     "pinst": "^2.1.6",
     "prettier": "^2.4.0",
     "ts-jest": "^28.0.5",
-    "ts-loader": "^9.2.5",
-    "typescript": "^4.4.3",
-    "webpack": "^5.52.1",
-    "webpack-cli": "^4.8.0"
+    "@rollup/plugin-terser": "^0.2.1",
+    "@rollup/plugin-typescript": "^10.0.1",
+    "rollup": "^3.8.1",
+    "rollup-plugin-bundle-size": "^1.0.3",
+    "typescript": "^4.8.4"
   },
   "dependencies": {
     "itty-router": "^2.6.6"
