@@ -37,7 +37,9 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
           if (prop !== 'all') {
             const parsedRoute = (options?.base || '') + route.replace(/:(\w+)/g, '{$1}')
 
+            // @ts-ignore
             let schema: OpenAPISchema = undefined
+            // @ts-ignore
             let operationId: string = undefined
 
             for (const handler of handlers) {
@@ -66,6 +68,7 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
 
               schema = {
                 operationId: operationId,
+                // @ts-ignore
                 parameters: params
                   ? getFormatedParameters(
                       params.map((param) => {
@@ -88,9 +91,9 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
           receiver
         )(
           route,
-          ...handlers.map((handler) => {
+          ...handlers.map((handler: any) => {
             if (handler.isRoute === true) {
-              return (...params) => new handler().execute(...params)
+              return (...params: any[]) => new handler().execute(...params)
             }
 
             return handler

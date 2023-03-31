@@ -19,7 +19,8 @@
     "traceResolution": false,
     "module": "esnext",
     "outDir": "dist/mjs",
-    "target": "esnext"
+    "target": "esnext",
+    "types": ["@cloudflare/workers-types"]
   },
   "exclude": ["node_modules", "dist"],
   "include": ["src"]

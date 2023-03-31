@@ -7,11 +7,12 @@ import {
   RegexParameterType,
   StringParameterType,
 } from './types'
+import { Request } from 'itty-router'
 
 export class BaseParameter {
   public static isParameter = true
   public isParameter = true
-  type = null
+  type = 'string'
   public params: ParameterType
   public generated: boolean
 
@@ -44,7 +45,7 @@ export class Arr extends BaseParameter {
   public isArr = true
   private innerType
 
-  constructor(innerType, params?: ParameterType) {
+  constructor(innerType: any, params?: ParameterType) {
     super(params)
     this.innerType = innerType
   }
@@ -383,7 +384,7 @@ export class Enumeration extends Str {
     if (this.params.enumCaseSensitive !== false) {
       value = this.params.values[value]
     } else {
-      const key = this.keys.find((key) => key.toLowerCase() === value.toLowerCase())
+      const key = this.keys.find((key: any) => key.toLowerCase() === value.toLowerCase())
       value = this.params.values[key]
     }
 
@@ -423,7 +424,7 @@ export class Parameter {
     this.type = this.getType(rawType, params)
   }
 
-  getType(type: any, params: ParameterLocation) {
+  getType(type: any, params: ParameterLocation): any {
     if (type.generated === true) {
       return type
     }
@@ -504,7 +505,9 @@ export class Body extends Parameter {
   paramsBody: ParameterBody
 
   constructor(rawType: any, params?: ParameterBody) {
+    // @ts-ignore
     super(null, rawType, {})
+    // @ts-ignore
     this.paramsBody = params
   }
 
@@ -524,6 +527,7 @@ export class Body extends Parameter {
 
 export class Resp extends Parameter {
   constructor(rawType: any, params: ParameterLocation) {
+    // @ts-ignore
     super(null, rawType, params)
   }
 
@@ -558,14 +562,16 @@ export function Cookie(type: any, params: ParameterLocation = {}): Parameter {
   return new Parameter('cookie', type, params)
 }
 
-export function extractParameter(request, query: Record<string, any>, name: string, location: string): any {
+export function extractParameter(request: Request, query: Record<string, any>, name: string, location: string): any {
   if (location === 'query') {
     return query[name]
   }
   if (location === 'path') {
+    // @ts-ignore
     return request.params[name]
   }
   if (location === 'header') {
+    // @ts-ignore
     return request.headers.get(name)
   }
   if (location === 'cookie') {
@@ -573,7 +579,7 @@ export function extractParameter(request, query: Record<string, any>, name: stri
   }
 }
 
-export function extractQueryParameters(request): Record<string, any> {
+export function extractQueryParameters(request: Request): Record<string, any> {
   const url = decodeURIComponent(request.url).split('?')
 
   if (url.length === 1) {

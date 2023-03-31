@@ -10,4 +10,5 @@ export default defineConfig({
     { format: 'es', file: 'dist/itty-router-openapi.mjs' },
   ],
   plugins: [typescript(), terser(), bundleSize()],
+  external: ['itty-router'],
 })
