@@ -23,12 +23,16 @@ export class BaseParameter {
   }
 
   getValue() {
-    return {
+    const value: Record<string, any> = {
       type: this.type,
       description: this.params.description,
       example: this.params.example,
       default: this.params.default,
     }
+
+    if (this.params.deprecated) value.deprecated = this.params.deprecated
+
+    return value
   }
 
   validate(value: any): any {
@@ -107,7 +111,7 @@ export class Obj extends BaseParameter {
 
   // @ts-ignore
   getValue() {
-    const result = {
+    const result: Record<string, any> = {
       type: 'object',
       properties: {},
     }
@@ -126,7 +130,7 @@ export class Obj extends BaseParameter {
     }
 
     if (required.length > 0) {
-      result['required'] = required
+      result.required = required
     }
 
     return result
@@ -454,7 +458,7 @@ export class Parameter {
     }
 
     if (typeof type === 'object') {
-      const parsed = {}
+      const parsed: Record<string, any> = {}
       for (const [key, value] of Object.entries(type)) {
         parsed[key] = this.getType(value, {})
       }
@@ -507,7 +511,7 @@ export class Body extends Parameter {
   getValue(): Record<string, any> {
     const schema = removeUndefinedFields(this.type.getValue())
 
-    const param = {
+    const param: Record<string, any> = {
       description: this.paramsBody?.description,
       content: {},
     }
@@ -528,7 +532,7 @@ export class Resp extends Parameter {
     const value = super.getValue()
     const contentType = this.params?.contentType ? 'this.params?.contentType' : 'application/json'
 
-    const param = {
+    const param: Record<string, any> = {
       description: this.params.description || 'Successful Response',
       content: {},
     }
@@ -578,7 +582,7 @@ export function extractQueryParameters(request): Record<string, any> {
 
   const query = url[1]
 
-  const params = {}
+  const params: Record<string, any> = {}
   for (const param of query.split('&')) {
     const paramSplitted = param.split('=')
     const key = paramSplitted[0]
