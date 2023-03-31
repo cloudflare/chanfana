@@ -1,0 +1,44 @@
+name: Create Pull Request Prerelease
+
+on: pull_request
+
+jobs:
+  build:
+    if: ${{ github.repository_owner == 'cloudflare' }}
+    name: Build & Publish a Prerelease to the Adhoc Registry
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 16.13
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.13
+          cache: 'npm' # cache ~/.npm in case 'npm ci' needs to run
+
+      - name: Set RELEASE_VERSION
+        run: echo "RELEASE_VERSION=${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Apply new version
+        run: node config/preparePublish.js
+
+      - name: Install modules
+        run: npm install
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: 'production'
+
+      - name: Create package
+        run: npm pack
+
+      - name: Upload packaged itty-router-openapi artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: npm-package-itty-router-openapi-${{ github.event.number }} # encode the PR number into the artifact name
+          path: cloudflare-itty-router-openapi-*.tgz
