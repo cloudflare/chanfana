@@ -7,7 +7,6 @@ import {
   RegexParameterType,
   StringParameterType,
 } from './types'
-import { Request } from 'itty-router'
 
 export class BaseParameter {
   public static isParameter = true

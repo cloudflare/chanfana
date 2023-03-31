@@ -1,7 +1,6 @@
-import { OpenAPIRouteSchema, OpenAPISchema, ResponseSchema, RouteValidated } from './types'
+import { OpenAPIRouteSchema, OpenAPISchema, RouteValidated } from './types'
 import { ApiException } from './exceptions'
-import { Request } from 'itty-router'
-import { extractParameter, extractQueryParameters, getFormatedParameters, Parameter, Resp, Body } from './parameters'
+import { Body, extractParameter, extractQueryParameters, getFormatedParameters, Parameter, Resp } from './parameters'
 
 export class OpenAPIRoute implements OpenAPIRouteSchema {
   static isRoute = true
