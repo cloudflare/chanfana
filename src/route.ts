@@ -1,18 +1,12 @@
-import { OpenAPIRouteSchema, OpenAPISchema, RouteValidated } from './types'
+import { OpenAPIRouteSchema, OpenAPISchema, ResponseSchema, RouteValidated } from './types'
 import { ApiException } from './exceptions'
 import { Request } from 'itty-router'
 import { extractParameter, extractQueryParameters, getFormatedParameters, Parameter, Resp, Body } from './parameters'
 
-export function route(options, func) {
-  func.schema = options
-
-  return func
-}
-
 export class OpenAPIRoute implements OpenAPIRouteSchema {
   static isRoute = true
 
-  static schema: OpenAPISchema = null
+  static schema: OpenAPISchema
 
   static getSchema(): OpenAPISchema {
     return this.schema
@@ -36,12 +30,13 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
       requestBody = new Body(schema.requestBody).getValue()
     }
 
-    const responses = {}
+    const responses: Record<string, any> = {}
     if (schema.responses) {
       for (const [key, value] of Object.entries(schema.responses)) {
-        responses[key] = new Resp(value.schema, {
+        const resp = new Resp(value.schema, {
           description: value.description,
-        }).getValue()
+        })
+        responses[key] = resp.getValue()
       }
     }
 
@@ -74,7 +69,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     })
   }
 
-  async execute(...args) {
+  async execute(...args: any[]) {
     const { data, errors } = await this.validateRequest(args[0])
 
     if (Object.keys(errors).length > 0) {
@@ -97,8 +92,8 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     const requestBody = this.getSchema().requestBody
     const queryParams = extractQueryParameters(request)
 
-    const validatedObj = {}
-    const validationErrors = {}
+    const validatedObj: Record<string, any> = {}
+    const validationErrors: Record<string, any> = {}
 
     for (const [key, value] of Object.entries(params)) {
       // @ts-ignore
@@ -118,6 +113,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
       let loaded = false
 
       try {
+        // @ts-ignore
         json = await request.json()
         loaded = true
       } catch (e) {
@@ -138,7 +134,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     }
   }
 
-  handle(...args): Promise<Response | Record<string, any>> {
+  handle(...args: any[]): Promise<Response | Record<string, any>> {
     throw new Error('Method not implemented.')
   }
 }

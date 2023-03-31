@@ -43,6 +43,19 @@ Q. When will this package reach stable maturity?
 A. This package is already heavily used in [Cloudflare Radar](https://radar.cloudflare.com/), and we are committed to
 not introducing breaking changes to it.
 
+## Options API
+
+#### `OpenAPIRouter(options = {})`
+
+| Name          | Type(s)                           | Description                                                             | Examples                                                                   |
+| ------------- | --------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `base`        | `string`                          | prefixes all routes with this string                                    | `Router({ base: '/api' })`                                                 |
+| `routes`      | `array of routes`                 | array of manual routes for preloading                                   | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
+| `schema`      | `object`                          | Object of the common OpenAPI customizations                             | [see documentation](#4-core-openapi-schema-customizations)                 |
+| `docs_url`    | `string` or `null` or `undefined` | Path for swagger docs, `null`: disabled, `undefined`: `/docs`           | `/docs`                                                                    |
+| `redoc_url`   | `string` or `null` or `undefined` | Path for redoc docs, `null`: disabled, `undefined`: `/redocs`           | `/redocs`                                                                  |
+| `openapi_url` | `string` or `null` or `undefined` | Path for openapi schema, `null`: disabled, `undefined`: `/openapi.json` | `/openapi.json`                                                            |
+
 ## Basic Usage
 
 Creating a new OpenAPI route is simple:

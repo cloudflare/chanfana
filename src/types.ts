@@ -19,6 +19,9 @@ export interface RouterOptions {
   base?: string
   routes?: RouteEntry<Request>[]
   schema?: Record<string, any>
+  docs_url?: string
+  redoc_url?: string
+  openapi_url?: string
 }
 
 export interface OpenAPISchema {
@@ -29,6 +32,7 @@ export interface OpenAPISchema {
   requestBody?: Record<string, any>
   parameters?: Record<string, Parameter> | Parameter[]
   responses?: Record<string, ResponseSchema>
+  deprecated?: boolean
 }
 
 export interface OpenAPIRouteSchema {
@@ -41,6 +45,7 @@ export interface ParameterType {
   description?: string
   example?: string | number | boolean
   required?: boolean
+  deprecated?: boolean
 }
 
 export interface StringParameterType extends ParameterType {

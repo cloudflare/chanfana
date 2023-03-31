@@ -7,11 +7,12 @@ import {
   RegexParameterType,
   StringParameterType,
 } from './types'
+import { Request } from 'itty-router'
 
 export class BaseParameter {
   public static isParameter = true
   public isParameter = true
-  type = null
+  type = 'string'
   public params: ParameterType
   public generated: boolean
 
@@ -23,12 +24,16 @@ export class BaseParameter {
   }
 
   getValue() {
-    return {
+    const value: Record<string, any> = {
       type: this.type,
       description: this.params.description,
       example: this.params.example,
       default: this.params.default,
     }
+
+    if (this.params.deprecated) value.deprecated = this.params.deprecated
+
+    return value
   }
 
   validate(value: any): any {
@@ -40,7 +45,7 @@ export class Arr extends BaseParameter {
   public isArr = true
   private innerType
 
-  constructor(innerType, params?: ParameterType) {
+  constructor(innerType: any, params?: ParameterType) {
     super(params)
     this.innerType = innerType
   }
@@ -107,7 +112,7 @@ export class Obj extends BaseParameter {
 
   // @ts-ignore
   getValue() {
-    const result = {
+    const result: Record<string, any> = {
       type: 'object',
       properties: {},
     }
@@ -126,7 +131,7 @@ export class Obj extends BaseParameter {
     }
 
     if (required.length > 0) {
-      result['required'] = required
+      result.required = required
     }
 
     return result
@@ -379,7 +384,7 @@ export class Enumeration extends Str {
     if (this.params.enumCaseSensitive !== false) {
       value = this.params.values[value]
     } else {
-      const key = this.keys.find((key) => key.toLowerCase() === value.toLowerCase())
+      const key = this.keys.find((key: any) => key.toLowerCase() === value.toLowerCase())
       value = this.params.values[key]
     }
 
@@ -419,7 +424,7 @@ export class Parameter {
     this.type = this.getType(rawType, params)
   }
 
-  getType(type: any, params: ParameterLocation) {
+  getType(type: any, params: ParameterLocation): any {
     if (type.generated === true) {
       return type
     }
@@ -454,7 +459,7 @@ export class Parameter {
     }
 
     if (typeof type === 'object') {
-      const parsed = {}
+      const parsed: Record<string, any> = {}
       for (const [key, value] of Object.entries(type)) {
         parsed[key] = this.getType(value, {})
       }
@@ -500,14 +505,16 @@ export class Body extends Parameter {
   paramsBody: ParameterBody
 
   constructor(rawType: any, params?: ParameterBody) {
+    // @ts-ignore
     super(null, rawType, {})
+    // @ts-ignore
     this.paramsBody = params
   }
 
   getValue(): Record<string, any> {
     const schema = removeUndefinedFields(this.type.getValue())
 
-    const param = {
+    const param: Record<string, any> = {
       description: this.paramsBody?.description,
       content: {},
     }
@@ -520,6 +527,7 @@ export class Body extends Parameter {
 
 export class Resp extends Parameter {
   constructor(rawType: any, params: ParameterLocation) {
+    // @ts-ignore
     super(null, rawType, params)
   }
 
@@ -528,7 +536,7 @@ export class Resp extends Parameter {
     const value = super.getValue()
     const contentType = this.params?.contentType ? 'this.params?.contentType' : 'application/json'
 
-    const param = {
+    const param: Record<string, any> = {
       description: this.params.description || 'Successful Response',
       content: {},
     }
@@ -554,14 +562,16 @@ export function Cookie(type: any, params: ParameterLocation = {}): Parameter {
   return new Parameter('cookie', type, params)
 }
 
-export function extractParameter(request, query: Record<string, any>, name: string, location: string): any {
+export function extractParameter(request: Request, query: Record<string, any>, name: string, location: string): any {
   if (location === 'query') {
     return query[name]
   }
   if (location === 'path') {
+    // @ts-ignore
     return request.params[name]
   }
   if (location === 'header') {
+    // @ts-ignore
     return request.headers.get(name)
   }
   if (location === 'cookie') {
@@ -569,7 +579,7 @@ export function extractParameter(request, query: Record<string, any>, name: stri
   }
 }
 
-export function extractQueryParameters(request): Record<string, any> {
+export function extractQueryParameters(request: Request): Record<string, any> {
   const url = decodeURIComponent(request.url).split('?')
 
   if (url.length === 1) {
@@ -578,7 +588,7 @@ export function extractQueryParameters(request): Record<string, any> {
 
   const query = url[1]
 
-  const params = {}
+  const params: Record<string, any> = {}
   for (const param of query.split('&')) {
     const paramSplitted = param.split('=')
     const key = paramSplitted[0]

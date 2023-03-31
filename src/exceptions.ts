@@ -1,4 +1,5 @@
 export class ApiException extends Error {
+  // @ts-ignore
   key: string
 
   constructor(message: any) {

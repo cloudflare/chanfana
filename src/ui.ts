@@ -1,5 +1,5 @@
-export const SwaggerUI = `
-<!DOCTYPE html>
+export function getSwaggerUI(schemaUrl: string): string {
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -15,7 +15,7 @@ export const SwaggerUI = `
 <script>
     window.onload = () => {
         window.ui = SwaggerUIBundle({
-            url: 'openapi.json',
+            url: '${schemaUrl}',
             dom_id: '#swagger-ui',
             deepLinking: true,
             presets: [
@@ -25,10 +25,11 @@ export const SwaggerUI = `
     };
 </script>
 </body>
-</html>
-`
+</html>`
+}
 
-export const ReDocUI = `<!DOCTYPE html>
+export function getReDocUI(schemaUrl: string): string {
+  return `<!DOCTYPE html>
     <html>
     <head>
     <title>ReDocUI</title>
@@ -49,8 +50,8 @@ export const ReDocUI = `<!DOCTYPE html>
     </style>
     </head>
     <body>
-    <redoc spec-url="openapi.json"></redoc>
+    <redoc spec-url="${schemaUrl}"></redoc>
     <script src="https://unpkg.com/redoc@2.0.0-rc.58/bundles/redoc.standalone.js"> </script>
     </body>
-    </html>
-`
+    </html>`
+}

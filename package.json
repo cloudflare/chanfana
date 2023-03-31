@@ -17,7 +17,6 @@
     "README.md"
   ],
   "scripts": {
-    "postinstall": "husky install",
     "prepublishOnly": "pinst --disable",
     "postpublish": "pinst --enable",
     "build": "rollup -c",

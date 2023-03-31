@@ -1,4 +1,4 @@
-import { ReDocUI, SwaggerUI } from './ui'
+import { getReDocUI, getSwaggerUI } from './ui'
 import { Router } from 'itty-router'
 import { getFormatedParameters, Query } from './parameters'
 import { OpenAPIRouterSchema, OpenAPISchema, RouterOptions } from './types'
@@ -37,7 +37,9 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
           if (prop !== 'all') {
             const parsedRoute = (options?.base || '') + route.replace(/:(\w+)/g, '{$1}')
 
+            // @ts-ignore
             let schema: OpenAPISchema = undefined
+            // @ts-ignore
             let operationId: string = undefined
 
             for (const handler of handlers) {
@@ -66,6 +68,7 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
 
               schema = {
                 operationId: operationId,
+                // @ts-ignore
                 parameters: params
                   ? getFormatedParameters(
                       params.map((param) => {
@@ -88,9 +91,9 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
           receiver
         )(
           route,
-          ...handlers.map((handler) => {
+          ...handlers.map((handler: any) => {
             if (handler.isRoute === true) {
-              return (...params) => new handler().execute(...params)
+              return (...params: any[]) => new handler().execute(...params)
             }
 
             return handler
@@ -101,30 +104,38 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
   })
 
   if (openapiConfig !== undefined) {
-    router.get('/docs', () => {
-      return new Response(SwaggerUI, {
-        headers: {
-          'content-type': 'text/html; charset=UTF-8',
-        },
-        status: 200,
+    if (options?.docs_url !== null && options?.openapi_url !== null) {
+      router.get(options?.docs_url || '/docs', () => {
+        return new Response(getSwaggerUI(options?.openapi_url || '/openapi.json'), {
+          headers: {
+            'content-type': 'text/html; charset=UTF-8',
+          },
+          status: 200,
+        })
       })
-    })
-    router.get('/redocs', () => {
-      return new Response(ReDocUI, {
-        headers: {
-          'content-type': 'text/html; charset=UTF-8',
-        },
-        status: 200,
+    }
+
+    if (options?.redoc_url !== null && options?.openapi_url !== null) {
+      router.get(options?.redoc_url || '/redocs', () => {
+        return new Response(getReDocUI(options?.openapi_url || '/openapi.json'), {
+          headers: {
+            'content-type': 'text/html; charset=UTF-8',
+          },
+          status: 200,
+        })
       })
-    })
-    router.get('/openapi.json', () => {
-      return new Response(JSON.stringify(schema), {
-        headers: {
-          'content-type': 'application/json;charset=UTF-8',
-        },
-        status: 200,
+    }
+
+    if (options?.openapi_url !== null) {
+      router.get(options?.openapi_url || '/openapi.json', () => {
+        return new Response(JSON.stringify(schema), {
+          headers: {
+            'content-type': 'application/json;charset=UTF-8',
+          },
+          status: 200,
+        })
       })
-    })
+    }
   }
 
   return routerProxy
