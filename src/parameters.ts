@@ -367,7 +367,7 @@ export class Enumeration extends Str {
   constructor(params: EnumerationParameterType) {
     super(params)
 
-    let {values} = params
+    let { values } = params
     if (Array.isArray(values)) values = Object.fromEntries(values.map((x) => [x, x]))
     this.keys = Object.keys(values)
     this.values = values

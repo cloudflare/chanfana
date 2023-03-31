@@ -1,11 +1,17 @@
 # itty-router-openapi
 
-This library provides an easy and compact OpenAPI 3 schema generator and validator for [Cloudflare Workers](https://developers.cloudflare.com/workers/).
+This library provides an easy and compact OpenAPI 3 schema generator and validator
+for [Cloudflare Workers](https://developers.cloudflare.com/workers/).
 
-`itty-router-openapi` is built on top of [itty-router](https://github.com/kwhitley/itty-router) and extends some of its core features, such as adding class-based endpoints. It also provides a simple and iterative path for migrating from old applications based on `itty-router`.
+`itty-router-openapi` is built on top of [itty-router](https://github.com/kwhitley/itty-router) and extends some of its
+core features, such as adding class-based endpoints. It also provides a simple and iterative path for migrating from old
+applications based on `itty-router`.
 
-A template repository is available at [cloudflare/templates](https://github.com/cloudflare/templates/tree/main/worker-openapi),
+A template repository is available
+at [cloudflare/templates](https://github.com/cloudflare/templates/tree/main/worker-openapi),
 with a live demo [here](https://worker-openapi-example.radar.cloudflare.com/docs).
+
+There is a Tutorial Section [available here](https://github.com/cloudflare/itty-router-openapi/blob/main/TUTORIAL.md)!
 
 ## Features
 
@@ -27,13 +33,15 @@ npm i @cloudflare/itty-router-openapi --save
 
 Q. Is this package production ready?
 
-A. Yes. This package was created during the [Cloudflare Radar 2.0](https://radar.cloudflare.com/) development and is currently used by the Radar website to serve the web app and the public API.
+A. Yes. This package was created during the [Cloudflare Radar 2.0](https://radar.cloudflare.com/) development and is
+currently used by the Radar website to serve the web app and the public API.
 
 ---
 
 Q. When will this package reach stable maturity?
 
-A. This package is already heavily used in [Cloudflare Radar](https://radar.cloudflare.com/), and we are committed to not introducing breaking changes to it.
+A. This package is already heavily used in [Cloudflare Radar](https://radar.cloudflare.com/), and we are committed to
+not introducing breaking changes to it.
 
 ## Basic Usage
 
@@ -43,13 +51,15 @@ Creating a new OpenAPI route is simple:
 - Fill your schema parameters.
 - Add your code to the handle function.
 
-In the example below, the `ToDoList` route will have an Integer parameter called `page` that will be validated before calling the `handle()` function.
+In the example below, the `ToDoList` route will have an Integer parameter called `page` that will be validated before
+calling the `handle()` function.
 
 Then the page number will be available inside the `handle()` function in the data object passed in the argument.
 
 Take notice that the `data` object is always the **last argument** that the `handle()` function receives.
 
-If you try to send a value that is not an Integer in this field, a `ValidationError` will be raised, and the Route will internally convert into a readable HTTP 400 error.
+If you try to send a value that is not an Integer in this field, a `ValidationError` will be raised, and the Route will
+internally convert into a readable HTTP 400 error.
 
 Endpoints can return both `Response` instances or an object that internally will be returned as a JSON Response.
 
@@ -104,11 +114,13 @@ router.all('*', () => new Response('Not Found.', { status: 404 }))
 addEventListener('fetch', (event) => event.respondWith(router.handle(event.request)))
 ```
 
-Now `wrangler dev` and go to `/docs` or `/redocs` with your browser. You'll be greeted with an OpenAPI UI that you can use to call your endpoints.
+Now `wrangler dev` and go to `/docs` or `/redocs` with your browser. You'll be greeted with an OpenAPI UI that you can
+use to call your endpoints.
 
 ## Migrating from existing `itty-router` applications
 
-All it takes is changing one line of code. After installing `itty-router-openapi` replace `Router` with the new `OpenAPIRouter` function.
+All it takes is changing one line of code. After installing `itty-router-openapi` replace `Router` with the
+new `OpenAPIRouter` function.
 
 ```ts
 // Old router
@@ -127,7 +139,8 @@ router.get('/todos/:id', ({ params }) => new Response(`Todo #${params.id}`))
 // ...
 ```
 
-Now, when running the application, go to `/docs`. You will see your endpoints listed with the query parameters parsed and ready to be invoked.
+Now, when running the application, go to `/docs`. You will see your endpoints listed with the query parameters parsed
+and ready to be invoked.
 
 ## Schema types
 
@@ -151,7 +164,8 @@ All of theses Types can be imported like `import { Email } from '@cloudflare/itt
 | `Ipv4`        |               `description` `example` `default`                |
 | `Ipv6`        |               `description` `example` `default`                |
 
-In order to make use of the `enum` argument you should pass your Enum values to the `Enumeration` class, as shown bellow.
+In order to make use of the `enum` argument you should pass your Enum values to the `Enumeration` class, as shown
+bellow.
 
 #### Example parameters:
 
@@ -317,43 +331,43 @@ Remember that `requestBody` is only available when the route method is not `GET`
 
 ```ts
 export class ToDoCreate extends OpenAPIRoute {
-    static schema = {
-        tags: ['ToDo'],
-        summary: 'Create a new Todo',
-        requestBody: {
-            title: String,
-            description: new Str({required: false}),
-            type: new Enumeration({
-              values: {
-                nextWeek: 'nextWeek',
-                nextMonth: 'nextMonth',
-              }
-            })
-        },
-        responses: {
-            '200': {
-                schema: {
-                    todo: {
-                        id: Number,
-                        title: String,
-                    },
-                },
-            },
-        },
-    }
-
-    async handle(request: Request, data: Record<string, any>) {
-        const { body } = data
-
-        // Actually insert the data somewhere
-
-        return {
-            todo: {
-                id: 123,
-                title: body.title,
-            },
+  static schema = {
+    tags: ['ToDo'],
+    summary: 'Create a new Todo',
+    requestBody: {
+      title: String,
+      description: new Str({required: false}),
+      type: new Enumeration({
+        values: {
+          nextWeek: 'nextWeek',
+          nextMonth: 'nextMonth',
         }
+      })
+    },
+    responses: {
+      '200': {
+        schema: {
+          todo: {
+            id: Number,
+            title: String,
+          },
+        },
+      },
+    },
+  }
+
+  async handle(request: Request, data: Record<string, any>) {
+    const {body} = data
+
+    // Actually insert the data somewhere
+
+    return {
+      todo: {
+        id: 123,
+        title: body.title,
+      },
     }
+  }
 }
 
 ...
@@ -367,18 +381,20 @@ router.post('/todos', ToDoCreate)
 
 In the Module Worker format, the parameters binding is different.
 
-Instead of the worker only having access to the `event` argument, that argument is split into `request`, `env`, `context`.
-And as said above, the `data` object (that contains the validated parameters) is always the **last argument** that the `handle()`
+Instead of the worker only having access to the `event` argument, that argument is split
+into `request`, `env`, `context`.
+And as said above, the `data` object (that contains the validated parameters) is always the **last argument** that
+the `handle()`
 function receives.
 
 ```ts
-import { OpenAPIRouter, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
+import {OpenAPIRouter, OpenAPIRoute} from '@cloudflare/itty-router-openapi'
 
 export class ToDoList extends OpenAPIRoute {
-  static schema = { ... }
+  static schema = {...}
 
   async handle(request: Request, env, context, data: Record<string, any>) {
-    const { page } = data
+    const {page} = data
 
     return {
       currentPage: page,
@@ -399,13 +415,13 @@ export default {
 Otherwise, if you don't need the new `env` and `context` parameters, you can remove theses like the next example
 
 ```ts
-import { OpenAPIRouter, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
+import {OpenAPIRouter, OpenAPIRoute} from '@cloudflare/itty-router-openapi'
 
 export class ToDoList extends OpenAPIRoute {
-  static schema = { ... }
+  static schema = {...}
 
   async handle(request: Request, data: Record<string, any>) {
-    const { page } = data
+    const {page} = data
 
     return {
       currentPage: page,
@@ -423,11 +439,14 @@ export default {
 }
 ```
 
-Learn more about [Cloudflare Module Worker format here](https://developers.cloudflare.com/workers/runtime-apis/fetch-event#syntax-module-worker).
+Learn more
+about [Cloudflare Module Worker format here](https://developers.cloudflare.com/workers/runtime-apis/fetch-event#syntax-module-worker).
 
 ### 2. Using Typescript types
 
-If you are planning on using this lib with Typescript, then declaring schemas is even easier than with Javascript because instead of importing the parameter types, you can use the native Typescript data types `String`, `Number`, or `Boolean`.
+If you are planning on using this lib with Typescript, then declaring schemas is even easier than with Javascript
+because instead of importing the parameter types, you can use the native Typescript data types `String`, `Number`,
+or `Boolean`.
 
 ```ts
 export class ToDoList extends OpenAPIRoute {
@@ -457,7 +476,8 @@ export class ToDoList extends OpenAPIRoute {
 
 ### 3. Build your own Schema Type
 
-All schema types extend from the `BaseParameter` or other type and build on top of that. To build your own type just pick an already available type, like `Str` or extend from the base class.
+All schema types extend from the `BaseParameter` or other type and build on top of that. To build your own type just
+pick an already available type, like `Str` or extend from the base class.
 
 ```ts
 export class Num extends BaseParameter {
@@ -492,7 +512,9 @@ export class DateOnly extends Str {
 
 ### 4. Core openapi schema customizations
 
-Besides adding a schema to your endpoints, its also recomended you customize your schema. This can be done by passing the schema argument when creating your router. All [OpenAPI Fixed Fields](https://swagger.io/specification/#schema) are available.
+Besides adding a schema to your endpoints, its also recomended you customize your schema. This can be done by passing
+the schema argument when creating your router. All [OpenAPI Fixed Fields](https://swagger.io/specification/#schema) are
+available.
 
 The example bellow will change the schema title, and add a Bearer token authentication to all endpoints
 
@@ -536,9 +558,11 @@ This endpoint will still be accessible, but will not be shown in the schema.
 
 ### 6. Accessing the `openapi.json` schema
 
-For CI/CD pipelines, you can read the complete `openapi.json` schemas by calling the `schema` property from the router instance.
+For CI/CD pipelines, you can read the complete `openapi.json` schemas by calling the `schema` property from the router
+instance.
 
-Here is an example of a nodejs script that would pick the schema, make some changes and write it to a file, to be able to
+Here is an example of a nodejs script that would pick the schema, make some changes and write it to a file, to be able
+to
 be picked from a CI/CD pipeline.
 
 ```ts
@@ -556,8 +580,10 @@ fs.writeFileSync('./public-api.json', JSON.stringify(schema, null, 2))
 
 ## Feedback and contributions
 
-Currently this package is maintained by the [Cloudflare Radar Team](https://radar.cloudflare.com/) and features are prioritized based on the Radar roadmap.
+Currently this package is maintained by the [Cloudflare Radar Team](https://radar.cloudflare.com/) and features are
+prioritized based on the Radar roadmap.
 
 Nonetheless you can still open pull requests or issues in this repository and they will get reviewed.
 
-You can also talk to us in the [Cloudflare Community](https://community.cloudflare.com/) or the [Radar Discord Channel](https://discord.com/channels/595317990191398933/1035553707116478495)
+You can also talk to us in the [Cloudflare Community](https://community.cloudflare.com/) or
+the [Radar Discord Channel](https://discord.com/channels/595317990191398933/1035553707116478495)
