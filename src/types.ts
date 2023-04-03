@@ -1,4 +1,4 @@
-import { Request, Route, RouteEntry, Router } from 'itty-router'
+import { RequestLike, Route, RouteEntry, RouterType } from 'itty-router'
 import { Parameter } from './parameters'
 
 export interface ClassRoute {
@@ -6,9 +6,10 @@ export interface ClassRoute {
 }
 
 export type OpenAPIRouterSchema = {
-  handle: (request: Request, ...extra: any) => Promise<any>
-  routes: RouteEntry<Request>[]
-  original: Router
+  __proto__: RouterType
+  routes: RouteEntry[]
+  handle: (request: RequestLike, ...extra: any) => Promise<any>
+  original: RouterType
 } & {
   [any: string]: ClassRoute
 } & {
@@ -17,7 +18,7 @@ export type OpenAPIRouterSchema = {
 
 export interface RouterOptions {
   base?: string
-  routes?: RouteEntry<Request>[]
+  routes?: RouteEntry[]
   schema?: Record<string, any>
   docs_url?: string
   redoc_url?: string
