@@ -93,9 +93,9 @@ export class ToDoList extends OpenAPIRoute {
     responses: {
       '200': {
         schema: {
-          currentPage: new Int(),
-          nextPage: new Int(),
-          results: [new Str({ example: 'lorem' })],
+          currentPage: 1,
+          nextPage: 2,
+          results: ['lorem'],
         },
       },
     },
@@ -201,6 +201,23 @@ parameters = {
 
 #### Example responses:
 
+Example with common values
+```ts
+responses = {
+  '200': {
+    schema: {
+      result: {
+        series: {
+          timestamps: ['2023-01-01 00:00:00'],
+          values: [0.56],
+        },
+      },
+    },
+  },
+}
+```
+
+Example with defined types
 ```ts
 responses = {
   '200': {
@@ -361,8 +378,8 @@ export class ToDoCreate extends OpenAPIRoute {
       '200': {
         schema: {
           todo: {
-            id: Number,
-            title: String,
+            id: 123,
+            title: 'My title',
           },
         },
       },
