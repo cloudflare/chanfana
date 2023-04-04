@@ -93,9 +93,9 @@ export class ToDoList extends OpenAPIRoute {
     responses: {
       '200': {
         schema: {
-          currentPage: new Int(),
-          nextPage: new Int(),
-          results: [new Str({ example: 'lorem' })],
+          currentPage: 1,
+          nextPage: 2,
+          results: ['lorem'],
         },
       },
     },
@@ -200,6 +200,25 @@ parameters = {
 ```
 
 #### Example responses:
+
+Example with common values
+
+```ts
+responses = {
+  '200': {
+    schema: {
+      result: {
+        series: {
+          timestamps: ['2023-01-01 00:00:00'],
+          values: [0.56],
+        },
+      },
+    },
+  },
+}
+```
+
+Example with defined types
 
 ```ts
 responses = {
@@ -361,8 +380,8 @@ export class ToDoCreate extends OpenAPIRoute {
       '200': {
         schema: {
           todo: {
-            id: Number,
-            title: String,
+            id: 123,
+            title: 'My title',
           },
         },
       },
@@ -590,6 +609,44 @@ const schema = router.schema
 // Write the final schema
 fs.writeFileSync('./public-api.json', JSON.stringify(schema, null, 2))
 ```
+
+### 7. Nested Routers
+
+For big projects, having all routes in the same file can be chaotic.
+
+In this example we split some routes to a different router
+
+```ts
+// api/attacks/router.ts
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
+
+export const attacksRouter = OpenAPIRouter({ base: '/api/v1/attacks' })
+
+attacksRouter.get('/layer3/timeseries', AttacksLayer3Timeseries)
+```
+
+```ts
+// router.ts
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
+import { attacksRouter } from 'api/attacks/router'
+
+export const router = OpenAPIRouter({
+  schema: {
+    info: {
+      title: 'Radar Worker API',
+      version: '1.0',
+    },
+  },
+})
+
+router.all('/api/v1/attacks/*', attacksRouter)
+
+// Other routes
+router.get('/api/v1/bgp/timeseries', BgpTimeseries)
+```
+
+Now run `wrangler dev` and go to `/docs` with your browser, here you can verify that all nested routers appear correctly
+and you are able to call every endpoint.
 
 ## Feedback and contributions
 

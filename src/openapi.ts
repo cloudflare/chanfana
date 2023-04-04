@@ -34,7 +34,14 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
 
       return (route: string, ...handlers: any) => {
         if (prop !== 'handle') {
-          if (prop !== 'all') {
+          if (handlers.length === 1 && handlers[0].schema?.paths !== undefined) {
+            const nestedRouter = handlers[0]
+
+            for (const [key, value] of Object.entries(nestedRouter.schema.paths)) {
+              // @ts-ignore
+              OpenAPIPaths[key] = value
+            }
+          } else if (prop !== 'all') {
             const parsedRoute = (options?.base || '') + route.replace(/:(\w+)/g, '{$1}')
 
             // @ts-ignore
@@ -92,7 +99,11 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
         )(
           route,
           ...handlers.map((handler: any) => {
-            if (handler.isRoute === true) {
+            if (handler.schema?.paths !== undefined) {
+              return handler.handle
+            }
+
+            if (handler.isRoute) {
               return (...params: any[]) => new handler().execute(...params)
             }
 

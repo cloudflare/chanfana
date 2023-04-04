@@ -437,12 +437,24 @@ export class Parameter {
       return new Str({ ...params })
     }
 
+    if (typeof type === 'string') {
+      return new Str({ example: type })
+    }
+
     if (type === Number) {
       return new Num({ ...params })
     }
 
+    if (typeof type === 'number') {
+      return new Num({ example: type })
+    }
+
     if (type === Boolean) {
       return new Bool({ ...params })
+    }
+
+    if (typeof type === 'boolean') {
+      return new Bool({ example: type })
     }
 
     if (type === Date) {

@@ -5,6 +5,10 @@ export interface ClassRoute {
   (path: string, ...handlers: OpenAPIRouteSchema[]): OpenAPIRouterSchema
 }
 
+export interface NestedRouter {
+  (path: string, handlers: OpenAPIRouterSchema): OpenAPIRouterSchema
+}
+
 export type OpenAPIRouterSchema = {
   __proto__: RouterType
   routes: RouteEntry[]
@@ -14,6 +18,8 @@ export type OpenAPIRouterSchema = {
   [any: string]: ClassRoute
 } & {
   [any: string]: Route
+} & {
+  [any: string]: NestedRouter
 }
 
 export interface RouterOptions {
