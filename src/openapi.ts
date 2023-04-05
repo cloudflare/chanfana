@@ -147,6 +147,17 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
         })
       })
     }
+
+    if (options?.aiPlugin !== null) {
+      router.get('/.well-known/ai-plugin.json', () => {
+        return new Response(JSON.stringify(options?.aiPlugin), {
+          headers: {
+            'content-type': 'application/json;charset=UTF-8',
+          },
+          status: 200,
+        })
+      })
+    }
   }
 
   return routerProxy

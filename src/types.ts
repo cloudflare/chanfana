@@ -29,6 +29,7 @@ export interface RouterOptions {
   docs_url?: string
   redoc_url?: string
   openapi_url?: string
+  aiPlugin?: AIPlugin
 }
 
 export interface OpenAPISchema {
@@ -94,4 +95,53 @@ export interface ResponseSchema {
 export interface RouteValidated {
   data: Record<string, any>
   errors: Record<string, any>
+}
+
+export enum SchemaVersion {
+  V1 = 'v1',
+}
+
+export enum AuthType {
+  NONE = 'none',
+  OAUTH = 'oauth',
+  SERVICE_HTTP = 'service_http',
+  USER_HTTP = 'user_http',
+}
+
+export enum APIType {
+  OPENAPI = 'openapi',
+}
+
+export interface AIPlugin {
+  schema_version: SchemaVersion
+  name_for_model: string
+  name_for_human: string
+  description_for_model: string
+  description_for_human: string
+  auth: Auth
+  api: API
+  logo_url: string
+  contact_email: string
+  legal_info_url: string
+}
+
+export interface API {
+  type: APIType
+  url: string
+  has_user_authentication: boolean
+}
+
+export interface Auth {
+  type: AuthType
+  authorization_type?: string
+  authorization_url?: string
+  client_url?: string
+  scope?: string
+  authorization_content_type?: string
+  verification_tokens?: VerificationTokens
+  instructions?: string
+}
+
+export interface VerificationTokens {
+  openai: string
 }
