@@ -148,7 +148,7 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
       })
     }
 
-    if (options?.aiPlugin !== null) {
+    if (options?.aiPlugin && options?.openapi_url !== null) {
       router.get('/.well-known/ai-plugin.json', () => {
         return new Response(JSON.stringify(options?.aiPlugin), {
           headers: {
