@@ -1,7 +1,7 @@
 import { getReDocUI, getSwaggerUI } from './ui'
 import { Router, IRequest } from 'itty-router'
 import { getFormatedParameters, Query } from './parameters'
-import { OpenAPIRouterSchema, OpenAPISchema, RouterOptions, APIType, AuthType } from './types'
+import { OpenAPIRouterSchema, OpenAPISchema, RouterOptions, APIType, AuthType, SchemaVersion } from './types'
 
 export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
   const OpenAPIPaths: Record<string, Record<string, any>> = {}
@@ -152,6 +152,7 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
       router.get('/.well-known/ai-plugin.json', (request: IRequest) => {
         return new Response(
           JSON.stringify({
+            schema_version: SchemaVersion.V1,
             api: {
               type: APIType.OPENAPI,
               has_user_authentication: false,
