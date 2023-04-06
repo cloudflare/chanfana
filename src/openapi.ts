@@ -156,7 +156,7 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
             api: {
               type: APIType.OPENAPI,
               has_user_authentication: false,
-              url: `https://${request.headers.get('host')}/openapi.json`,
+              url: `https://${request.headers.get('host')}${options?.openapi_url || '/openapi.json'}`,
             },
             auth: {
               type: AuthType.NONE,
