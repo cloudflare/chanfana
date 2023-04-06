@@ -1,7 +1,7 @@
 import { getReDocUI, getSwaggerUI } from './ui'
-import { Router } from 'itty-router'
+import { Router, IRequest } from 'itty-router'
 import { getFormatedParameters, Query } from './parameters'
-import { OpenAPIRouterSchema, OpenAPISchema, RouterOptions } from './types'
+import { OpenAPIRouterSchema, OpenAPISchema, RouterOptions, APIType, AuthType, SchemaVersion } from './types'
 
 export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
   const OpenAPIPaths: Record<string, Record<string, any>> = {}
@@ -145,6 +145,31 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
           },
           status: 200,
         })
+      })
+    }
+
+    if (options?.aiPlugin && options?.openapi_url !== null) {
+      router.get('/.well-known/ai-plugin.json', (request: IRequest) => {
+        return new Response(
+          JSON.stringify({
+            schema_version: SchemaVersion.V1,
+            api: {
+              type: APIType.OPENAPI,
+              has_user_authentication: false,
+              url: `https://${request.headers.get('host')}${options?.openapi_url || '/openapi.json'}`,
+            },
+            auth: {
+              type: AuthType.NONE,
+            },
+            ...options?.aiPlugin,
+          }),
+          {
+            headers: {
+              'content-type': 'application/json;charset=UTF-8',
+            },
+            status: 200,
+          }
+        )
       })
     }
   }
