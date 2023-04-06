@@ -118,8 +118,8 @@ export interface AIPlugin {
   name_for_human: string
   description_for_model: string
   description_for_human: string
-  auth: Auth
-  api: API
+  auth?: Auth
+  api?: API
   logo_url: string
   contact_email: string
   legal_info_url: string
