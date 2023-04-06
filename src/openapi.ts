@@ -152,17 +152,15 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
       router.get('/.well-known/ai-plugin.json', (request: IRequest) => {
         return new Response(
           JSON.stringify({
-            ...options?.aiPlugin,
             api: {
               type: APIType.OPENAPI,
               has_user_authentication: false,
               url: `https://${request.headers.get('host')}/openapi.json`,
-              ...options?.aiPlugin?.api,
             },
             auth: {
               type: AuthType.NONE,
-              ...options?.aiPlugin?.auth,
             },
+            ...options?.aiPlugin,
           }),
           {
             headers: {
