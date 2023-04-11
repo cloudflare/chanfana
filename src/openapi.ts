@@ -138,25 +138,50 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
     }
 
     if (options?.openapi_url !== null) {
-      router.get(options?.openapi_url || '/openapi.json', () => {
+      const url = options?.openapi_url || '/openapi.json'
+      const res = () => {
+        const headers: HeadersInit =
+          options?.aiPlugin?.is_dev === true
+            ? {
+                'content-type': 'application/json;charset=UTF-8',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+              }
+            : {
+                'content-type': 'application/json;charset=UTF-8',
+              }
         return new Response(JSON.stringify(schema), {
-          headers: {
-            'content-type': 'application/json;charset=UTF-8',
-          },
+          headers,
           status: 200,
         })
-      })
+      }
+      router.get(url, res)
+      router.options(url, res)
     }
 
     if (options?.aiPlugin && options?.openapi_url !== null) {
-      router.get('/.well-known/ai-plugin.json', (request: IRequest) => {
+      const res = (request: IRequest) => {
+        const headers: HeadersInit =
+          options?.aiPlugin?.is_dev === true
+            ? {
+                'content-type': 'application/json;charset=UTF-8',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+              }
+            : {
+                'content-type': 'application/json;charset=UTF-8',
+              }
+        const url =
+          options?.aiPlugin?.is_dev === true
+            ? `http://localhost:8787${options?.openapi_url || '/openapi.json'}`
+            : `https://${request.headers.get('host')}${options?.openapi_url || '/openapi.json'}`
         return new Response(
           JSON.stringify({
             schema_version: SchemaVersion.V1,
             api: {
               type: APIType.OPENAPI,
               has_user_authentication: false,
-              url: `https://${request.headers.get('host')}${options?.openapi_url || '/openapi.json'}`,
+              url,
             },
             auth: {
               type: AuthType.NONE,
@@ -164,13 +189,13 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
             ...options?.aiPlugin,
           }),
           {
-            headers: {
-              'content-type': 'application/json;charset=UTF-8',
-            },
+            headers,
             status: 200,
           }
         )
-      })
+      }
+      router.get('/.well-known/ai-plugin.json', res)
+      router.options('/.well-known/ai-plugin.json', res)
     }
   }
 

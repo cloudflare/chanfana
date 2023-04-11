@@ -123,6 +123,7 @@ export interface AIPlugin {
   logo_url: string
   contact_email: string
   legal_info_url: string
+  is_dev?: boolean
 }
 
 export interface API {
