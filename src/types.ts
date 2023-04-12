@@ -113,7 +113,7 @@ export enum APIType {
 }
 
 export interface AIPlugin {
-  schema_version: SchemaVersion
+  schema_version?: SchemaVersion
   name_for_model: string
   name_for_human: string
   description_for_model: string
