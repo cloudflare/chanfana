@@ -22,41 +22,13 @@ There is a Tutorial Section [available here](https://github.com/cloudflare/itty-
 - [x] Query parameters validator
 - [x] Path parameters validator
 - [x] Body request validator
-- [x] Out of the box [OpenAI plugin support](#openai-plugin-support)
+- [x] Out of the box [OpenAI plugin support](#aiplugin)
 
 ## Installation
 
 ```
 npm i @cloudflare/itty-router-openapi --save
 ```
-
-## FAQ
-
-Q. Is this package production ready?
-
-A. Yes. This package was created during the [Cloudflare Radar 2.0](https://radar.cloudflare.com/) development and is
-currently used by the Radar website to serve the web app and the public API.
-
----
-
-Q. When will this package reach stable maturity?
-
-A. This package is already heavily used in [Cloudflare Radar](https://radar.cloudflare.com/), and we are committed to
-not introducing breaking changes to it.
-
-## Options API
-
-#### `OpenAPIRouter(options = {})`
-
-| Name          | Type(s)                           | Description                                                             | Examples                                                                   |
-| ------------- | --------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `base`        | `string`                          | prefixes all routes with this string                                    | `Router({ base: '/api' })`                                                 |
-| `routes`      | `array of routes`                 | array of manual routes for preloading                                   | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
-| `schema`      | `object`                          | Object of the common OpenAPI customizations                             | [see documentation](#4-core-openapi-schema-customizations)                 |
-| `docs_url`    | `string` or `null` or `undefined` | Path for swagger docs, `null`: disabled, `undefined`: `/docs`           | `/docs`                                                                    |
-| `redoc_url`   | `string` or `null` or `undefined` | Path for redoc docs, `null`: disabled, `undefined`: `/redocs`           | `/redocs`                                                                  |
-| `openapi_url` | `string` or `null` or `undefined` | Path for openapi schema, `null`: disabled, `undefined`: `/openapi.json` | `/openapi.json`                                                            |
-| `aiPlugin`    | `object` or `undefined`           | Object that will be used to generate the `ai-plugin.json` schema        | [see documentation](#openai-plugin-support)                                |
 
 ## Basic Usage
 
@@ -156,6 +128,38 @@ router.get('/todos/:id', ({ params }) => new Response(`Todo #${params.id}`))
 
 Now, when running the application, go to `/docs`. You will see your endpoints listed with the query parameters parsed
 and ready to be invoked.
+
+## Options API
+
+#### `OpenAPIRouter(options = {})`
+
+| Name          | Type(s)                           | Description                                                             | Examples                                                                   |
+| ------------- | --------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `base`        | `string`                          | prefixes all routes with this string                                    | `Router({ base: '/api' })`                                                 |
+| `routes`      | `array of routes`                 | array of manual routes for preloading                                   | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
+| `schema`      | `object`                          | Object of the common OpenAPI customizations                             | [see documentation](#4-core-openapi-schema-customizations)                 |
+| `docs_url`    | `string` or `null` or `undefined` | Path for swagger docs, `null`: disabled, `undefined`: `/docs`           | `/docs`                                                                    |
+| `redoc_url`   | `string` or `null` or `undefined` | Path for redoc docs, `null`: disabled, `undefined`: `/redocs`           | `/redocs`                                                                  |
+| `openapi_url` | `string` or `null` or `undefined` | Path for openapi schema, `null`: disabled, `undefined`: `/openapi.json` | `/openapi.json`                                                            |
+| `aiPlugin`    | `object` or `undefined`           | Object that will be used to generate the `ai-plugin.json` schema        | [see schema bellow](#aiplugin)                                             |
+
+#### `aiPlugin`
+
+Example configurations are [available here](#openai-plugin-support)
+
+| Name                    | Type(s)                                    | Description                                                                           | Examples                                                                   |
+| ----------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `schema_version`        | `SchemaVersion` or `string` or `undefined` | Schema Version, if `undefined` this is filled with `V1`                               | `Router({ base: '/api' })`                                                 |
+| `name_for_model`        | `string`                                   | Name for model                                                                        | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
+| `name_for_human`        | `string`                                   | Name for Human                                                                        | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
+| `description_for_model` | `string`                                   | Description for model                                                                 | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
+| `description_for_human` | `string`                                   | Description for human                                                                 | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
+| `logo_url`              | `string`                                   | Logo url                                                                              | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
+| `contact_email`         | `string`                                   | Contact email                                                                         | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
+| `legal_info_url`        | `string`                                   | Legal info url                                                                        | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
+| `auth`                  | `object` or `undefined`                    | Object for Auth configuration, `undefined`: defaults to no Auth                       | [see documentation](#4-core-openapi-schema-customizations)                 |
+| `api`                   | `object` or `undefined`                    | Object for Api configuration, `undefined`: defaults to openapi.json spec              | [see documentation](#4-core-openapi-schema-customizations)                 |
+| `is_dev`                | `boolean` or `undefined`                   | Boolean to let chatgpt know it is in development mode, `undefined`: defaults to false | [see documentation](#4-core-openapi-schema-customizations)                 |
 
 ## Schema types
 
