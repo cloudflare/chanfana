@@ -113,7 +113,7 @@ export enum APIType {
 }
 
 export interface AIPlugin {
-  schema_version?: SchemaVersion
+  schema_version?: SchemaVersion | string
   name_for_model: string
   name_for_human: string
   description_for_model: string
@@ -123,16 +123,17 @@ export interface AIPlugin {
   logo_url: string
   contact_email: string
   legal_info_url: string
+  is_dev?: boolean
 }
 
 export interface API {
-  type: APIType
+  type: APIType | string
   url: string
   has_user_authentication: boolean
 }
 
 export interface Auth {
-  type: AuthType
+  type: AuthType | string
   authorization_type?: string
   authorization_url?: string
   client_url?: string
