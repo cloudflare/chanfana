@@ -150,18 +150,27 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
 
     if (options?.aiPlugin && options?.openapi_url !== null) {
       router.get('/.well-known/ai-plugin.json', (request: IRequest) => {
+        const schemaApi = {
+          type: APIType.OPENAPI,
+          has_user_authentication: false,
+          url: options?.openapi_url || '/openapi.json',
+          ...options?.aiPlugin?.api,
+        }
+
+        // Check if schema path is relative
+        if (!schemaApi.url.startsWith('http')) {
+          // dynamically add the host
+          schemaApi.url = `https://${request.headers.get('host')}${schemaApi.url}`
+        }
+
         return new Response(
           JSON.stringify({
             schema_version: SchemaVersion.V1,
-            api: {
-              type: APIType.OPENAPI,
-              has_user_authentication: false,
-              url: `https://${request.headers.get('host')}${options?.openapi_url || '/openapi.json'}`,
-            },
             auth: {
               type: AuthType.NONE,
             },
             ...options?.aiPlugin,
+            api: schemaApi,
           }),
           {
             headers: {
