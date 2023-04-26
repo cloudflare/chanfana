@@ -75,7 +75,7 @@ export class ToDoList extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, data: Record<string, any>) {
+  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
     const { page } = data
 
     return {
@@ -98,7 +98,9 @@ router.get('/todos', ToDoList)
 // 404 for everything else
 router.all('*', () => new Response('Not Found.', { status: 404 }))
 
-addEventListener('fetch', (event) => event.respondWith(router.handle(event.request)))
+export default {
+  fetch: router.handle,
+}
 ```
 
 Now `wrangler dev` and go to `/docs` or `/redocs` with your browser. You'll be greeted with an OpenAPI UI that you can
@@ -324,7 +326,7 @@ export class ToDoFetch extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, data: Record<string, any>) {
+  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
     const { todoId } = data
     // ...
   }
@@ -351,7 +353,7 @@ export class ToDoList extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, data: Record<string, any>) {
+  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
     const { page } = data
     // ...
   }
@@ -394,7 +396,7 @@ export class ToDoCreate extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, data: Record<string, any>) {
+  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
     const {body} = data
 
     // Actually insert the data somewhere
@@ -561,7 +563,7 @@ export default {
 Learn more
 about [Cloudflare Module Worker format here](https://developers.cloudflare.com/workers/runtime-apis/fetch-event#syntax-module-worker).
 
-### 2. Using Typescript types
+### 2. Using Javascript types
 
 If you are planning on using this lib with Typescript, then declaring schemas is even easier than with Javascript
 because instead of importing the parameter types, you can use the native Typescript data types `String`, `Number`,
@@ -734,6 +736,63 @@ router.get('/api/v1/bgp/timeseries', BgpTimeseries)
 
 Now run `wrangler dev` and go to `/docs` with your browser, here you can verify that all nested routers appear correctly
 and you are able to call every endpoint.
+
+### 8. Cloudflare Worker using addEventListener
+
+If you want to use the `addEventListener` instead of exporting an object, you can define your worker like this:
+
+```ts
+import {OpenAPIRouter, OpenAPIRoute} from '@cloudflare/itty-router-openapi'
+
+export class ToDoList extends OpenAPIRoute {
+  static schema = {...}
+
+  async handle(request: Request, data: Record<string, any>) {
+    const {page} = data
+
+    return {
+      currentPage: page,
+      nextPage: page + 1,
+      results: ['lorem', 'ipsum'],
+    }
+  }
+}
+
+const router = OpenAPIRouter()
+router.get('/todos', ToDoList)
+
+addEventListener('fetch', (event) => event.respondWith(router.handle(event.request)))
+```
+
+You can also pass other `event` parameters to the endpoint, by adding them in the `addEventListener` function
+
+```ts
+import {OpenAPIRouter, OpenAPIRoute} from '@cloudflare/itty-router-openapi'
+
+export class ToDoList extends OpenAPIRoute {
+  static schema = {...}
+
+  async handle(request: Request, waitUntil: any, data: Record<string, any>) {
+    const {page} = data
+
+    return {
+      currentPage: page,
+      nextPage: page + 1,
+      results: ['lorem', 'ipsum'],
+    }
+  }
+}
+
+const router = OpenAPIRouter()
+router.get('/todos', ToDoList)
+
+addEventListener('fetch', (event) => event.respondWith(router.handle(event.request, event.waitUntil.bind(event))))
+```
+
+Notice that, in this last example the endpoint is receiving an extra `waitUntil` parameter.
+
+Learn more
+about [Cloudflare Workers addEventListener here](https://developers.cloudflare.com/workers/runtime-apis/add-event-listener/).
 
 ## Feedback and contributions
 

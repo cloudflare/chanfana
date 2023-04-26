@@ -25,6 +25,7 @@
     "test:cov": "jest --coverage --no-cache --runInBand",
     "addscope": "node tools/packagejson name @cloudflare/itty-router-openapi",
     "prettify": "prettier . --write --ignore-unknown",
+    "lint": "npm run prettify",
     "prepare": "husky install"
   },
   "publishConfig": {
