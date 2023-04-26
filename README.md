@@ -51,7 +51,7 @@ internally convert into a readable HTTP 400 error.
 Endpoints can return both `Response` instances or an object that internally will be returned as a JSON Response.
 
 ```ts
-import {OpenAPIRoute, Query, Int, Str} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRoute, Query, Int, Str } from '@cloudflare/itty-router-openapi'
 
 export class ToDoList extends OpenAPIRoute {
   static schema = {
@@ -76,7 +76,7 @@ export class ToDoList extends OpenAPIRoute {
   }
 
   async handle(request: Request, data: Record<string, any>) {
-    const {page} = data
+    const { page } = data
 
     return {
       currentPage: page,
@@ -90,13 +90,13 @@ export class ToDoList extends OpenAPIRoute {
 Then, ideally in a different file, you can register the routes normally:
 
 ```ts
-import {OpenAPIRouter} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
 
 const router = OpenAPIRouter()
 router.get('/todos', ToDoList)
 
 // 404 for everything else
-router.all('*', () => new Response('Not Found.', {status: 404}))
+router.all('*', () => new Response('Not Found.', { status: 404 }))
 
 addEventListener('fetch', (event) => event.respondWith(router.handle(event.request)))
 ```
@@ -115,13 +115,13 @@ new `OpenAPIRouter` function.
 //const router = Router()
 
 // New router
-import {OpenAPIRouter} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
 
 const router = OpenAPIRouter()
 
 // Old routes remain the same
 router.get('/todos', () => new Response('Todos Index!'))
-router.get('/todos/:id', ({params}) => new Response(`Todo #${params.id}`))
+router.get('/todos/:id', ({ params }) => new Response(`Todo #${params.id}`))
 
 // ...
 ```
@@ -134,7 +134,7 @@ and ready to be invoked.
 #### `OpenAPIRouter(options = {})`
 
 | Name          | Type(s)                           | Description                                                             | Examples                                                                   |
-|---------------|-----------------------------------|-------------------------------------------------------------------------|----------------------------------------------------------------------------|
+| ------------- | --------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | `base`        | `string`                          | prefixes all routes with this string                                    | `Router({ base: '/api' })`                                                 |
 | `routes`      | `array of routes`                 | array of manual routes for preloading                                   | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
 | `schema`      | `object`                          | Object of the common OpenAPI customizations                             | [see documentation](#4-core-openapi-schema-customizations)                 |
@@ -148,7 +148,7 @@ and ready to be invoked.
 Example configurations are [available here](#openai-plugin-support)
 
 | Name                    | Type(s)                                    | Description                                                                           | Examples                                                                                                                                                                                                                   |
-|-------------------------|--------------------------------------------|---------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `schema_version`        | `SchemaVersion` or `string` or `undefined` | Schema Version, `undefined`: defaults `v1`                                            | `v1`                                                                                                                                                                                                                       |
 | `name_for_model`        | `string`                                   | Name for model                                                                        | `cloudflare_radar`                                                                                                                                                                                                         |
 | `name_for_human`        | `string`                                   | Name for Human                                                                        | `Cloudflare Radar API`                                                                                                                                                                                                     |
@@ -168,7 +168,7 @@ Schema types can be used in parameters, requestBody and responses.
 All of theses Types can be imported like `import { Email } from '@cloudflare/itty-router-openapi'`
 
 | Name          |                           Arguments                            |
-|---------------|:--------------------------------------------------------------:|
+| ------------- | :------------------------------------------------------------: |
 | `Num`         |               `description` `example` `default`                |
 | `Int`         |               `description` `example` `default`                |
 | `Str`         |           `description` `example` `default` `format`           |
@@ -200,7 +200,7 @@ parameters = {
       description: 'Search query',
       example: 'funny people',
     }),
-    {required: false}
+    { required: false }
   ),
 }
 ```
@@ -239,7 +239,7 @@ responses = {
         },
         series: {
           timestamps: [new DateTime()],
-          values: [new Str({example: 0.56})],
+          values: [new Str({ example: 0.56 })],
         },
       },
     },
@@ -251,7 +251,7 @@ responses = {
 
 ```ts
 requestBody = {
-  datasetId: new Int({example: 3}),
+  datasetId: new Int({ example: 3 }),
   search: new Str(),
 }
 ```
@@ -261,7 +261,7 @@ requestBody = {
 Enumerations like the other types can be defined both inline or as a variable outside the schema.
 
 ```ts
-import {Enumeration} from '@cloudflare/itty-router-openapi'
+import { Enumeration } from '@cloudflare/itty-router-openapi'
 
 parameters = {
   format: Query(Enumeration, {
@@ -281,7 +281,7 @@ parameters = {
 This way, the client can call any combination of upper and lower characters and it will still be a valid input.
 
 ```ts
-import {Enumeration} from '@cloudflare/itty-router-openapi'
+import { Enumeration } from '@cloudflare/itty-router-openapi'
 
 const formatsEnum = new Enumeration({
   enumCaseSensitive: false,
@@ -311,7 +311,7 @@ Example path parameter:
 Notice that parameter key needs to be the same name as the route path
 
 ```ts
-import {OpenAPIRoute, Path, Int, Str} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRoute, Path, Int, Str } from '@cloudflare/itty-router-openapi'
 
 export class ToDoFetch extends OpenAPIRoute {
   static schema = {
@@ -325,7 +325,7 @@ export class ToDoFetch extends OpenAPIRoute {
   }
 
   async handle(request: Request, data: Record<string, any>) {
-    const {todoId} = data
+    const { todoId } = data
     // ...
   }
 }
@@ -336,7 +336,7 @@ router.get('/todos/:todoId', ToDoFetch)
 Example query parameter:
 
 ```ts
-import {OpenAPIRoute, Query, Int, Str} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRoute, Query, Int, Str } from '@cloudflare/itty-router-openapi'
 
 export class ToDoList extends OpenAPIRoute {
   static schema = {
@@ -352,7 +352,7 @@ export class ToDoList extends OpenAPIRoute {
   }
 
   async handle(request: Request, data: Record<string, any>) {
-    const {page} = data
+    const { page } = data
     // ...
   }
 }
@@ -440,7 +440,7 @@ Taking into consideration the default values included, we can build a very minim
 doesn't require Auth:
 
 ```ts
-import {OpenAPIRouter} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
 
 const router = OpenAPIRouter({
   aiPlugin: {
@@ -469,7 +469,7 @@ Thats why we made the `aiPlugin.api.url` to allow relative paths, and when doing
 automatically fill the domain.
 
 ```ts
-import {OpenAPIRouter} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
 
 const router = OpenAPIRouter({
   aiPlugin: {
@@ -666,11 +666,11 @@ const router = OpenAPIRouter({
 Hiding routes can be archived by registering your endpoints in the original `itty-router`,as shown here:
 
 ```ts
-import {OpenAPIRouter} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
 
 const router = OpenAPIRouter()
 
-router.original.get('/todos/:id', ({params}) => new Response(`Todo #${params.id}`))
+router.original.get('/todos/:id', ({ params }) => new Response(`Todo #${params.id}`))
 ```
 
 This endpoint will still be accessible, but will not be shown in the schema.
@@ -686,7 +686,7 @@ be picked from a CI/CD pipeline.
 
 ```ts
 import fs from 'fs'
-import {router} from '../src/router'
+import { router } from '../src/router'
 
 // Get the Schema from itty-router-openapi
 const schema = router.schema
@@ -705,17 +705,17 @@ In this example we split some routes to a different router
 
 ```ts
 // api/attacks/router.ts
-import {OpenAPIRouter} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
 
-export const attacksRouter = OpenAPIRouter({base: '/api/v1/attacks'})
+export const attacksRouter = OpenAPIRouter({ base: '/api/v1/attacks' })
 
 attacksRouter.get('/layer3/timeseries', AttacksLayer3Timeseries)
 ```
 
 ```ts
 // router.ts
-import {OpenAPIRouter} from '@cloudflare/itty-router-openapi'
-import {attacksRouter} from 'api/attacks/router'
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
+import { attacksRouter } from 'api/attacks/router'
 
 export const router = OpenAPIRouter({
   schema: {
