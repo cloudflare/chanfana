@@ -597,7 +597,7 @@ export function extractQueryParameters(request: Request): Record<string, any> {
     return {}
   }
 
-  const query = url.slice(1).join("?")
+  const query = url.slice(1).join('?')
 
   const params: Record<string, any> = {}
   for (const param of query.split('&')) {

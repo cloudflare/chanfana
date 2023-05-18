@@ -26,7 +26,9 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
 
     let requestBody = null
     if (schema.requestBody) {
-      requestBody = new Body(schema.requestBody).getValue()
+      requestBody = new Body(schema.requestBody, {
+        contentType: schema.requestBody.contentType,
+      }).getValue()
     }
 
     const responses: Record<string, any> = {}
@@ -34,6 +36,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
       for (const [key, value] of Object.entries(schema.responses)) {
         const resp = new Resp(value.schema, {
           description: value.description,
+          contentType: value.contentType,
         })
         responses[key] = resp.getValue()
       }
