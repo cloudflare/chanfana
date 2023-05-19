@@ -5,6 +5,7 @@ import {
   ParameterLocation,
   ParameterType,
   RegexParameterType,
+  ResponseSchema,
   StringParameterType,
 } from './types'
 
@@ -131,6 +132,10 @@ export class Obj extends BaseParameter {
 
     if (required.length > 0) {
       result.required = required
+    }
+
+    if (this.params.xml) {
+      result.xml = this.params.xml
     }
 
     return result
@@ -537,7 +542,7 @@ export class Body extends Parameter {
 }
 
 export class Resp extends Parameter {
-  constructor(rawType: any, params: ParameterLocation) {
+  constructor(rawType: any, params: ResponseSchema) {
     // @ts-ignore
     super(null, rawType, params)
   }

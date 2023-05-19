@@ -34,10 +34,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     const responses: Record<string, any> = {}
     if (schema.responses) {
       for (const [key, value] of Object.entries(schema.responses)) {
-        const resp = new Resp(value.schema, {
-          description: value.description,
-          contentType: value.contentType,
-        })
+        const resp = new Resp(value.schema, value)
         responses[key] = resp.getValue()
       }
     }

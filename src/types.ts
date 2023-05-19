@@ -48,12 +48,17 @@ export interface OpenAPIRouteSchema {
   schema: OpenAPISchema
 }
 
+export interface ResponseXML {
+  name: string
+}
+
 export interface ParameterType {
   default?: string | number | boolean
   description?: string
   example?: string | number | boolean
   required?: boolean
   deprecated?: boolean
+  xml?: ResponseXML
 }
 
 export interface StringParameterType extends ParameterType {
