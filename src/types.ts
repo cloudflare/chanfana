@@ -48,12 +48,17 @@ export interface OpenAPIRouteSchema {
   schema: OpenAPISchema
 }
 
+export interface ResponseXML {
+  name: string
+}
+
 export interface ParameterType {
   default?: string | number | boolean
   description?: string
   example?: string | number | boolean
   required?: boolean
   deprecated?: boolean
+  xml?: ResponseXML
 }
 
 export interface StringParameterType extends ParameterType {
@@ -73,7 +78,7 @@ export interface RegexParameterType extends StringParameterType {
 export interface ParameterLocation extends StringParameterType {
   name?: string
   required?: boolean
-  contentType?: boolean
+  contentType?: string
 
   // Because this is a generic initializer, it must include all available options
   values?: Record<string, any>
@@ -90,6 +95,7 @@ export interface ParameterBody {
 export interface ResponseSchema {
   description?: string
   schema: Record<any, any>
+  contentType?: string
 }
 
 export interface RouteValidated {

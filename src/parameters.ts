@@ -5,6 +5,7 @@ import {
   ParameterLocation,
   ParameterType,
   RegexParameterType,
+  ResponseSchema,
   StringParameterType,
 } from './types'
 
@@ -131,6 +132,10 @@ export class Obj extends BaseParameter {
 
     if (required.length > 0) {
       result.required = required
+    }
+
+    if (this.params.xml) {
+      result.xml = this.params.xml
     }
 
     return result
@@ -537,7 +542,7 @@ export class Body extends Parameter {
 }
 
 export class Resp extends Parameter {
-  constructor(rawType: any, params: ParameterLocation) {
+  constructor(rawType: any, params: ResponseSchema) {
     // @ts-ignore
     super(null, rawType, params)
   }
@@ -545,7 +550,7 @@ export class Resp extends Parameter {
   // @ts-ignore
   getValue() {
     const value = super.getValue()
-    const contentType = this.params?.contentType ? 'this.params?.contentType' : 'application/json'
+    const contentType = this.params?.contentType ? this.params?.contentType : 'application/json'
 
     const param: Record<string, any> = {
       description: this.params.description || 'Successful Response',
@@ -597,7 +602,7 @@ export function extractQueryParameters(request: Request): Record<string, any> {
     return {}
   }
 
-  const query = url.slice(1).join("?")
+  const query = url.slice(1).join('?')
 
   const params: Record<string, any> = {}
   for (const param of query.split('&')) {

@@ -794,6 +794,59 @@ Notice that, in this last example the endpoint is receiving an extra `waitUntil`
 Learn more
 about [Cloudflare Workers addEventListener here](https://developers.cloudflare.com/workers/runtime-apis/add-event-listener/).
 
+### 9. Custom responses formats
+
+Describing a binary file:
+
+```ts
+import { OpenAPIRoute, Str } from '@cloudflare/itty-router-openapi'
+
+export class ToDoList extends OpenAPIRoute {
+  static schema = {
+    summary: 'My summary of a custom pdf file endpoint.',
+    responses: {
+      '200': {
+        contentType: 'application/pdf',
+        schema: new Str({ format: 'binary' }),
+      },
+    },
+  }
+
+  async handle(request: Request, data: Record<string, any>) {
+    // ...
+  }
+}
+```
+
+Describing a XML response:
+
+```ts
+import { OpenAPIRoute, Str } from '@cloudflare/itty-router-openapi'
+
+export class ToDoList extends OpenAPIRoute {
+  static schema = {
+    summary: 'My summary of a custom pdf file endpoint.',
+    responses: {
+      '200': {
+        contentType: 'application/xml',
+        schema: new Obj(
+          {
+            code: new Str({ example: '13335' }),
+            name: new Str({ example: 'Cloudflare' }),
+            type: new Str({ example: 'asn' }),
+          },
+          { xml: { name: 'root' } }
+        ),
+      },
+    },
+  }
+
+  async handle(request: Request, data: Record<string, any>) {
+    // ...
+  }
+}
+```
+
 ## Feedback and contributions
 
 Currently this package is maintained by the [Cloudflare Radar Team](https://radar.cloudflare.com/) and features are
