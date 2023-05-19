@@ -545,7 +545,7 @@ export class Resp extends Parameter {
   // @ts-ignore
   getValue() {
     const value = super.getValue()
-    const contentType = this.params?.contentType ? 'this.params?.contentType' : 'application/json'
+    const contentType = this.params?.contentType ? this.params?.contentType : 'application/json'
 
     const param: Record<string, any> = {
       description: this.params.description || 'Successful Response',
