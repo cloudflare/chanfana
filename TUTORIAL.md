@@ -239,8 +239,8 @@ it.
 
 We are excited to see what the community will be building using this.
 
-We opened a Radar room on our Developers [Discord Server](https://discord.gg/UVttSwrU). Feel free
-to [join](https://discord.gg/UVttSwrU) it and ask us
+We opened a Radar room on our Developers [Discord Server](https://discord.cloudflare.com/). Feel free
+to [join](https://discord.cloudflare.com/) it and ask us
 questions; the team is eager to
 receive feedback and discuss web technology with you.
 
