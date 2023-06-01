@@ -30,6 +30,11 @@ export interface RouterOptions {
   redoc_url?: string
   openapi_url?: string
   aiPlugin?: AIPlugin
+  raiseUnknownParameters?: boolean
+}
+
+export interface RouteOptions {
+  raiseUnknownParameters: boolean
 }
 
 export interface OpenAPISchema {
