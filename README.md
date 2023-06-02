@@ -135,15 +135,16 @@ and ready to be invoked.
 
 #### `OpenAPIRouter(options = {})`
 
-| Name          | Type(s)                           | Description                                                             | Examples                                                                   |
-| ------------- | --------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `base`        | `string`                          | prefixes all routes with this string                                    | `Router({ base: '/api' })`                                                 |
-| `routes`      | `array of routes`                 | array of manual routes for preloading                                   | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
-| `schema`      | `object`                          | Object of the common OpenAPI customizations                             | [see documentation](#4-core-openapi-schema-customizations)                 |
-| `docs_url`    | `string` or `null` or `undefined` | Path for swagger docs, `null`: disabled, `undefined`: `/docs`           | `/docs`                                                                    |
-| `redoc_url`   | `string` or `null` or `undefined` | Path for redoc docs, `null`: disabled, `undefined`: `/redocs`           | `/redocs`                                                                  |
-| `openapi_url` | `string` or `null` or `undefined` | Path for openapi schema, `null`: disabled, `undefined`: `/openapi.json` | `/openapi.json`                                                            |
-| `aiPlugin`    | `object` or `undefined`           | Object that will be used to generate the `ai-plugin.json` schema        | [see schema bellow](#aiplugin)                                             |
+| Name                     | Type(s)                           | Description                                                                            | Examples                                                                   |
+| ------------------------ | --------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `base`                   | `string`                          | prefixes all routes with this string                                                   | `Router({ base: '/api' })`                                                 |
+| `routes`                 | `array of routes`                 | array of manual routes for preloading                                                  | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
+| `schema`                 | `object`                          | Object of the common OpenAPI customizations                                            | [see documentation](#4-core-openapi-schema-customizations)                 |
+| `docs_url`               | `string` or `null` or `undefined` | Path for swagger docs, `null`: disabled, `undefined`: `/docs`                          | `/docs`                                                                    |
+| `redoc_url`              | `string` or `null` or `undefined` | Path for redoc docs, `null`: disabled, `undefined`: `/redocs`                          | `/redocs`                                                                  |
+| `openapi_url`            | `string` or `null` or `undefined` | Path for openapi schema, `null`: disabled, `undefined`: `/openapi.json`                | `/openapi.json`                                                            |
+| `raiseUnknownParameters` | `boolean`                         | This will raise validation errors when an endpoint received an unknown query parameter | true                                                                       |
+| `aiPlugin`               | `object` or `undefined`           | Object that will be used to generate the `ai-plugin.json` schema                       | [see schema bellow](#aiplugin)                                             |
 
 #### `aiPlugin`
 
