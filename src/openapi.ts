@@ -14,6 +14,7 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
       title: options?.schema?.info?.title || 'OpenAPI',
       version: options?.schema?.info?.version || '1.0',
     },
+    raiseUnknownParameters: options?.raiseUnknownParameters, // TODO: turn this true by default in the future
     ...options?.schema,
   }
 
@@ -104,7 +105,10 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
             }
 
             if (handler.isRoute) {
-              return (...params: any[]) => new handler().execute(...params)
+              return (...params: any[]) =>
+                new handler({
+                  raiseUnknownParameters: openapiConfig.raiseUnknownParameters,
+                }).execute(...params)
             }
 
             return handler

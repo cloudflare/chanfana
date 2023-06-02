@@ -1,11 +1,24 @@
-import { OpenAPIRouteSchema, OpenAPISchema, RouteValidated } from './types'
+import { OpenAPIRouteSchema, OpenAPISchema, RouteOptions, RouteValidated } from './types'
 import { ApiException } from './exceptions'
-import { Body, extractParameter, extractQueryParameters, getFormatedParameters, Parameter, Resp } from './parameters'
+import {
+  Arr,
+  Body,
+  extractParameter,
+  extractQueryParameters,
+  getFormatedParameters,
+  Parameter,
+  Resp,
+} from './parameters'
 
 export class OpenAPIRoute implements OpenAPIRouteSchema {
   static isRoute = true
 
   static schema: OpenAPISchema
+  params: RouteOptions
+
+  constructor(params: RouteOptions) {
+    this.params = params
+  }
 
   static getSchema(): OpenAPISchema {
     return this.schema
@@ -93,6 +106,29 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
 
     const validatedObj: Record<string, any> = {}
     const validationErrors: Record<string, any> = {}
+
+    // check for query unknown parameters
+    if (this.params?.raiseUnknownParameters) {
+      for (const key of Object.keys(queryParams)) {
+        if (Array.isArray(params)) {
+          let exists = false
+          for (const param of params) {
+            if (param.params.name === key) {
+              exists = true
+              break
+            }
+          }
+
+          if (!exists) {
+            validationErrors[key] = `is an unknown parameter`
+          }
+        } else {
+          if (params[key] === undefined) {
+            validationErrors[key] = `is an unknown parameter`
+          }
+        }
+      }
+    }
 
     for (const [key, value] of Object.entries(params)) {
       // @ts-ignore
