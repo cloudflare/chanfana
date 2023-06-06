@@ -1,0 +1,18 @@
+{
+  "transform": {
+    "^.+\\.(t|j)sx?$": "ts-jest"
+  },
+  "testRegex": "/tests/.*\\.test\\.ts$",
+  "collectCoverageFrom": ["src/**/*.{ts,js}"],
+  "coverageThreshold": {
+    "global": {
+      "branches": 45,
+      "functions": 70,
+      "lines": 70,
+      "statements": 70
+    }
+  },
+  "moduleNameMapper": {
+    "^_/(.*)$": "<rootDir>/src/$1"
+  }
+}
