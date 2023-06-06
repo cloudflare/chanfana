@@ -3,4 +3,4 @@
 . "$(dirname "$0")/common.sh"
 
 npm run prettify
-#npm run test
+npm run test
