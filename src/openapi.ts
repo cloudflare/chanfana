@@ -23,6 +23,9 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
     paths: OpenAPIPaths,
   }
 
+  // Quick fix, to make api spec valid
+  delete schema.raiseUnknownParameters
+
   // @ts-ignore
   const routerProxy: OpenAPIRouter = new Proxy(router, {
     get: (target, prop, receiver) => {

@@ -14,6 +14,7 @@ export type OpenAPIRouterSchema = {
   routes: RouteEntry[]
   handle: (request: RequestLike, ...extra: any) => Promise<any>
   original: RouterType
+  schema: any
 } & {
   [any: string]: ClassRoute
 } & {
