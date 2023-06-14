@@ -1,3 +1,4 @@
+import 'isomorphic-fetch'
 import { buildRequest } from '../utils'
 import { ToDoList, todoRouter } from '../router'
 

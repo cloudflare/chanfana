@@ -77,6 +77,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^7.0.2",
+    "isomorphic-fetch": "^3.0.0",
     "jest": "^29.0.0",
     "jest-openapi": "^0.14.2",
     "pinst": "^2.1.6",
@@ -87,6 +88,6 @@
     "typescript": "^4.8.4"
   },
   "dependencies": {
-    "itty-router": "^3.0.12"
+    "itty-router": "^4.0.10"
   }
 }
