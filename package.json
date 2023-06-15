@@ -88,6 +88,6 @@
     "typescript": "^4.8.4"
   },
   "dependencies": {
-    "itty-router": "^4.0.10"
+    "itty-router": "^4.0.11"
   }
 }
