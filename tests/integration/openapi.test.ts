@@ -1,3 +1,4 @@
+import 'isomorphic-fetch'
 import { todoRouter } from '../router'
 import jestOpenAPI from 'jest-openapi'
 

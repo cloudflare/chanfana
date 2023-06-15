@@ -1,5 +1,5 @@
 import { getReDocUI, getSwaggerUI } from './ui'
-import { Router, IRequest } from 'itty-router'
+import { Router, IRequest } from 'itty-router/cjs/Router'
 import { getFormatedParameters, Query } from './parameters'
 import { OpenAPIRouterSchema, OpenAPISchema, RouterOptions, APIType, AuthType, SchemaVersion } from './types'
 
