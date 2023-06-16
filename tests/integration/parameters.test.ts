@@ -367,3 +367,88 @@ describe('queryParametersValidation', () => {
     expect(resp.errors.p_optional).toBeUndefined()
   })
 })
+
+describe('bodyParametersValidation', () => {
+  test('requiredFieldTitle', async () => {
+    const request = await todoRouter.handle(
+      buildRequest({
+        method: 'POST',
+        path: '/todos',
+        json: () => {
+          return {}
+        },
+      })
+    )
+    const resp = await request.json()
+
+    expect(request.status).toEqual(400)
+
+    // the current body implementation only validates 1 field at time
+    expect(resp.errors['body.title']).toEqual('is required')
+  })
+
+  test('requiredFieldTipe', async () => {
+    const request = await todoRouter.handle(
+      buildRequest({
+        method: 'POST',
+        path: '/todos',
+        json: () => {
+          return {
+            title: 'my todo',
+          }
+        },
+      })
+    )
+    const resp = await request.json()
+
+    expect(request.status).toEqual(400)
+
+    // the current body implementation only validates 1 field at time
+    expect(resp.errors['body.type']).toEqual('is required')
+  })
+
+  test('validRequest', async () => {
+    const request = await todoRouter.handle(
+      buildRequest({
+        method: 'POST',
+        path: '/todos',
+        json: () => {
+          return {
+            title: 'my todo',
+            type: 'nextWeek',
+          }
+        },
+      }),
+      {},
+      {}
+    )
+    const resp = await request.json()
+
+    expect(request.status).toEqual(200)
+
+    expect(resp).toEqual({ todo: { title: 'my todo', type: 'nextWeek' } })
+  })
+
+  test('validRequestWithOptionalParameters', async () => {
+    const request = await todoRouter.handle(
+      buildRequest({
+        method: 'POST',
+        path: '/todos',
+        json: () => {
+          return {
+            title: 'my todo',
+            description: 'this will be done',
+            type: 'nextWeek',
+          }
+        },
+      }),
+      {},
+      {}
+    )
+    const resp = await request.json()
+
+    expect(request.status).toEqual(200)
+
+    expect(resp).toEqual({ todo: { title: 'my todo', description: 'this will be done', type: 'nextWeek' } })
+  })
+})

@@ -102,9 +102,44 @@ export class ToDoGet extends OpenAPIRoute {
   }
 }
 
+export class ToDoCreate extends OpenAPIRoute {
+  static schema = {
+    tags: ['ToDo'],
+    summary: 'Create a new ToDo',
+    requestBody: {
+      title: String,
+      description: new Str({ required: false }),
+      type: new Enumeration({
+        values: {
+          nextWeek: 'nextWeek',
+          nextMonth: 'nextMonth',
+        },
+      }),
+    },
+    responses: {
+      '200': {
+        schema: {
+          todo: {
+            title: 'My new todo',
+            description: 'This really needs to be done next week',
+            type: 'nextWeek',
+          },
+        },
+      },
+    },
+  }
+
+  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+    return {
+      todo: data.body,
+    }
+  }
+}
+
 export const todoRouter = OpenAPIRouter()
 todoRouter.get('/todos', ToDoList)
 todoRouter.get('/todos/:id', ToDoGet)
+todoRouter.post('/todos', ToDoCreate)
 
 // 404 for everything else
 todoRouter.all('*', () => new Response('Not Found.', { status: 404 }))
