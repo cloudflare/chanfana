@@ -1,5 +1,5 @@
-import { RequestLike, Route, RouteEntry, RouterType } from 'itty-router/cjs/Router'
 import { Parameter } from './parameters'
+import { RequestLike, Route, RouteEntry, RouterType } from 'itty-router'
 
 export interface ClassRoute {
   (path: string, ...handlers: OpenAPIRouteSchema[]): OpenAPIRouterSchema
