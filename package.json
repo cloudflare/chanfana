@@ -60,7 +60,7 @@
     "url": "https://github.com/cloudflare/itty-router-openapi/issues"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^3.18.0",
+    "@cloudflare/workers-types": "^4.20230518.0",
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
     "@rollup/plugin-terser": "^0.2.1",
