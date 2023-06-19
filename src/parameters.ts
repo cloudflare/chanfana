@@ -249,7 +249,9 @@ export class Regex extends Str {
       if (this.params.patternError) {
         throw new ValidationError(`is not a valid ${this.params.patternError}`)
       }
-      throw new ValidationError(`does not match the pattern ${this.params.format}`)
+      throw new ValidationError(
+        `does not match the pattern ${this.params.format}`
+      )
     }
 
     return value
@@ -283,7 +285,8 @@ export class Uuid extends Regex {
 
   constructor(params?: StringParameterType) {
     super({
-      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+      pattern:
+        '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
       patternError: 'uuid',
       ...params,
       format: 'uuid',
@@ -312,7 +315,8 @@ export class Ipv4 extends Regex {
 
   constructor(params?: StringParameterType) {
     super({
-      pattern: '^(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}$',
+      pattern:
+        '^(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}$',
       patternError: 'ipv4',
       ...params,
       format: 'ipv4',
@@ -358,7 +362,9 @@ export class Bool extends Str {
     value = value.toLowerCase()
 
     if (!this.validValues.includes(value)) {
-      throw new ValidationError('is not a valid boolean, allowed values are true or false')
+      throw new ValidationError(
+        'is not a valid boolean, allowed values are true or false'
+      )
     }
 
     value = value === 'true'
@@ -377,7 +383,8 @@ export class Enumeration extends Str {
     super(params)
 
     let { values } = params
-    if (Array.isArray(values)) values = Object.fromEntries(values.map((x) => [x, x]))
+    if (Array.isArray(values))
+      values = Object.fromEntries(values.map((x) => [x, x]))
     this.keys = Object.keys(values)
     this.values = values
   }
@@ -388,7 +395,9 @@ export class Enumeration extends Str {
     if (this.params.enumCaseSensitive !== false) {
       value = this.params.values[value]
     } else {
-      const key = this.keys.find((key: any) => key.toLowerCase() === value.toLowerCase())
+      const key = this.keys.find(
+        (key: any) => key.toLowerCase() === value.toLowerCase()
+      )
       value = this.params.values[key]
     }
 
@@ -535,7 +544,9 @@ export class Body extends Parameter {
       content: {},
     }
 
-    param.content[this.paramsBody?.contentType || 'application/json'] = { schema: schema }
+    param.content[this.paramsBody?.contentType || 'application/json'] = {
+      schema: schema,
+    }
 
     return param
   }
@@ -550,7 +561,9 @@ export class Resp extends Parameter {
   // @ts-ignore
   getValue() {
     const value = super.getValue()
-    const contentType = this.params?.contentType ? this.params?.contentType : 'application/json'
+    const contentType = this.params?.contentType
+      ? this.params?.contentType
+      : 'application/json'
 
     const param: Record<string, any> = {
       description: this.params.description || 'Successful Response',
@@ -578,7 +591,12 @@ export function Cookie(type: any, params: ParameterLocation = {}): Parameter {
   return new Parameter('cookie', type, params)
 }
 
-export function extractParameter(request: Request, query: Record<string, any>, name: string, location: string): any {
+export function extractParameter(
+  request: Request,
+  query: Record<string, any>,
+  name: string,
+  location: string
+): any {
   if (location === 'query') {
     return query[name]
   }
@@ -628,9 +646,12 @@ export function Required(param: Parameter): Parameter {
   return param
 }
 
-export function removeUndefinedFields(obj: Record<string, any>): Record<string, any> {
+export function removeUndefinedFields(
+  obj: Record<string, any>
+): Record<string, any> {
   for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'object' && !Array.isArray(value)) obj[key] = removeUndefinedFields(value)
+    if (typeof value === 'object' && !Array.isArray(value))
+      obj[key] = removeUndefinedFields(value)
 
     if (value === undefined) {
       delete obj[key]
@@ -640,7 +661,9 @@ export function removeUndefinedFields(obj: Record<string, any>): Record<string, 
   return obj
 }
 
-export function getFormatedParameters(params: Record<string, Parameter> | Parameter[]) {
+export function getFormatedParameters(
+  params: Record<string, Parameter> | Parameter[]
+) {
   const formated = []
   const isArray = Array.isArray(params)
 

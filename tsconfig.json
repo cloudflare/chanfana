@@ -4,24 +4,25 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": "src",
     "declaration": true,
+    "sourceMap": true,
     "esModuleInterop": true,
     "inlineSourceMap": false,
-    "lib": ["esnext"],
+    "lib": ["esnext", "dom", "dom.iterable"],
     "listEmittedFiles": false,
     "listFiles": false,
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
     "pretty": true,
     "resolveJsonModule": true,
-    "rootDir": ".",
+    "rootDir": "src",
     "skipLibCheck": true,
     "strict": true,
     "traceResolution": false,
-    "module": "esnext",
-    "outDir": "dist/mjs",
+    "outDir": "",
     "target": "esnext",
-    "types": ["@cloudflare/workers-types", "@types/jest"]
+    "module": "esnext",
+    "types": ["@cloudflare/workers-types", "@types/node", "@types/jest"]
   },
-  "exclude": ["node_modules", "dist", "tests"],
-  "include": ["src"]
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/example.ts"],
+  "include": ["src", "example"]
 }

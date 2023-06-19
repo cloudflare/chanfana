@@ -13,9 +13,13 @@ for (let i = 0, l = args.length; i < l; i++) {
   }
 }
 
-fs.writeFile(Path.join(__dirname, fileName), JSON.stringify(file, null, 2), (err) => {
-  if (err) {
-    return console.log(err)
+fs.writeFile(
+  Path.join(__dirname, fileName),
+  JSON.stringify(file, null, 2),
+  (err) => {
+    if (err) {
+      return console.log(err)
+    }
+    console.log('Writing to ' + fileName)
   }
-  console.log('Writing to ' + fileName)
-})
+)

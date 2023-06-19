@@ -1,7 +1,11 @@
-import { OpenAPIRouteSchema, OpenAPISchema, RouteOptions, RouteValidated } from './types'
+import {
+  OpenAPIRouteSchema,
+  OpenAPISchema,
+  RouteOptions,
+  RouteValidated,
+} from './types'
 import { ApiException } from './exceptions'
 import {
-  Arr,
   Body,
   extractParameter,
   extractQueryParameters,
@@ -55,7 +59,9 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     // Deep copy
     return {
       ...schema,
-      parameters: schema.parameters ? getFormatedParameters(schema.parameters) : [],
+      parameters: schema.parameters
+        ? getFormatedParameters(schema.parameters)
+        : [],
       responses: responses,
       ...(requestBody ? { requestBody: requestBody } : {}),
     }
@@ -134,7 +140,12 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
       // @ts-ignore
       const param: Parameter = value
       const name = param.params.name ? param.params.name : key
-      const rawData = extractParameter(request, queryParams, name, param.location)
+      const rawData = extractParameter(
+        request,
+        queryParams,
+        name,
+        param.location
+      )
 
       try {
         validatedObj[name] = param.validate(rawData)
@@ -159,7 +170,9 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
         try {
           validatedObj['body'] = new Body(requestBody).validate(json)
         } catch (e) {
-          validationErrors['body' + (e as ApiException).key] = (e as ApiException).message
+          validationErrors['body' + (e as ApiException).key] = (
+            e as ApiException
+          ).message
         }
     }
 
