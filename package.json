@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "description": "OpenAPI schema generator and validator for Cloudflare Workers",
   "type": "module",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/itty-router-openapi.js",
+  "module": "./dist/itty-router-openapi.js",
+  "types": "./dist/itty-router-openapi.d.ts",
   "files": [
     "dist",
     "LICENSE",
