@@ -45,7 +45,10 @@ export class ToDoList extends OpenAPIRoute {
       }),
       p_datetime: Query(DateTime),
       p_dateonly: Query(DateOnly),
-      p_regex: Query(Regex, { pattern: '^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$' }),
+      p_regex: Query(Regex, {
+        pattern:
+          '^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$',
+      }),
       p_email: Query(Email),
       p_uuid: Query(Uuid),
       p_hostname: Query(Hostname),
@@ -65,7 +68,12 @@ export class ToDoList extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: Record<string, any>
+  ) {
     return {
       params: data,
       results: ['lorem', 'ipsum'],
@@ -92,7 +100,12 @@ export class ToDoGet extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: Record<string, any>
+  ) {
     return {
       todo: {
         lorem: 'lorem',
@@ -129,7 +142,12 @@ export class ToDoCreate extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: Record<string, any>
+  ) {
     return {
       todo: data.body,
     }

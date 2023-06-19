@@ -1,7 +1,14 @@
 import { getReDocUI, getSwaggerUI } from './ui'
 import { Router, IRequest } from 'itty-router'
 import { getFormatedParameters, Query } from './parameters'
-import { OpenAPIRouterSchema, OpenAPISchema, RouterOptions, APIType, AuthType, SchemaVersion } from './types'
+import {
+  OpenAPIRouterSchema,
+  OpenAPISchema,
+  RouterOptions,
+  APIType,
+  AuthType,
+  SchemaVersion,
+} from './types'
 
 export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
   const OpenAPIPaths: Record<string, Record<string, any>> = {}
@@ -38,15 +45,21 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
 
       return (route: string, ...handlers: any) => {
         if (prop !== 'handle') {
-          if (handlers.length === 1 && handlers[0].schema?.paths !== undefined) {
+          if (
+            handlers.length === 1 &&
+            handlers[0].schema?.paths !== undefined
+          ) {
             const nestedRouter = handlers[0]
 
-            for (const [key, value] of Object.entries(nestedRouter.schema.paths)) {
+            for (const [key, value] of Object.entries(
+              nestedRouter.schema.paths
+            )) {
               // @ts-ignore
               OpenAPIPaths[key] = value
             }
           } else if (prop !== 'all') {
-            const parsedRoute = (options?.base || '') + route.replace(/:(\w+)/g, '{$1}')
+            const parsedRoute =
+              (options?.base || '') + route.replace(/:(\w+)/g, '{$1}')
 
             // @ts-ignore
             let schema: OpenAPISchema = undefined
@@ -92,7 +105,10 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
               }
             }
 
-            OpenAPIPaths[parsedRoute][prop.toString()] = { operationId, ...schema }
+            OpenAPIPaths[parsedRoute][prop.toString()] = {
+              operationId,
+              ...schema,
+            }
           }
         }
 
@@ -124,23 +140,29 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
   if (openapiConfig !== undefined) {
     if (options?.docs_url !== null && options?.openapi_url !== null) {
       router.get(options?.docs_url || '/docs', () => {
-        return new Response(getSwaggerUI(options?.openapi_url || '/openapi.json'), {
-          headers: {
-            'content-type': 'text/html; charset=UTF-8',
-          },
-          status: 200,
-        })
+        return new Response(
+          getSwaggerUI(options?.openapi_url || '/openapi.json'),
+          {
+            headers: {
+              'content-type': 'text/html; charset=UTF-8',
+            },
+            status: 200,
+          }
+        )
       })
     }
 
     if (options?.redoc_url !== null && options?.openapi_url !== null) {
       router.get(options?.redoc_url || '/redocs', () => {
-        return new Response(getReDocUI(options?.openapi_url || '/openapi.json'), {
-          headers: {
-            'content-type': 'text/html; charset=UTF-8',
-          },
-          status: 200,
-        })
+        return new Response(
+          getReDocUI(options?.openapi_url || '/openapi.json'),
+          {
+            headers: {
+              'content-type': 'text/html; charset=UTF-8',
+            },
+            status: 200,
+          }
+        )
       })
     }
 
@@ -167,7 +189,9 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
         // Check if schema path is relative
         if (!schemaApi.url.startsWith('http')) {
           // dynamically add the host
-          schemaApi.url = `https://${request.headers.get('host')}${schemaApi.url}`
+          schemaApi.url = `https://${request.headers.get('host')}${
+            schemaApi.url
+          }`
         }
 
         return new Response(

@@ -25,7 +25,12 @@ class ToDoGet extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: Record<string, any>
+  ) {
     return {
       todo: {
         lorem: 'lorem',
@@ -36,7 +41,9 @@ class ToDoGet extends OpenAPIRoute {
 }
 
 innerRouter.get('/todo/:id', ToDoGet)
-innerRouter.all('*', () => Response.json({ message: 'Not Found' }, { status: 404 }))
+innerRouter.all('*', () =>
+  Response.json({ message: 'Not Found' }, { status: 404 })
+)
 
 const router = OpenAPIRouter({
   schema: {
@@ -52,7 +59,9 @@ router.all('*', () => new Response('Not Found.', { status: 404 }))
 
 describe('innerRouter', () => {
   it('simpleSuccessfulCall', async () => {
-    const request = await router.handle(buildRequest({ method: 'GET', path: `/api/v1/todo/1` }))
+    const request = await router.handle(
+      buildRequest({ method: 'GET', path: `/api/v1/todo/1` })
+    )
     const resp = await request.json()
 
     expect(request.status).toEqual(200)
@@ -65,7 +74,9 @@ describe('innerRouter', () => {
   })
 
   it('innerCatchAll', async () => {
-    const request = await router.handle(buildRequest({ method: 'GET', path: `/api/v1/asd` }))
+    const request = await router.handle(
+      buildRequest({ method: 'GET', path: `/api/v1/asd` })
+    )
     const resp = await request.json()
 
     expect(request.status).toEqual(404)
@@ -73,7 +84,9 @@ describe('innerRouter', () => {
   })
 
   it('outerCatchAll', async () => {
-    const request = await router.handle(buildRequest({ method: 'GET', path: `/asd` }))
+    const request = await router.handle(
+      buildRequest({ method: 'GET', path: `/asd` })
+    )
     const resp = await request.text()
 
     expect(request.status).toEqual(404)
