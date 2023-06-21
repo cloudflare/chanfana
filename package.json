@@ -2,9 +2,9 @@
   "name": "@cloudflare/itty-router-openapi",
   "version": "0.0.1",
   "description": "OpenAPI schema generator and validator for Cloudflare Workers",
-  "main": "./dist/itty-router-openapi.js",
-  "module": "./dist/itty-router-openapi.mjs",
-  "types": "./dist/itty-router-openapi.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "LICENSE",
@@ -87,15 +87,15 @@
     "itty-router": "^4.0.13"
   },
   "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
     "./exceptions": {
       "import": "./dist/exceptions.mjs",
       "require": "./dist/exceptions.js",
       "types": "./dist/exceptions.d.ts"
-    },
-    "./itty-router-openapi": {
-      "import": "./dist/itty-router-openapi.mjs",
-      "require": "./dist/itty-router-openapi.js",
-      "types": "./dist/itty-router-openapi.d.ts"
     },
     "./openapi": {
       "import": "./dist/openapi.mjs",
