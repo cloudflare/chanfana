@@ -24,7 +24,7 @@ jobs:
         run: echo "RELEASE_VERSION=0.0.0-${GITHUB_SHA:0:7}" >> $GITHUB_ENV
 
       - name: Apply new version
-        run: node config/preparePublish.js
+        run: node config/preparePublish.mjs
 
       - name: Install modules
         run: npm install
