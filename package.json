@@ -17,7 +17,7 @@
     "package": "npm run build && npm pack",
     "test:cov": "jest --coverage --no-cache --runInBand",
     "addscope": "node config/packagejson name @cloudflare/itty-router-openapi",
-    "prettify": "prettier --check src tests || (prettier -w src tests tools; exit 1)",
+    "prettify": "prettier --check src tests README.md || (prettier -w src tests README.md; exit 1)",
     "lint": "npm run prettify",
     "prepare": "husky install",
     "test": "jest --no-cache --runInBand --config jestconfig.json --verbose",

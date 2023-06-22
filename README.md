@@ -75,7 +75,12 @@ export class ToDoList extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: Record<string, any>
+  ) {
     const { page } = data
 
     return {
@@ -136,7 +141,7 @@ and ready to be invoked.
 #### `OpenAPIRouter(options = {})`
 
 | Name                     | Type(s)                           | Description                                                                                   | Examples                                                                   |
-|--------------------------|-----------------------------------|-----------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
+| ------------------------ | --------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | `base`                   | `string`                          | prefixes all routes with this string                                                          | `Router({ base: '/api' })`                                                 |
 | `routes`                 | `array of routes`                 | array of manual routes for preloading                                                         | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
 | `schema`                 | `object`                          | Object of the common OpenAPI customizations                                                   | [see documentation](#4-core-openapi-schema-customizations)                 |
@@ -152,7 +157,7 @@ and ready to be invoked.
 Example configurations are [available here](#openai-plugin-support)
 
 | Name                    | Type(s)                                    | Description                                                                           | Examples                                                                                                                                                                                                                   |
-|-------------------------|--------------------------------------------|---------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `schema_version`        | `SchemaVersion` or `string` or `undefined` | Schema Version, `undefined`: defaults `v1`                                            | `v1`                                                                                                                                                                                                                       |
 | `name_for_model`        | `string`                                   | Name for model                                                                        | `cloudflare_radar`                                                                                                                                                                                                         |
 | `name_for_human`        | `string`                                   | Name for Human                                                                        | `Cloudflare Radar API`                                                                                                                                                                                                     |
@@ -172,7 +177,7 @@ Schema types can be used in parameters, requestBody and responses.
 All of theses Types can be imported like `import { Email } from '@cloudflare/itty-router-openapi'`
 
 | Name          |                           Arguments                            |
-|---------------|:--------------------------------------------------------------:|
+| ------------- | :------------------------------------------------------------: |
 | `Num`         |               `description` `example` `default`                |
 | `Int`         |               `description` `example` `default`                |
 | `Str`         |           `description` `example` `default` `format`           |
@@ -328,7 +333,12 @@ export class ToDoFetch extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: Record<string, any>
+  ) {
     const { todoId } = data
     // ...
   }
@@ -355,7 +365,12 @@ export class ToDoList extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: Record<string, any>
+  ) {
     const { page } = data
     // ...
   }
@@ -674,7 +689,10 @@ import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
 
 const router = OpenAPIRouter()
 
-router.original.get('/todos/:id', ({ params }) => new Response(`Todo #${params.id}`))
+router.original.get(
+  '/todos/:id',
+  ({ params }) => new Response(`Todo #${params.id}`)
+)
 ```
 
 This endpoint will still be accessible, but will not be shown in the schema.
