@@ -64,5 +64,6 @@ export default async () => {
         ],
       }),
     ],
+    external: ['itty-router'],
   }))
 }
