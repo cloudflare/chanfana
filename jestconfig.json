@@ -11,8 +11,5 @@
       "lines": 70,
       "statements": 70
     }
-  },
-  "moduleNameMapper": {
-    "^_/(.*)$": "<rootDir>/src/$1"
   }
 }

@@ -16,8 +16,8 @@
     "build": "rollup -c",
     "package": "npm run build && npm pack",
     "test:cov": "jest --coverage --no-cache --runInBand",
-    "addscope": "node tools/packagejson name @cloudflare/itty-router-openapi",
-    "prettify": "prettier --check src tests  tools || (prettier -w src tests tools; exit 1)",
+    "addscope": "node config/packagejson name @cloudflare/itty-router-openapi",
+    "prettify": "prettier --check src tests || (prettier -w src tests tools; exit 1)",
     "lint": "npm run prettify",
     "prepare": "husky install",
     "test": "jest --no-cache --runInBand --config jestconfig.json --verbose",
@@ -80,7 +80,7 @@
     "rollup": "^3.25.1",
     "rollup-plugin-bundle-size": "^1.0.3",
     "rollup-plugin-copy": "^3.4.0",
-    "ts-jest": "^29.0.0",
+    "ts-jest": "^29.1.0",
     "typescript": "^5.1.3"
   },
   "dependencies": {

@@ -1,12 +1,12 @@
 import { getReDocUI, getSwaggerUI } from './ui'
-import { Router, IRequest } from 'itty-router'
+import { IRequest, Router } from 'itty-router'
 import { getFormatedParameters, Query } from './parameters'
 import {
+  APIType,
+  AuthType,
   OpenAPIRouterSchema,
   OpenAPISchema,
   RouterOptions,
-  APIType,
-  AuthType,
   SchemaVersion,
 } from './types'
 
@@ -103,12 +103,21 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
                     )
                   : null,
               }
+            } else {
+              // Schema was provided in the endpoint
+              if (!schema.operationId) {
+                if (
+                  options?.generateOperationIds === false &&
+                  !schema.operationId
+                ) {
+                  throw new Error(`Route ${route} don't have operationId set!`)
+                }
+
+                schema.operationId = operationId
+              }
             }
 
-            OpenAPIPaths[parsedRoute][prop.toString()] = {
-              operationId,
-              ...schema,
-            }
+            OpenAPIPaths[parsedRoute][prop.toString()] = schema
           }
         }
 
