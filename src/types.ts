@@ -32,6 +32,7 @@ export interface RouterOptions {
   openapi_url?: string
   aiPlugin?: AIPlugin
   raiseUnknownParameters?: boolean
+  generateOperationIds?: boolean
 }
 
 export interface RouteOptions {

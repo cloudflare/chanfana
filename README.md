@@ -75,7 +75,12 @@ export class ToDoList extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: Record<string, any>
+  ) {
     const { page } = data
 
     return {
@@ -135,16 +140,17 @@ and ready to be invoked.
 
 #### `OpenAPIRouter(options = {})`
 
-| Name                     | Type(s)                           | Description                                                                            | Examples                                                                   |
-| ------------------------ | --------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `base`                   | `string`                          | prefixes all routes with this string                                                   | `Router({ base: '/api' })`                                                 |
-| `routes`                 | `array of routes`                 | array of manual routes for preloading                                                  | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
-| `schema`                 | `object`                          | Object of the common OpenAPI customizations                                            | [see documentation](#4-core-openapi-schema-customizations)                 |
-| `docs_url`               | `string` or `null` or `undefined` | Path for swagger docs, `null`: disabled, `undefined`: `/docs`                          | `/docs`                                                                    |
-| `redoc_url`              | `string` or `null` or `undefined` | Path for redoc docs, `null`: disabled, `undefined`: `/redocs`                          | `/redocs`                                                                  |
-| `openapi_url`            | `string` or `null` or `undefined` | Path for openapi schema, `null`: disabled, `undefined`: `/openapi.json`                | `/openapi.json`                                                            |
-| `raiseUnknownParameters` | `boolean`                         | This will raise validation errors when an endpoint received an unknown query parameter | true                                                                       |
-| `aiPlugin`               | `object` or `undefined`           | Object that will be used to generate the `ai-plugin.json` schema                       | [see schema bellow](#aiplugin)                                             |
+| Name                     | Type(s)                           | Description                                                                                   | Examples                                                                   |
+| ------------------------ | --------------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `base`                   | `string`                          | prefixes all routes with this string                                                          | `Router({ base: '/api' })`                                                 |
+| `routes`                 | `array of routes`                 | array of manual routes for preloading                                                         | [see documentation](https://github.com/kwhitley/itty-router#manual-routes) |
+| `schema`                 | `object`                          | Object of the common OpenAPI customizations                                                   | [see documentation](#4-core-openapi-schema-customizations)                 |
+| `docs_url`               | `string` or `null` or `undefined` | Path for swagger docs, `null`: disabled, `undefined`: `/docs`                                 | `/docs`                                                                    |
+| `redoc_url`              | `string` or `null` or `undefined` | Path for redoc docs, `null`: disabled, `undefined`: `/redocs`                                 | `/redocs`                                                                  |
+| `openapi_url`            | `string` or `null` or `undefined` | Path for openapi schema, `null`: disabled, `undefined`: `/openapi.json`                       | `/openapi.json`                                                            |
+| `raiseUnknownParameters` | `boolean`                         | This will raise validation errors when an endpoint received an unknown query parameter        | true                                                                       |
+| `generateOperationIds`   | `boolean`                         | This will generate operarion ids from class names for your endpoints when nothing is provided | true                                                                       |
+| `aiPlugin`               | `object` or `undefined`           | Object that will be used to generate the `ai-plugin.json` schema                              | [see schema bellow](#aiplugin)                                             |
 
 #### `aiPlugin`
 
@@ -327,7 +333,12 @@ export class ToDoFetch extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: Record<string, any>
+  ) {
     const { todoId } = data
     // ...
   }
@@ -354,7 +365,12 @@ export class ToDoList extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: Record<string, any>
+  ) {
     const { page } = data
     // ...
   }
@@ -377,7 +393,7 @@ export class ToDoCreate extends OpenAPIRoute {
     summary: 'Create a new Todo',
     requestBody: {
       title: String,
-      description: new Str({required: false}),
+      description: new Str({ required: false }),
       type: new Enumeration({
         values: {
           nextWeek: 'nextWeek',
@@ -398,7 +414,7 @@ export class ToDoCreate extends OpenAPIRoute {
   }
 
   async handle(request: Request, env: any, context: any, data: Record<string, any>) {
-    const {body} = data
+    const { body } = data
 
     // Actually insert the data somewhere
 
@@ -424,7 +440,7 @@ the [plugin manifest](https://platform.openai.com/docs/plugins/getting-started)
 This library include default values for the following plugin manifest fields:
 
 ```ts
-import {AuthType, SchemaVersion, APIType} from '@cloudflare/itty-router-openapi'
+import { AuthType, SchemaVersion, APIType } from '@cloudflare/itty-router-openapi'
 
 const default = {
   schema_version: SchemaVersion.V1,
@@ -510,13 +526,13 @@ the `handle()`
 function receives.
 
 ```ts
-import {OpenAPIRouter, OpenAPIRoute} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRouter, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
 
 export class ToDoList extends OpenAPIRoute {
-  static schema = {...}
+  static schema = { ... }
 
   async handle(request: Request, env, context, data: Record<string, any>) {
-    const {page} = data
+    const { page } = data
 
     return {
       currentPage: page,
@@ -537,13 +553,13 @@ export default {
 Otherwise, if you don't need the new `env` and `context` parameters, you can remove theses like the next example
 
 ```ts
-import {OpenAPIRouter, OpenAPIRoute} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRouter, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
 
 export class ToDoList extends OpenAPIRoute {
-  static schema = {...}
+  static schema = { ... }
 
   async handle(request: Request, data: Record<string, any>) {
-    const {page} = data
+    const { page } = data
 
     return {
       currentPage: page,
@@ -673,7 +689,10 @@ import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
 
 const router = OpenAPIRouter()
 
-router.original.get('/todos/:id', ({ params }) => new Response(`Todo #${params.id}`))
+router.original.get(
+  '/todos/:id',
+  ({ params }) => new Response(`Todo #${params.id}`)
+)
 ```
 
 This endpoint will still be accessible, but will not be shown in the schema.
@@ -743,13 +762,13 @@ and you are able to call every endpoint.
 If you want to use the `addEventListener` instead of exporting an object, you can define your worker like this:
 
 ```ts
-import {OpenAPIRouter, OpenAPIRoute} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRouter, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
 
 export class ToDoList extends OpenAPIRoute {
-  static schema = {...}
+  static schema = { ... }
 
   async handle(request: Request, data: Record<string, any>) {
-    const {page} = data
+    const { page } = data
 
     return {
       currentPage: page,
@@ -768,13 +787,13 @@ addEventListener('fetch', (event) => event.respondWith(router.handle(event.reque
 You can also pass other `event` parameters to the endpoint, by adding them in the `addEventListener` function
 
 ```ts
-import {OpenAPIRouter, OpenAPIRoute} from '@cloudflare/itty-router-openapi'
+import { OpenAPIRouter, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
 
 export class ToDoList extends OpenAPIRoute {
-  static schema = {...}
+  static schema = { ... }
 
   async handle(request: Request, waitUntil: any, data: Record<string, any>) {
-    const {page} = data
+    const { page } = data
 
     return {
       currentPage: page,
