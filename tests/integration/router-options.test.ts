@@ -3,6 +3,7 @@ import 'isomorphic-fetch'
 import { OpenAPIRoute } from '../../src/route'
 import { OpenAPIRouter } from '../../src/openapi'
 import { buildRequest } from '../utils'
+import { todoRouter } from '../router'
 
 class EndpointWithoutOperationId extends OpenAPIRoute {
   static schema = {
@@ -15,7 +16,9 @@ class EndpointWithoutOperationId extends OpenAPIRoute {
     context: any,
     data: Record<string, any>
   ) {
-    return data
+    return {
+      msg: 'EndpointWithoutOperationId',
+    }
   }
 }
 
@@ -31,7 +34,9 @@ class EndpointWithOperationId extends OpenAPIRoute {
     context: any,
     data: Record<string, any>
   ) {
-    return data
+    return {
+      msg: 'EndpointWithOperationId',
+    }
   }
 }
 
@@ -69,5 +74,29 @@ describe('routerOptions', () => {
     })
     router.get('/todo', EndpointWithOperationId)
     expect(router.schema.paths['/todo'].get.operationId).toEqual('get_my_todo')
+  })
+
+  it('with base empty', async () => {
+    const router = OpenAPIRouter()
+    router.get('/todo', EndpointWithOperationId)
+
+    const request = await router.handle(
+      buildRequest({ method: 'GET', path: '/todo' })
+    )
+    const resp = await request.json()
+
+    expect(resp.msg).toEqual('EndpointWithOperationId')
+  })
+
+  it('with base defined', async () => {
+    const router = OpenAPIRouter({ base: '/api' })
+    router.get('/todo', EndpointWithOperationId)
+
+    const request = await router.handle(
+      buildRequest({ method: 'GET', path: '/api/todo' })
+    )
+    const resp = await request.json()
+
+    expect(resp.msg).toEqual('EndpointWithOperationId')
   })
 })
