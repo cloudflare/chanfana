@@ -1,6 +1,6 @@
 import { getReDocUI, getSwaggerUI } from './ui'
 import { IRequest, Router } from 'itty-router'
-import { getFormatedParameters, Query } from './parameters'
+import { getFormatedParameters, Path } from './parameters'
 import {
   APIType,
   AuthType,
@@ -59,7 +59,10 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
             }
           } else if (prop !== 'all') {
             const parsedRoute =
-              (options?.base || '') + route.replace(/:(\w+)/g, '{$1}')
+              (options?.base || '') +
+              route
+                .replace(/\/+(\/|$)/g, '$1') // strip double & trailing splash
+                .replace(/:(\w+)/g, '{$1}') // convert parameters into openapi compliant
 
             // @ts-ignore
             let schema: OpenAPISchema = undefined
@@ -96,12 +99,17 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
                 parameters: params
                   ? getFormatedParameters(
                       params.map((param) => {
-                        return Query(String, {
+                        return Path(String, {
                           name: param.replace(':', ''),
                         })
                       })
                     )
-                  : null,
+                  : [],
+                responses: {
+                  '200': {
+                    description: 'Successfully Response',
+                  },
+                },
               }
             } else {
               // Schema was provided in the endpoint
@@ -150,7 +158,9 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
     if (options?.docs_url !== null && options?.openapi_url !== null) {
       router.get(options?.docs_url || '/docs', () => {
         return new Response(
-          getSwaggerUI(options?.openapi_url || '/openapi.json'),
+          getSwaggerUI(
+            (options?.base || '') + (options?.openapi_url || '/openapi.json')
+          ),
           {
             headers: {
               'content-type': 'text/html; charset=UTF-8',
@@ -164,7 +174,9 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
     if (options?.redoc_url !== null && options?.openapi_url !== null) {
       router.get(options?.redoc_url || '/redocs', () => {
         return new Response(
-          getReDocUI(options?.openapi_url || '/openapi.json'),
+          getReDocUI(
+            (options?.base || '') + (options?.openapi_url || '/openapi.json')
+          ),
           {
             headers: {
               'content-type': 'text/html; charset=UTF-8',
