@@ -154,7 +154,12 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
       }
     }
 
-    if (request.method.toLowerCase() !== 'get' && requestBody) {
+    if (
+      request.method.toLowerCase() !== 'get' &&
+      requestBody &&
+      (requestBody.contentType === undefined ||
+        requestBody.contentType === 'application/json')
+    ) {
       let json
       let loaded = false
 
