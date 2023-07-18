@@ -47,7 +47,7 @@ export class ToDoList extends OpenAPIRoute {
       p_dateonly: Query(DateOnly),
       p_regex: Query(Regex, {
         pattern:
-          '^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$',
+          /^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$/,
       }),
       p_email: Query(Email),
       p_uuid: Query(Uuid),
@@ -60,6 +60,7 @@ export class ToDoList extends OpenAPIRoute {
     },
     responses: {
       '200': {
+        description: 'example',
         schema: {
           params: {},
           results: ['lorem'],
@@ -90,6 +91,7 @@ export class ToDoGet extends OpenAPIRoute {
     },
     responses: {
       '200': {
+        description: 'example',
         schema: {
           todo: {
             lorem: String,
@@ -131,6 +133,7 @@ export class ToDoCreate extends OpenAPIRoute {
     },
     responses: {
       '200': {
+        description: 'example',
         schema: {
           todo: {
             title: 'My new todo',
@@ -154,7 +157,7 @@ export class ToDoCreate extends OpenAPIRoute {
   }
 }
 
-export const todoRouter = OpenAPIRouter()
+export const todoRouter = OpenAPIRouter({ openapiVersion: '3' })
 todoRouter.get('/todos', ToDoList)
 todoRouter.get('/todos/:id', ToDoGet)
 todoRouter.post('/todos', ToDoCreate)

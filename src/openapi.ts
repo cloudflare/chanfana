@@ -1,62 +1,86 @@
 import { getReDocUI, getSwaggerUI } from './ui'
 import { IRequest, Router } from 'itty-router'
-import { getFormatedParameters, Path } from './parameters'
 import {
   APIType,
   AuthType,
   OpenAPIRouterSchema,
-  OpenAPISchema,
   RouterOptions,
   SchemaVersion,
 } from './types'
+import {
+  OpenApiGeneratorV31,
+  OpenApiGeneratorV3,
+  RouteConfig,
+} from '@asteasolutions/zod-to-openapi'
+import { OpenAPIRegistryMerger } from './zod/registry'
+import { z } from 'zod'
 
 export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
-  const OpenAPIPaths: Record<string, Record<string, any>> = {}
+  const registry = new OpenAPIRegistryMerger()
+
+  const getGeneratedSchema = () => {
+    let openapiGenerator: any = OpenApiGeneratorV31
+    if (options?.openapiVersion === '3') openapiGenerator = OpenApiGeneratorV3
+
+    // console.log(router.routes)
+    const generator = new openapiGenerator(registry.definitions)
+
+    return generator.generateDocument({
+      openapi: options?.openapiVersion === '3' ? '3.0.3' : '3.1.0',
+      info: {
+        version: options?.schema?.info?.version || '1.0.0',
+        title: options?.schema?.info?.title || 'OpenAPI',
+        description: options?.schema?.info?.description,
+      },
+      servers: options?.schema?.servers,
+    })
+  }
 
   const router = Router({ base: options?.base, routes: options?.routes })
 
-  const openapiConfig = {
-    openapi: '3.0.2',
-    info: {
-      title: options?.schema?.info?.title || 'OpenAPI',
-      version: options?.schema?.info?.version || '1.0',
-    },
-    raiseUnknownParameters: options?.raiseUnknownParameters, // TODO: turn this true by default in the future
-    ...options?.schema,
-  }
+  // const openapiConfig = {
+  //   openapi: '3.0.2',
+  //   info: {
+  //     title: options?.schema?.info?.title || 'OpenAPI',
+  //     version: options?.schema?.info?.version || '1.0',
+  //   },
+  //   raiseUnknownParameters: options?.raiseUnknownParameters, // TODO: turn this true by default in the future
+  //   ...options?.schema,
+  // }
 
-  const schema = {
-    ...openapiConfig,
-    paths: OpenAPIPaths,
-  }
+  // const schema = {
+  //   ...openapiConfig,
+  //   paths: OpenAPIPaths,
+  // }
 
   // Quick fix, to make api spec valid
-  delete schema.raiseUnknownParameters
+  // delete schema.raiseUnknownParameters
 
   // @ts-ignore
   const routerProxy: OpenAPIRouter = new Proxy(router, {
-    get: (target, prop, receiver) => {
+    // @ts-ignore
+    get: (target: any, prop: string, receiver: object) => {
+      // console.log(path)
       if (prop === 'original') {
         return router
       }
       if (prop === 'schema') {
-        return schema
+        return getGeneratedSchema()
+      }
+      if (prop === 'registry') {
+        return registry
       }
 
       return (route: string, ...handlers: any) => {
         if (prop !== 'handle') {
           if (
             handlers.length === 1 &&
-            handlers[0].schema?.paths !== undefined
+            handlers[0].registry instanceof OpenAPIRegistryMerger
           ) {
             const nestedRouter = handlers[0]
 
-            for (const [key, value] of Object.entries(
-              nestedRouter.schema.paths
-            )) {
-              // @ts-ignore
-              OpenAPIPaths[key] = value
-            }
+            // Merge nested router definitions into outer router
+            registry.merge(nestedRouter.registry)
           } else if (prop !== 'all') {
             const parsedRoute =
               (options?.base || '') +
@@ -65,7 +89,7 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
                 .replace(/:(\w+)/g, '{$1}') // convert parameters into openapi compliant
 
             // @ts-ignore
-            let schema: OpenAPISchema = undefined
+            let schema: RouteConfig = undefined
             // @ts-ignore
             let operationId: string = undefined
 
@@ -74,15 +98,11 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
                 operationId = `${prop.toString()}_${handler.name}`
               }
 
-              if (handler.getParsedSchema) {
-                schema = handler.getParsedSchema()
+              if (handler.getSchemaZod) {
+                schema = handler.getSchemaZod()
+                // console.log(schema)
                 break
               }
-            }
-
-            if (OpenAPIPaths[parsedRoute] === undefined) {
-              // The same path can have multiple operations
-              OpenAPIPaths[parsedRoute] = {}
             }
 
             if (operationId === undefined) {
@@ -91,25 +111,28 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
 
             if (schema === undefined) {
               // No schema for this route, try to guest the parameters
-              const params = route.match(/:(\w+)/g)
 
+              // @ts-ignore
               schema = {
                 operationId: operationId,
-                // @ts-ignore
-                parameters: params
-                  ? getFormatedParameters(
-                      params.map((param) => {
-                        return Path(String, {
-                          name: param.replace(':', ''),
-                        })
-                      })
-                    )
-                  : [],
                 responses: {
-                  '200': {
-                    description: 'Successfully Response',
+                  200: {
+                    description: 'Object with user data.',
                   },
                 },
+              }
+
+              const params = route.match(/:(\w+)/g)
+              if (params) {
+                schema.request = {
+                  // TODO: make sure this works
+                  params: z.object(
+                    params.reduce(
+                      (obj, item) => Object.assign(obj, { [item]: z.string() }),
+                      {}
+                    )
+                  ),
+                }
               }
             } else {
               // Schema was provided in the endpoint
@@ -125,28 +148,42 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
               }
             }
 
-            OpenAPIPaths[parsedRoute][prop.toString()] = schema
+            registry.registerPath({
+              ...schema,
+              // @ts-ignore
+              method: prop.toString(),
+              path: parsedRoute,
+            })
           }
         }
 
+        // console.log(`${prop.toString()}`)
+        // @ts-ignore
+        // console.log(Reflect.routes)
         return Reflect.get(
           target,
           prop,
           receiver
+          // path
         )(
           route,
           ...handlers.map((handler: any) => {
-            if (handler.schema?.paths !== undefined) {
+            // console.log(route)
+            // console.log(handlers)
+            if (handler.handle) {
+              // Nested router
               return handler.handle
             }
 
             if (handler.isRoute) {
+              // console.log(handler)
               return (...params: any[]) =>
                 new handler({
-                  raiseUnknownParameters: openapiConfig.raiseUnknownParameters,
+                  // raiseUnknownParameters: openapiConfig.raiseUnknownParameters,  TODO
                 }).execute(...params)
             }
 
+            // console.log(handler())
             return handler
           })
         )
@@ -154,85 +191,81 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
     },
   })
 
-  if (openapiConfig !== undefined) {
-    if (options?.docs_url !== null && options?.openapi_url !== null) {
-      router.get(options?.docs_url || '/docs', () => {
-        return new Response(
-          getSwaggerUI(
-            (options?.base || '') + (options?.openapi_url || '/openapi.json')
-          ),
-          {
-            headers: {
-              'content-type': 'text/html; charset=UTF-8',
-            },
-            status: 200,
-          }
-        )
-      })
-    }
+  if (options?.docs_url !== null && options?.openapi_url !== null) {
+    router.get(options?.docs_url || '/docs', () => {
+      return new Response(
+        getSwaggerUI(
+          (options?.base || '') + (options?.openapi_url || '/openapi.json')
+        ),
+        {
+          headers: {
+            'content-type': 'text/html; charset=UTF-8',
+          },
+          status: 200,
+        }
+      )
+    })
+  }
 
-    if (options?.redoc_url !== null && options?.openapi_url !== null) {
-      router.get(options?.redoc_url || '/redocs', () => {
-        return new Response(
-          getReDocUI(
-            (options?.base || '') + (options?.openapi_url || '/openapi.json')
-          ),
-          {
-            headers: {
-              'content-type': 'text/html; charset=UTF-8',
-            },
-            status: 200,
-          }
-        )
-      })
-    }
+  if (options?.redoc_url !== null && options?.openapi_url !== null) {
+    router.get(options?.redoc_url || '/redocs', () => {
+      return new Response(
+        getReDocUI(
+          (options?.base || '') + (options?.openapi_url || '/openapi.json')
+        ),
+        {
+          headers: {
+            'content-type': 'text/html; charset=UTF-8',
+          },
+          status: 200,
+        }
+      )
+    })
+  }
 
-    if (options?.openapi_url !== null) {
-      router.get(options?.openapi_url || '/openapi.json', () => {
-        return new Response(JSON.stringify(schema), {
+  if (options?.openapi_url !== null) {
+    router.get(options?.openapi_url || '/openapi.json', () => {
+      return new Response(JSON.stringify(getGeneratedSchema()), {
+        headers: {
+          'content-type': 'application/json;charset=UTF-8',
+        },
+        status: 200,
+      })
+    })
+  }
+
+  if (options?.aiPlugin && options?.openapi_url !== null) {
+    router.get('/.well-known/ai-plugin.json', (request: IRequest) => {
+      const schemaApi = {
+        type: APIType.OPENAPI,
+        has_user_authentication: false,
+        url: options?.openapi_url || '/openapi.json',
+        ...options?.aiPlugin?.api,
+      }
+
+      // Check if schema path is relative
+      if (!schemaApi.url.startsWith('http')) {
+        // dynamically add the host
+        schemaApi.url = `https://${request.headers.get('host')}${schemaApi.url}`
+      }
+
+      return new Response(
+        JSON.stringify({
+          schema_version: SchemaVersion.V1,
+          auth: {
+            type: AuthType.NONE,
+          },
+          ...options?.aiPlugin,
+          api: schemaApi,
+        }),
+        {
           headers: {
             'content-type': 'application/json;charset=UTF-8',
           },
           status: 200,
-        })
-      })
-    }
-
-    if (options?.aiPlugin && options?.openapi_url !== null) {
-      router.get('/.well-known/ai-plugin.json', (request: IRequest) => {
-        const schemaApi = {
-          type: APIType.OPENAPI,
-          has_user_authentication: false,
-          url: options?.openapi_url || '/openapi.json',
-          ...options?.aiPlugin?.api,
         }
-
-        // Check if schema path is relative
-        if (!schemaApi.url.startsWith('http')) {
-          // dynamically add the host
-          schemaApi.url = `https://${request.headers.get('host')}${
-            schemaApi.url
-          }`
-        }
-
-        return new Response(
-          JSON.stringify({
-            schema_version: SchemaVersion.V1,
-            auth: {
-              type: AuthType.NONE,
-            },
-            ...options?.aiPlugin,
-            api: schemaApi,
-          }),
-          {
-            headers: {
-              'content-type': 'application/json;charset=UTF-8',
-            },
-            status: 200,
-          }
-        )
-      })
-    }
+      )
+    })
   }
 
   return routerProxy
