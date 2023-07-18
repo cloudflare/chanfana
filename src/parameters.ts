@@ -16,7 +16,6 @@ if (z.string().openapi === undefined) {
 // @ts-ignore
 export function convertParams(field, params) {
   params = params || {}
-  // console.log(z.coerce.date().isOptional())
   if (params.required === false)
     // @ts-ignore
     field = field.optional().transform((val) => val || null)
@@ -46,7 +45,6 @@ export class Obj {
     for (const [key, value] of Object.entries(fields)) {
       parsed[key] = legacyTypeIntoZod(value)
     }
-    // console.log(parsed)
 
     return convertParams(z.object(parsed), params)
   }

@@ -41,17 +41,12 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     let parameters: any = {}
     let requestBody: object = schema.requestBody as object
     const responses: any = {}
-    // console.log(requestBody)
 
     if (requestBody) {
       if (!isAnyZodType(requestBody)) {
-        // console.log(requestBody)
-        // console.log(legacyTypeIntoZod(requestBody).shape)
         requestBody = legacyTypeIntoZod(requestBody)
       }
 
-      // console.log(requestBody)
-      // console.log(requestBody.shape)
       requestBody = {
         content: {
           'application/json': {
@@ -59,7 +54,6 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
           },
         },
       }
-      // console.log(requestBody.content)
 
       parameters.body = requestBody
     }
@@ -104,7 +98,6 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
           _params[value.location] = {}
         }
 
-        // console.log(value)
         _params[value.location][key] = value.type
       }
 
@@ -121,9 +114,6 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     delete schema.requestBody
     delete schema.parameters
     delete schema.responses
-
-    // console.log(requestBody.shape)
-    // console.log(parameters.shape)
 
     // Deep copy
     //@ts-ignore
@@ -153,7 +143,6 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     const { data, errors } = await this.validateRequest(args[0])
 
     if (errors) {
-      // console.log(errors)
       return this.handleValidationError(errors)
     }
 
@@ -226,10 +215,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
       validationSchema = validationSchema.strict()
     }
 
-    // console.log(z.string().array()._def.typeName === 'ZodArray')
-    // console.log(validationSchema.shape.query.shape)
     const validatedData = validationSchema.safeParse(unvalidatedData)
-    // console.log(unvalidatedData)
 
     return {
       data: validatedData.success ? validatedData.data : undefined,

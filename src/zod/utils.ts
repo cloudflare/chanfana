@@ -39,12 +39,7 @@ export function legacyTypeIntoZod(type: any, params?: any): any {
   }
 
   if (type === String) {
-    // console.log(1)
-    // console.log(type)
-    // console.log(params)
-    const asd = new Str(params)
-    // console.log(asd)
-    return asd
+    return new Str(params)
   }
 
   if (typeof type === 'string') {

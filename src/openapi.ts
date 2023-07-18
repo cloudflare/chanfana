@@ -22,7 +22,6 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
     let openapiGenerator: any = OpenApiGeneratorV31
     if (options?.openapiVersion === '3') openapiGenerator = OpenApiGeneratorV3
 
-    // console.log(router.routes)
     const generator = new openapiGenerator(registry.definitions)
 
     return generator.generateDocument({
@@ -60,7 +59,6 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
   const routerProxy: OpenAPIRouter = new Proxy(router, {
     // @ts-ignore
     get: (target: any, prop: string, receiver: object) => {
-      // console.log(path)
       if (prop === 'original') {
         return router
       }
@@ -100,7 +98,6 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
 
               if (handler.getSchemaZod) {
                 schema = handler.getSchemaZod()
-                // console.log(schema)
                 break
               }
             }
@@ -168,8 +165,6 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
         )(
           route,
           ...handlers.map((handler: any) => {
-            // console.log(route)
-            // console.log(handlers)
             if (handler.handle) {
               // Nested router
               return handler.handle
