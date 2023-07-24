@@ -45,7 +45,7 @@ building Cloudflare Workers, which we assume
 you have [installed](https://github.com/cloudflare/wrangler2#installation) already, to initialize the project:
 
 ```bash
-mkdir openapi-example && openapi-example
+mkdir openapi-example && cd openapi-example
 wrangler init
 ```
 
