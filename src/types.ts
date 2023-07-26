@@ -1,4 +1,3 @@
-import { Parameter } from './parameters'
 import { RequestLike, Route, RouteEntry, RouterType } from 'itty-router'
 
 export interface ClassRoute {
@@ -33,6 +32,7 @@ export interface RouterOptions {
   aiPlugin?: AIPlugin
   raiseUnknownParameters?: boolean
   generateOperationIds?: boolean
+  openapiVersion?: '3' | '3.1'
 }
 
 export interface RouteOptions {
@@ -45,13 +45,14 @@ export interface OpenAPISchema {
   description?: string
   operationId?: string
   requestBody?: Record<string, any>
-  parameters?: Record<string, Parameter> | Parameter[]
-  responses?: Record<string, ResponseSchema>
+  parameters?: Record<string, any>
+  responses?: Record<string | number, ResponseSchema>
   deprecated?: boolean
 }
 
 export interface OpenAPIRouteSchema {
   getSchema(): OpenAPISchema
+
   schema: OpenAPISchema
 }
 
@@ -78,7 +79,7 @@ export interface EnumerationParameterType extends StringParameterType {
 }
 
 export interface RegexParameterType extends StringParameterType {
-  pattern: string
+  pattern: RegExp
   patternError?: string
 }
 
@@ -90,7 +91,7 @@ export interface ParameterLocation extends StringParameterType {
   // Because this is a generic initializer, it must include all available options
   values?: Record<string, any>
   enumCaseSensitive?: boolean
-  pattern?: string
+  pattern?: string | RegExp
   patternError?: string
 }
 
@@ -100,7 +101,7 @@ export interface ParameterBody {
 }
 
 export interface ResponseSchema {
-  description?: string
+  description: string
   schema?: Record<any, any>
   contentType?: string
 }

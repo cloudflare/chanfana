@@ -52,7 +52,7 @@ export default async () => {
       },
     ],
     plugins: [
-      typescript({ sourceMap: true }),
+      typescript({ sourceMap: false }),
       terser(),
       bundleSize(),
       copy({
@@ -64,6 +64,6 @@ export default async () => {
         ],
       }),
     ],
-    external: ['itty-router'],
+    external: ['itty-router', 'zod', '@asteasolutions/zod-to-openapi'],
   }))
 }
