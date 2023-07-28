@@ -3,18 +3,19 @@ import {
   ParameterLocation,
   ParameterType,
   RegexParameterType,
+  RouteParameter,
 } from './types'
 import { z, ZodObject } from 'zod'
 import { isSpecificZodType, legacyTypeIntoZod } from './zod/utils'
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
+import { ZodType } from 'zod/lib/types'
 
 if (z.string().openapi === undefined) {
   // console.log('zod extension applied')
   extendZodWithOpenApi(z)
 }
 
-// @ts-ignore
-export function convertParams(field, params) {
+export function convertParams(field: any, params: any): ZodType {
   params = params || {}
   if (params.required === false)
     // @ts-ignore
@@ -198,13 +199,19 @@ export class Enumeration {
     field = field.transform((val) => values[val])
 
     const result = convertParams(field, params)
+
+    // Keep retro compatibility
+    //@ts-ignore
     result.values = originalValues
 
     return result
   }
 }
 
-export function Query(type: any, params: ParameterLocation = {}) {
+export function Query(
+  type: any,
+  params: ParameterLocation = {}
+): RouteParameter {
   return {
     name: params.name,
     location: 'query',
@@ -212,7 +219,10 @@ export function Query(type: any, params: ParameterLocation = {}) {
   }
 }
 
-export function Path(type: any, params: ParameterLocation = {}) {
+export function Path(
+  type: any,
+  params: ParameterLocation = {}
+): RouteParameter {
   return {
     name: params.name,
     location: 'params',
@@ -220,7 +230,10 @@ export function Path(type: any, params: ParameterLocation = {}) {
   }
 }
 
-export function Header(type: any, params: ParameterLocation = {}) {
+export function Header(
+  type: any,
+  params: ParameterLocation = {}
+): RouteParameter {
   return {
     name: params.name,
     location: 'header',
@@ -298,26 +311,4 @@ export function extractQueryParameters(
   }
 
   return params
-}
-
-export function genParametersForUnknownEndpoint(params: Record<any, any>) {
-  const formated = []
-  const isArray = Array.isArray(params)
-
-  for (const [key, parameter] of Object.entries(params || {})) {
-    if (isArray && !parameter.name) {
-      throw new Error('Parameter must have a defined name when using as Array')
-    }
-
-    const name = parameter.name || key
-
-    formated.push({
-      // TODO: check this type before assign
-      // @ts-ignore
-      ...parameter.getValue(),
-      name: name,
-    })
-  }
-
-  return formated
 }

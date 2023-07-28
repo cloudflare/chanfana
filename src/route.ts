@@ -1,37 +1,42 @@
-import {
-  OpenAPIRouteSchema,
-  OpenAPISchema,
-  RouteOptions,
-  RouteValidated,
-} from './types'
+import { OpenAPIRouteSchema, RouteOptions, RouteValidated } from './types'
 import { extractQueryParameters } from './parameters'
 import { z } from 'zod'
 import { isAnyZodType, legacyTypeIntoZod } from './zod/utils'
 import { RouteConfig } from '@asteasolutions/zod-to-openapi'
 import { jsonResp } from './utils'
+import { IRequest } from 'itty-router'
 
-export class OpenAPIRoute implements OpenAPIRouteSchema {
+export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
+  handle(request: I, ...args: A): any {
+    throw new Error('Method not implemented.')
+  }
+
   static isRoute = true
 
-  static schema: OpenAPISchema
+  static schema: OpenAPIRouteSchema
   params: RouteOptions
 
   constructor(params: RouteOptions) {
     this.params = params
   }
 
-  static getSchema(): OpenAPISchema {
+  static getSchema(): OpenAPIRouteSchema {
     return this.schema
   }
 
-  get schema(): OpenAPISchema {
+  schema(): OpenAPIRouteSchema {
     // @ts-ignore
     return this.__proto__.constructor.schema
   }
 
-  getSchema(): OpenAPISchema {
+  getSchema(): OpenAPIRouteSchema {
     // @ts-ignore
     return this.__proto__.constructor.getSchema()
+  }
+
+  getSchemaZod(): RouteConfig {
+    // @ts-ignore
+    return this.__proto__.constructor.getSchemaZod()
   }
 
   static getSchemaZod(): RouteConfig {
@@ -113,6 +118,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
 
     delete schema.requestBody
     delete schema.parameters
+    // @ts-ignore
     delete schema.responses
 
     // Deep copy
@@ -148,6 +154,7 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
 
     args.push(data)
 
+    // @ts-ignore
     const resp = await this.handle(...args)
 
     if (!(resp instanceof Response) && typeof resp === 'object') {
@@ -221,9 +228,5 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
       data: validatedData.success ? validatedData.data : undefined,
       errors: !validatedData.success ? validatedData.error.issues : undefined,
     }
-  }
-
-  handle(...args: any[]): Promise<Response | Record<string, any>> {
-    throw new Error('Method not implemented.')
   }
 }

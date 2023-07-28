@@ -1,31 +1,16 @@
-import { RequestLike, Route, RouteEntry, RouterType } from 'itty-router'
-
-export interface ClassRoute {
-  (path: string, ...handlers: OpenAPIRouteSchema[]): OpenAPIRouterSchema
-}
-
-export interface NestedRouter {
-  (path: string, handlers: OpenAPIRouterSchema): OpenAPIRouterSchema
-}
-
-export type OpenAPIRouterSchema = {
-  __proto__: RouterType
-  routes: RouteEntry[]
-  handle: (request: RequestLike, ...extra: any) => Promise<any>
-  original: RouterType
-  schema: any
-} & {
-  [any: string]: ClassRoute
-} & {
-  [any: string]: Route
-} & {
-  [any: string]: NestedRouter
-}
+import { RouteEntry } from 'itty-router'
+import { OpenAPIObject } from 'openapi3-ts/oas31'
+import { AnyZodObject, ZodType } from 'zod'
+import {
+  ResponseConfig,
+  ZodRequestBody,
+} from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
+import { RouteConfig } from '@asteasolutions/zod-to-openapi'
 
 export interface RouterOptions {
   base?: string
   routes?: RouteEntry[]
-  schema?: Record<string, any>
+  schema?: Partial<OpenAPIObject>
   docs_url?: string
   redoc_url?: string
   openapi_url?: string
@@ -35,29 +20,30 @@ export interface RouterOptions {
   openapiVersion?: '3' | '3.1'
 }
 
+export declare type RouteParameter = {
+  name?: string
+  location: string
+  type: ZodType
+}
+
+export declare type RouteResponse = Omit<ResponseConfig, 'content'> & {
+  schema?: Record<any, any>
+  contentType?: string
+}
+
+export declare type OpenAPIRouteSchema = Omit<
+  RouteConfig,
+  'method' | 'path' | 'requestBody' | 'parameters' | 'responses'
+> & {
+  requestBody?: Record<string, any>
+  parameters?: Record<string, RouteParameter> | RouteParameter[]
+  responses: {
+    [statusCode: string]: RouteResponse
+  }
+}
+
 export interface RouteOptions {
   raiseUnknownParameters: boolean
-}
-
-export interface OpenAPISchema {
-  tags?: string[]
-  summary?: string
-  description?: string
-  operationId?: string
-  requestBody?: Record<string, any>
-  parameters?: Record<string, any>
-  responses?: Record<string | number, ResponseSchema>
-  deprecated?: boolean
-}
-
-export interface OpenAPIRouteSchema {
-  getSchema(): OpenAPISchema
-
-  schema: OpenAPISchema
-}
-
-export interface ResponseXML {
-  name: string
 }
 
 export interface ParameterType {
@@ -66,7 +52,6 @@ export interface ParameterType {
   example?: string | number | boolean
   required?: boolean
   deprecated?: boolean
-  xml?: ResponseXML
 }
 
 export interface StringParameterType extends ParameterType {
@@ -93,17 +78,6 @@ export interface ParameterLocation extends StringParameterType {
   enumCaseSensitive?: boolean
   pattern?: string | RegExp
   patternError?: string
-}
-
-export interface ParameterBody {
-  description?: string
-  contentType?: string
-}
-
-export interface ResponseSchema {
-  description: string
-  schema?: Record<any, any>
-  contentType?: string
 }
 
 export interface RouteValidated {

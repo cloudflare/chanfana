@@ -1,24 +1,54 @@
 import { getReDocUI, getSwaggerUI } from './ui'
-import { IRequest, Router } from 'itty-router'
 import {
-  APIType,
-  AuthType,
-  OpenAPIRouterSchema,
-  RouterOptions,
-  SchemaVersion,
-} from './types'
+  IRequest,
+  RouteHandler,
+  Router,
+  RouterType,
+  UniversalRoute,
+} from 'itty-router'
+import { APIType, AuthType, RouterOptions, SchemaVersion } from './types'
 import {
-  OpenApiGeneratorV31,
   OpenApiGeneratorV3,
+  OpenApiGeneratorV31,
   RouteConfig,
 } from '@asteasolutions/zod-to-openapi'
 import { OpenAPIRegistryMerger } from './zod/registry'
 import { z } from 'zod'
+import { OpenAPIObject } from 'openapi3-ts/oas31'
+import { OpenAPIRoute } from './route'
 
-export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
-  const registry = new OpenAPIRegistryMerger()
+export type Route = <
+  RequestType = IRequest,
+  Args extends any[] = any[],
+  RT = OpenAPIRouterType
+>(
+  path: string,
+  ...handlers: (RouteHandler<RequestType, Args> | OpenAPIRouterType | any)[] // TODO: fix this any to be instance of OpenAPIRoute
+) => RT
 
-  const getGeneratedSchema = () => {
+export type OpenAPIRouterType<R = Route, Args extends any[] = any[]> = {
+  original: RouterType<R>
+  schema: OpenAPIObject
+  registry: OpenAPIRegistryMerger
+} & RouterType<R>
+
+// helper function to detect equality in types (used to detect custom Request on router)
+type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y
+  ? 1
+  : 2
+  ? true
+  : false
+
+export function OpenAPIRouter<
+  RequestType = IRequest,
+  Args extends any[] = any[],
+  RouteType = Equal<RequestType, IRequest> extends true
+    ? Route
+    : UniversalRoute<RequestType, Args>
+>(options?: RouterOptions): OpenAPIRouterType<RouteType, Args> {
+  const registry: OpenAPIRegistryMerger = new OpenAPIRegistryMerger()
+
+  const getGeneratedSchema = (): OpenAPIObject => {
     let openapiGenerator: any = OpenApiGeneratorV31
     if (options?.openapiVersion === '3') openapiGenerator = OpenApiGeneratorV3
 
@@ -29,36 +59,17 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
       info: {
         version: options?.schema?.info?.version || '1.0.0',
         title: options?.schema?.info?.title || 'OpenAPI',
-        description: options?.schema?.info?.description,
+        ...options?.schema?.info,
       },
-      servers: options?.schema?.servers,
+      ...options?.schema,
     })
   }
 
   const router = Router({ base: options?.base, routes: options?.routes })
 
-  // const openapiConfig = {
-  //   openapi: '3.0.2',
-  //   info: {
-  //     title: options?.schema?.info?.title || 'OpenAPI',
-  //     version: options?.schema?.info?.version || '1.0',
-  //   },
-  //   raiseUnknownParameters: options?.raiseUnknownParameters, // TODO: turn this true by default in the future
-  //   ...options?.schema,
-  // }
-
-  // const schema = {
-  //   ...openapiConfig,
-  //   paths: OpenAPIPaths,
-  // }
-
-  // Quick fix, to make api spec valid
-  // delete schema.raiseUnknownParameters
-
-  // @ts-ignore
-  const routerProxy: OpenAPIRouter = new Proxy(router, {
-    // @ts-ignore
-    get: (target: any, prop: string, receiver: object) => {
+  const routerProxy: OpenAPIRouterType<RouteType, Args> = new Proxy(router, {
+    // @ts-expect-error (we're adding an expected prop "path" to the get)
+    get: (target: any, prop: string, receiver: object, path: string) => {
       if (prop === 'original') {
         return router
       }
@@ -69,15 +80,17 @@ export function OpenAPIRouter(options?: RouterOptions): OpenAPIRouterSchema {
         return registry
       }
 
-      return (route: string, ...handlers: any) => {
+      return (
+        route: string,
+        ...handlers: RouteHandler<RequestType, Args>[] &
+          typeof OpenAPIRoute[] &
+          OpenAPIRouterType<RouteType, Args>[]
+      ) => {
         if (prop !== 'handle') {
-          if (
-            handlers.length === 1 &&
-            handlers[0].registry instanceof OpenAPIRegistryMerger
-          ) {
+          if (handlers.length === 1 && handlers[0].registry) {
             const nestedRouter = handlers[0]
 
-            // Merge nested router definitions into outer router
+            // Merge inner router definitions into outer router
             registry.merge(nestedRouter.registry)
           } else if (prop !== 'all') {
             const parsedRoute =
