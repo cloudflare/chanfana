@@ -73,6 +73,9 @@ export class Arr extends BaseParameter {
     return {
       type: 'array',
       items: this.innerType.getValue(),
+      description: this.params.description,
+      example: this.params.example,
+      default: this.params.default,
     }
   }
 }
