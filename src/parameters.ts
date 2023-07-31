@@ -8,7 +8,7 @@ import {
 import { z, ZodObject } from 'zod'
 import { isSpecificZodType, legacyTypeIntoZod } from './zod/utils'
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
-import { ZodType } from 'zod/lib/types'
+import { ZodType } from 'zod'
 
 if (z.string().openapi === undefined) {
   // console.log('zod extension applied')

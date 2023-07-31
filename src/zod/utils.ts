@@ -8,7 +8,7 @@ import {
   Obj,
   Str,
 } from '../parameters'
-import { ZodType } from 'zod/lib/types'
+import { ZodType } from 'zod'
 import { ZodArray, ZodBoolean, ZodNumber, ZodString } from 'zod'
 
 export function isAnyZodType(schema: object): schema is z.ZodType {
