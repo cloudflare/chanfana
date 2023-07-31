@@ -19,7 +19,7 @@ export function convertParams(field: any, params: any): ZodType {
   params = params || {}
   if (params.required === false)
     // @ts-ignore
-    field = field.optional().transform((val) => val || null)
+    field = field.optional()
 
   if (params.description) field = field.describe(params.description)
 

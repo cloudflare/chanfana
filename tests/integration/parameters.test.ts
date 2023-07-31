@@ -525,7 +525,7 @@ describe('bodyParametersValidation', () => {
     expect(request.status).toEqual(200)
 
     expect(resp).toEqual({
-      todo: { title: 'my todo', type: 'nextWeek', description: null },
+      todo: { title: 'my todo', type: 'nextWeek' },
     })
   })
 
