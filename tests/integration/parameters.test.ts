@@ -15,9 +15,7 @@ describe('queryParametersValidation', () => {
     )
 
     // sanity check some parameters
-    expect(findError(resp.errors, 'p_number')).toEqual(
-      'Expected number, received nan'
-    )
+    expect(findError(resp.errors, 'p_number')).toEqual('Invalid input')
     expect(findError(resp.errors, 'p_boolean')).toEqual(
       "Invalid enum value. Expected 'true' | 'false', received 'undefined'"
     )

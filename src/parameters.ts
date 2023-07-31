@@ -55,7 +55,12 @@ export class Num {
   static generator = true
 
   constructor(params?: ParameterType) {
-    return convertParams(z.coerce.number(), params)
+    return convertParams(
+      z.number().or(z.string()).pipe(z.coerce.number()),
+      params
+    ).openapi({
+      type: 'number',
+    })
   }
 }
 
@@ -63,7 +68,12 @@ export class Int {
   static generator = true
 
   constructor(params?: ParameterType) {
-    return convertParams(z.coerce.number().int(), params)
+    return convertParams(
+      z.number().int().or(z.string()).pipe(z.coerce.number()),
+      params
+    ).openapi({
+      type: 'integer',
+    })
   }
 }
 
