@@ -8,7 +8,7 @@ core features, such as adding class-based endpoints. It also provides a simple a
 applications based on `itty-router`.
 
 A template repository is available
-at [cloudflare/templates](https://github.com/cloudflare/templates/tree/main/worker-openapi),
+at [cloudflare/templates](https://github.com/cloudflare/workers-sdk/tree/main/templates/worker-openapi),
 with a live demo [here](https://worker-openapi-example.radar.cloudflare.com/docs).
 
 There is a Tutorial Section [available here](https://github.com/cloudflare/itty-router-openapi/blob/main/TUTORIAL.md)!
