@@ -149,7 +149,7 @@ and ready to be invoked.
 | `redoc_url`              | `string` or `null` or `undefined` | Path for redoc docs, `null`: disabled, `undefined`: `/redocs`                                 | `/redocs`                                                                  |
 | `openapi_url`            | `string` or `null` or `undefined` | Path for openapi schema, `null`: disabled, `undefined`: `/openapi.json`                       | `/openapi.json`                                                            |
 | `raiseUnknownParameters` | `boolean`                         | This will raise validation errors when an endpoint received an unknown query parameter        | true                                                                       |
-| `generateOperationIds`   | `boolean`                         | This will generate operarion ids from class names for your endpoints when nothing is provided | true                                                                       |
+| `generateOperationIds`   | `boolean`                         | This will generate operation ids from class names for your endpoints when nothing is provided | true                                                                       |
 | `aiPlugin`               | `object` or `undefined`           | Object that will be used to generate the `ai-plugin.json` schema                              | [see schema bellow](#aiplugin)                                             |
 
 #### `aiPlugin`
