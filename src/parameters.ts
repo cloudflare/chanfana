@@ -34,7 +34,7 @@ export class Arr {
   static generator = true
 
   constructor(innerType: any, params?: ParameterType) {
-    return convertParams(legacyTypeIntoZod(innerType[0]).array(), params)
+    return convertParams(legacyTypeIntoZod(innerType).array(), params)
   }
 }
 

@@ -73,7 +73,7 @@ export function legacyTypeIntoZod(type: any, params?: any): ZodType {
       throw new Error('Arr must have a type')
     }
 
-    return new Arr(type, params) as ZodType<ZodArray<any>>
+    return new Arr(type[0], params) as ZodType<ZodArray<any>>
   }
 
   if (typeof type === 'object') {
