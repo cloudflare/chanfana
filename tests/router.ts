@@ -17,6 +17,7 @@ import {
   Uuid,
   Path,
 } from '../src/parameters'
+import { OpenAPIRouteSchema } from '../src'
 
 export class ToDoList extends OpenAPIRoute {
   static schema = {
@@ -118,7 +119,7 @@ export class ToDoGet extends OpenAPIRoute {
 }
 
 export class ToDoCreate extends OpenAPIRoute {
-  static schema = {
+  static schema: OpenAPIRouteSchema = {
     tags: ['ToDo'],
     summary: 'Create a new ToDo',
     requestBody: {

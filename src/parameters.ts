@@ -3,23 +3,23 @@ import {
   ParameterLocation,
   ParameterType,
   RegexParameterType,
+  RouteParameter,
 } from './types'
 import { z, ZodObject } from 'zod'
 import { isSpecificZodType, legacyTypeIntoZod } from './zod/utils'
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
+import { ZodType } from 'zod'
 
 if (z.string().openapi === undefined) {
   // console.log('zod extension applied')
   extendZodWithOpenApi(z)
 }
 
-// @ts-ignore
-export function convertParams(field, params) {
+export function convertParams(field: any, params: any): ZodType {
   params = params || {}
-  // console.log(z.coerce.date().isOptional())
   if (params.required === false)
     // @ts-ignore
-    field = field.optional().transform((val) => val || null)
+    field = field.optional()
 
   if (params.description) field = field.describe(params.description)
 
@@ -34,7 +34,7 @@ export class Arr {
   static generator = true
 
   constructor(innerType: any, params?: ParameterType) {
-    return convertParams(legacyTypeIntoZod(innerType[0]).array(), params)
+    return convertParams(legacyTypeIntoZod(innerType).array(), params)
   }
 }
 
@@ -46,7 +46,6 @@ export class Obj {
     for (const [key, value] of Object.entries(fields)) {
       parsed[key] = legacyTypeIntoZod(value)
     }
-    // console.log(parsed)
 
     return convertParams(z.object(parsed), params)
   }
@@ -56,7 +55,12 @@ export class Num {
   static generator = true
 
   constructor(params?: ParameterType) {
-    return convertParams(z.coerce.number(), params)
+    return convertParams(
+      z.number().or(z.string()).pipe(z.coerce.number()),
+      params
+    ).openapi({
+      type: 'number',
+    })
   }
 }
 
@@ -64,7 +68,12 @@ export class Int {
   static generator = true
 
   constructor(params?: ParameterType) {
-    return convertParams(z.coerce.number().int(), params)
+    return convertParams(
+      z.number().int().or(z.string()).pipe(z.coerce.number()),
+      params
+    ).openapi({
+      type: 'integer',
+    })
   }
 }
 
@@ -200,13 +209,19 @@ export class Enumeration {
     field = field.transform((val) => values[val])
 
     const result = convertParams(field, params)
+
+    // Keep retro compatibility
+    //@ts-ignore
     result.values = originalValues
 
     return result
   }
 }
 
-export function Query(type: any, params: ParameterLocation = {}) {
+export function Query(
+  type: any,
+  params: ParameterLocation = {}
+): RouteParameter {
   return {
     name: params.name,
     location: 'query',
@@ -214,7 +229,10 @@ export function Query(type: any, params: ParameterLocation = {}) {
   }
 }
 
-export function Path(type: any, params: ParameterLocation = {}) {
+export function Path(
+  type: any,
+  params: ParameterLocation = {}
+): RouteParameter {
   return {
     name: params.name,
     location: 'params',
@@ -222,7 +240,10 @@ export function Path(type: any, params: ParameterLocation = {}) {
   }
 }
 
-export function Header(type: any, params: ParameterLocation = {}) {
+export function Header(
+  type: any,
+  params: ParameterLocation = {}
+): RouteParameter {
   return {
     name: params.name,
     location: 'header',
@@ -300,26 +321,4 @@ export function extractQueryParameters(
   }
 
   return params
-}
-
-export function genParametersForUnknownEndpoint(params: Record<any, any>) {
-  const formated = []
-  const isArray = Array.isArray(params)
-
-  for (const [key, parameter] of Object.entries(params || {})) {
-    if (isArray && !parameter.name) {
-      throw new Error('Parameter must have a defined name when using as Array')
-    }
-
-    const name = parameter.name || key
-
-    formated.push({
-      // TODO: check this type before assign
-      // @ts-ignore
-      ...parameter.getValue(),
-      name: name,
-    })
-  }
-
-  return formated
 }

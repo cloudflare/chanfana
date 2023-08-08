@@ -3,11 +3,12 @@ import 'isomorphic-fetch'
 import { OpenAPIRoute } from '../../src/route'
 import { OpenAPIRouter } from '../../src/openapi'
 import { buildRequest } from '../utils'
-import { todoRouter } from '../router'
+import { OpenAPIRouteSchema } from '../../src'
 
 class EndpointWithoutOperationId extends OpenAPIRoute {
   static schema = {
     summary: 'Get a single ToDo',
+    responses: {},
   }
 
   async handle(
@@ -23,7 +24,8 @@ class EndpointWithoutOperationId extends OpenAPIRoute {
 }
 
 class EndpointWithOperationId extends OpenAPIRoute {
-  static schema = {
+  static schema: OpenAPIRouteSchema = {
+    responses: {},
     operationId: 'get_my_todo',
     summary: 'Get a single ToDo',
   }
@@ -57,15 +59,33 @@ describe('routerOptions', () => {
       generateOperationIds: true,
     })
     routerTrue.get('/todo', EndpointWithoutOperationId)
-    expect(routerTrue.schema.paths['/todo'].get.operationId).toEqual(
-      'get_EndpointWithoutOperationId'
-    )
+
+    if (
+      routerTrue.schema.paths &&
+      routerTrue.schema.paths['/todo'] &&
+      routerTrue.schema.paths['/todo'].get
+    ) {
+      expect(routerTrue.schema.paths['/todo'].get.operationId).toEqual(
+        'get_EndpointWithoutOperationId'
+      )
+    } else {
+      throw new Error('/todo not found in schema')
+    }
 
     const routerUnset = OpenAPIRouter()
     routerUnset.get('/todo', EndpointWithoutOperationId)
-    expect(routerUnset.schema.paths['/todo'].get.operationId).toEqual(
-      'get_EndpointWithoutOperationId'
-    )
+
+    if (
+      routerUnset.schema.paths &&
+      routerUnset.schema.paths['/todo'] &&
+      routerUnset.schema.paths['/todo'].get
+    ) {
+      expect(routerUnset.schema.paths['/todo'].get.operationId).toEqual(
+        'get_EndpointWithoutOperationId'
+      )
+    } else {
+      throw new Error('/todo not found in schema')
+    }
   })
 
   it('generate operation ids true on endpoint with operation id', async () => {
@@ -73,7 +93,18 @@ describe('routerOptions', () => {
       generateOperationIds: true,
     })
     router.get('/todo', EndpointWithOperationId)
-    expect(router.schema.paths['/todo'].get.operationId).toEqual('get_my_todo')
+
+    if (
+      router.schema.paths &&
+      router.schema.paths['/todo'] &&
+      router.schema.paths['/todo'].get
+    ) {
+      expect(router.schema.paths['/todo'].get.operationId).toEqual(
+        'get_my_todo'
+      )
+    } else {
+      throw new Error('/todo not found in schema')
+    }
   })
 
   it('with base empty', async () => {

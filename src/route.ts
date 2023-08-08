@@ -1,37 +1,42 @@
-import {
-  OpenAPIRouteSchema,
-  OpenAPISchema,
-  RouteOptions,
-  RouteValidated,
-} from './types'
+import { OpenAPIRouteSchema, RouteOptions, RouteValidated } from './types'
 import { extractQueryParameters } from './parameters'
 import { z } from 'zod'
 import { isAnyZodType, legacyTypeIntoZod } from './zod/utils'
 import { RouteConfig } from '@asteasolutions/zod-to-openapi'
 import { jsonResp } from './utils'
+import { IRequest } from 'itty-router'
 
-export class OpenAPIRoute implements OpenAPIRouteSchema {
+export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
+  handle(request: I, ...args: A): any {
+    throw new Error('Method not implemented.')
+  }
+
   static isRoute = true
 
-  static schema: OpenAPISchema
+  static schema: OpenAPIRouteSchema
   params: RouteOptions
 
   constructor(params: RouteOptions) {
     this.params = params
   }
 
-  static getSchema(): OpenAPISchema {
+  static getSchema(): OpenAPIRouteSchema {
     return this.schema
   }
 
-  get schema(): OpenAPISchema {
+  schema(): OpenAPIRouteSchema {
     // @ts-ignore
     return this.__proto__.constructor.schema
   }
 
-  getSchema(): OpenAPISchema {
+  getSchema(): OpenAPIRouteSchema {
     // @ts-ignore
     return this.__proto__.constructor.getSchema()
+  }
+
+  getSchemaZod(): RouteConfig {
+    // @ts-ignore
+    return this.__proto__.constructor.getSchemaZod()
   }
 
   static getSchemaZod(): RouteConfig {
@@ -41,17 +46,12 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     let parameters: any = {}
     let requestBody: object = schema.requestBody as object
     const responses: any = {}
-    // console.log(requestBody)
 
     if (requestBody) {
       if (!isAnyZodType(requestBody)) {
-        // console.log(requestBody)
-        // console.log(legacyTypeIntoZod(requestBody).shape)
         requestBody = legacyTypeIntoZod(requestBody)
       }
 
-      // console.log(requestBody)
-      // console.log(requestBody.shape)
       requestBody = {
         content: {
           'application/json': {
@@ -59,7 +59,6 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
           },
         },
       }
-      // console.log(requestBody.content)
 
       parameters.body = requestBody
     }
@@ -104,7 +103,6 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
           _params[value.location] = {}
         }
 
-        // console.log(value)
         _params[value.location][key] = value.type
       }
 
@@ -120,10 +118,8 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
 
     delete schema.requestBody
     delete schema.parameters
+    // @ts-ignore
     delete schema.responses
-
-    // console.log(requestBody.shape)
-    // console.log(parameters.shape)
 
     // Deep copy
     //@ts-ignore
@@ -153,12 +149,12 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
     const { data, errors } = await this.validateRequest(args[0])
 
     if (errors) {
-      // console.log(errors)
       return this.handleValidationError(errors)
     }
 
     args.push(data)
 
+    // @ts-ignore
     const resp = await this.handle(...args)
 
     if (!(resp instanceof Response) && typeof resp === 'object') {
@@ -226,18 +222,11 @@ export class OpenAPIRoute implements OpenAPIRouteSchema {
       validationSchema = validationSchema.strict()
     }
 
-    // console.log(z.string().array()._def.typeName === 'ZodArray')
-    // console.log(validationSchema.shape.query.shape)
     const validatedData = validationSchema.safeParse(unvalidatedData)
-    // console.log(unvalidatedData)
 
     return {
       data: validatedData.success ? validatedData.data : undefined,
       errors: !validatedData.success ? validatedData.error.issues : undefined,
     }
-  }
-
-  handle(...args: any[]): Promise<Response | Record<string, any>> {
-    throw new Error('Method not implemented.')
   }
 }

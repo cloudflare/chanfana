@@ -1,4 +1,4 @@
-import type { z } from 'zod'
+import type { z, ZodObject } from 'zod'
 import {
   Arr,
   Bool,
@@ -8,6 +8,8 @@ import {
   Obj,
   Str,
 } from '../parameters'
+import { ZodType } from 'zod'
+import { ZodArray, ZodBoolean, ZodNumber, ZodString } from 'zod'
 
 export function isAnyZodType(schema: object): schema is z.ZodType {
   // @ts-ignore
@@ -22,7 +24,7 @@ export function isSpecificZodType(field: any, typeName: string): boolean {
   )
 }
 
-export function legacyTypeIntoZod(type: any, params?: any): any {
+export function legacyTypeIntoZod(type: any, params?: any): ZodType {
   params = params || {}
 
   if (isAnyZodType(type)) {
@@ -35,40 +37,35 @@ export function legacyTypeIntoZod(type: any, params?: any): any {
 
   // Legacy support
   if (type.generator === true) {
-    return new type(params)
+    return new type(params) as ZodType
   }
 
   if (type === String) {
-    // console.log(1)
-    // console.log(type)
-    // console.log(params)
-    const asd = new Str(params)
-    // console.log(asd)
-    return asd
+    return new Str(params) as ZodType<ZodString>
   }
 
   if (typeof type === 'string') {
-    return new Str({ example: type })
+    return new Str({ example: type }) as ZodType<ZodString>
   }
 
   if (type === Number) {
-    return new Num(params)
+    return new Num(params) as ZodType<ZodNumber>
   }
 
   if (typeof type === 'number') {
-    return new Num({ example: type })
+    return new Num({ example: type }) as ZodType<ZodNumber>
   }
 
   if (type === Boolean) {
-    return new Bool(params)
+    return new Bool(params) as ZodType<ZodBoolean>
   }
 
   if (typeof type === 'boolean') {
-    return new Bool({ example: type })
+    return new Bool({ example: type }) as ZodType<ZodBoolean>
   }
 
   if (type === Date) {
-    return new DateTime(params)
+    return new DateTime(params) as ZodType<ZodString>
   }
 
   if (Array.isArray(type)) {
@@ -76,11 +73,11 @@ export function legacyTypeIntoZod(type: any, params?: any): any {
       throw new Error('Arr must have a type')
     }
 
-    return new Arr(type, params)
+    return new Arr(type[0], params) as ZodType<ZodArray<any>>
   }
 
   if (typeof type === 'object') {
-    return new Obj(type, params)
+    return new Obj(type, params) as ZodType<ZodObject<any>>
   }
 
   throw new Error(`${type} not implemented`)
