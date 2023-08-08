@@ -1,107 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/migrating-from-itty-router/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/types/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/ci-cd-pipelines/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/custom-response-formats/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/event-listener-worker/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/hiding-routes-in-openapi-schema/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/openai-plugin/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/openapi-schema-customizations/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/user-guide/cors/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/user-guide/first-steps/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/user-guide/header-parameters/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/user-guide/nested-routers/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/user-guide/path-parameters/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/user-guide/query-parameters/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/user-guide/request-body/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/user-guide/response-model/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/user-guide/router-options/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>None</loc>
-         <lastmod>2023-08-08</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>None</loc>
-         <lastmod>2023-08-08</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>None</loc>
+         <loc>https://cloudflare.github.io/itty-router-openapi/user-guide/security/</loc>
          <lastmod>2023-08-08</lastmod>
          <changefreq>daily</changefreq>
     </url>

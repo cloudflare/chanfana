@@ -10,6 +10,8 @@
       
       
       
+        <link rel="canonical" href="https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/custom-response-formats/">
+      
       <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.1">
     
@@ -37,6 +39,8 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
+    
+      <link rel="stylesheet" href="../../termynal.css">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -66,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#9-custom-responses-formats" class="md-skip">
+        <a href="#describing-a-binary-file" class="md-skip">
           Skip to content
         </a>
       
@@ -248,53 +252,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/" class="md-nav__link">
-        Features
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../basic-usage/" class="md-nav__link">
-        Basic usage
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../types/" class="md-nav__link">
         Types
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../migrating-from-itty-router/" class="md-nav__link">
-        Migrating from itty router
       </a>
     </li>
   
@@ -311,18 +270,40 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
       
       
       
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
       
-        <label class="md-nav__link" for="__nav_6">
+      
+        <label class="md-nav__link" for="__nav_3">
           User Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="User Guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_6">
+        <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
           User Guide
         </label>
@@ -487,18 +468,32 @@
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
       
       
       
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
       
-        <label class="md-nav__link" for="__nav_7">
+      
+        <label class="md-nav__link" for="__nav_4">
           Advanced User Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Advanced User Guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_7">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           Advanced User Guide
         </label>
@@ -540,8 +535,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#9-custom-responses-formats" class="md-nav__link">
-    9. Custom responses formats
+  <a href="#describing-a-binary-file" class="md-nav__link">
+    Describing a binary file:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#describing-a-xml-response" class="md-nav__link">
+    Describing a XML response:
   </a>
   
 </li>
@@ -562,7 +564,7 @@
   
     <li class="md-nav__item">
       <a href="../openai-plugin/" class="md-nav__link">
-        Openai plugin
+        OpenAI plugin support
       </a>
     </li>
   
@@ -576,7 +578,7 @@
   
     <li class="md-nav__item">
       <a href="../ci-cd-pipelines/" class="md-nav__link">
-        Ci cd pipelines
+        CI/CD
       </a>
     </li>
   
@@ -590,7 +592,7 @@
   
     <li class="md-nav__item">
       <a href="../event-listener-worker/" class="md-nav__link">
-        Event listener worker
+        Worker using addEventListener
       </a>
     </li>
   
@@ -618,7 +620,7 @@
   
     <li class="md-nav__item">
       <a href="../openapi-schema-customizations/" class="md-nav__link">
-        Openapi schema customizations
+        OpenAPI schema customizations
       </a>
     </li>
   
@@ -627,6 +629,21 @@
           
         </ul>
       </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migrating-from-itty-router/" class="md-nav__link">
+        Migrating existing itty-router applications
+      </a>
     </li>
   
 
@@ -656,8 +673,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#9-custom-responses-formats" class="md-nav__link">
-    9. Custom responses formats
+  <a href="#describing-a-binary-file" class="md-nav__link">
+    Describing a binary file:
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#describing-a-xml-response" class="md-nav__link">
+    Describing a XML response:
   </a>
   
 </li>
@@ -678,8 +702,7 @@
 
   <h1>Custom response formats</h1>
 
-<h3 id="9-custom-responses-formats">9. Custom responses formats<a class="headerlink" href="#9-custom-responses-formats" title="Permanent link">&para;</a></h3>
-<p>Describing a binary file:</p>
+<h2 id="describing-a-binary-file">Describing a binary file:<a class="headerlink" href="#describing-a-binary-file" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="p">,</span><span class="w"> </span><span class="nx">Str</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
 
 <span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ToDoList</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
@@ -693,12 +716,12 @@
 <span class="w">    </span><span class="p">},</span>
 <span class="w">  </span><span class="p">}</span>
 
-<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">Record</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">any</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">Record</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">any</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="c1">// ...</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Describing a XML response:</p>
+<h2 id="describing-a-xml-response">Describing a XML response:<a class="headerlink" href="#describing-a-xml-response" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="p">,</span><span class="w"> </span><span class="nx">Str</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
 
 <span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ToDoList</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
@@ -719,7 +742,7 @@
 <span class="w">    </span><span class="p">},</span>
 <span class="w">  </span><span class="p">}</span>
 
-<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">Record</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">any</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">Record</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">any</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="c1">// ...</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
@@ -760,13 +783,13 @@
       
       
         
-        <a href="../openai-plugin/" class="md-footer__link md-footer__link--next" aria-label="Next: Openai plugin" rel="next">
+        <a href="../openai-plugin/" class="md-footer__link md-footer__link--next" aria-label="Next: OpenAI plugin support" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Openai plugin
+              OpenAI plugin support
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -810,10 +833,12 @@
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["search.suggest", "search.highlight", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["search.suggest", "search.highlight", "content.tabs.link", "navigation.indexes", "content.tooltips", "navigation.path", "content.code.annotate", "content.code.copy", "content.code.select"], "search": "../../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.9c69f0bc.min.js"></script>
+      
+        <script src="../../termynal.js"></script>
       
     
   </body>

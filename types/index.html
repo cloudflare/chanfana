@@ -10,6 +10,8 @@
       
       
       
+        <link rel="canonical" href="https://cloudflare.github.io/itty-router-openapi/types/">
+      
       <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.1">
     
@@ -37,6 +39,8 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
+    
+      <link rel="stylesheet" href="../termynal.css">
     
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -66,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#2-using-javascript-types" class="md-skip">
+        <a href="#native-types" class="md-skip">
           Skip to content
         </a>
       
@@ -246,36 +250,6 @@
 
   
   
-  
-    <li class="md-nav__item">
-      <a href="../features/" class="md-nav__link">
-        Features
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../basic-usage/" class="md-nav__link">
-        Basic usage
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
     
   
   
@@ -308,29 +282,16 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#2-using-javascript-types" class="md-nav__link">
-    2. Using Javascript types
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Using Javascript types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#example-enumeration" class="md-nav__link">
-    Example Enumeration:
+  <a href="#native-types" class="md-nav__link">
+    Native types
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#example-enumeration-not-case-sensitive" class="md-nav__link">
-    Example Enumeration not case sensitive:
+      
+        <li class="md-nav__item">
+  <a href="#zod-types" class="md-nav__link">
+    Zod types
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -349,37 +310,44 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="../migrating-from-itty-router/" class="md-nav__link">
-        Migrating from itty router
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
     
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
       
       
       
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
       
-        <label class="md-nav__link" for="__nav_6">
+      
+        <label class="md-nav__link" for="__nav_3">
           User Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="User Guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_6">
+        <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
           User Guide
         </label>
@@ -542,18 +510,32 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
       
       
       
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
       
-        <label class="md-nav__link" for="__nav_7">
+      
+        <label class="md-nav__link" for="__nav_4">
           Advanced User Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Advanced User Guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_7">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           Advanced User Guide
         </label>
@@ -580,7 +562,7 @@
   
     <li class="md-nav__item">
       <a href="../advanced-user-guide/openai-plugin/" class="md-nav__link">
-        Openai plugin
+        OpenAI plugin support
       </a>
     </li>
   
@@ -594,7 +576,7 @@
   
     <li class="md-nav__item">
       <a href="../advanced-user-guide/ci-cd-pipelines/" class="md-nav__link">
-        Ci cd pipelines
+        CI/CD
       </a>
     </li>
   
@@ -608,7 +590,7 @@
   
     <li class="md-nav__item">
       <a href="../advanced-user-guide/event-listener-worker/" class="md-nav__link">
-        Event listener worker
+        Worker using addEventListener
       </a>
     </li>
   
@@ -636,7 +618,7 @@
   
     <li class="md-nav__item">
       <a href="../advanced-user-guide/openapi-schema-customizations/" class="md-nav__link">
-        Openapi schema customizations
+        OpenAPI schema customizations
       </a>
     </li>
   
@@ -645,6 +627,21 @@
           
         </ul>
       </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migrating-from-itty-router/" class="md-nav__link">
+        Migrating existing itty-router applications
+      </a>
     </li>
   
 
@@ -674,29 +671,16 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#2-using-javascript-types" class="md-nav__link">
-    2. Using Javascript types
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Using Javascript types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#example-enumeration" class="md-nav__link">
-    Example Enumeration:
+  <a href="#native-types" class="md-nav__link">
+    Native types
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#example-enumeration-not-case-sensitive" class="md-nav__link">
-    Example Enumeration not case sensitive:
+      
+        <li class="md-nav__item">
+  <a href="#zod-types" class="md-nav__link">
+    Zod types
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -716,68 +700,142 @@
 
   <h1>Types</h1>
 
-<h3 id="2-using-javascript-types">2. Using Javascript types<a class="headerlink" href="#2-using-javascript-types" title="Permanent link">&para;</a></h3>
-<p>If you are planning on using this lib with Typescript, then declaring schemas is even easier than with Javascript
-because instead of importing the parameter types, you can use the native Typescript data types <code>String</code>, <code>Number</code>,
-or <code>Boolean</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ToDoList</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<p>Types are used everywhere in this framework, from defining parameters to response formats.</p>
+<p>There are 2 API's to define types in itty-router-open, but we recommend that you choose one and stick to it.</p>
+<p>Native types, are types developed exclusive to this framework, they are pretty straight forward and easy to use, but are
+some limitations.</p>
+<p>Zod types, are as the name says, types from the <a href="https://github.com/colinhacks/zod">Zod</a> library, they are much more
+verbose
+than the native types, but allows you to define almost everything.</p>
+<h2 id="native-types">Native types<a class="headerlink" href="#native-types" title="Permanent link">&para;</a></h2>
+<p>All of theses Types can be imported like:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Email</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th align="center">Arguments</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Num</td>
+<td align="center">description example default</td>
+</tr>
+<tr>
+<td>Int</td>
+<td align="center">description example default</td>
+</tr>
+<tr>
+<td>Str</td>
+<td align="center">description example default format</td>
+</tr>
+<tr>
+<td>Enumeration</td>
+<td align="center">description example default values enumCaseSensitive</td>
+</tr>
+<tr>
+<td>DateTime</td>
+<td align="center">description example default</td>
+</tr>
+<tr>
+<td>DateOnly</td>
+<td align="center">description example default</td>
+</tr>
+<tr>
+<td>Bool</td>
+<td align="center">description example default</td>
+</tr>
+<tr>
+<td>Regex</td>
+<td align="center">description example default pattern patternError</td>
+</tr>
+<tr>
+<td>Email</td>
+<td align="center">description example default</td>
+</tr>
+<tr>
+<td>Uuid</td>
+<td align="center">description example default</td>
+</tr>
+<tr>
+<td>Hostname</td>
+<td align="center">description example default</td>
+</tr>
+<tr>
+<td>Ipv4</td>
+<td align="center">description example default</td>
+</tr>
+<tr>
+<td>Ipv6</td>
+<td align="center">description example default</td>
+</tr>
+</tbody>
+</table>
+<p>As an example, you would define a string query parameter as the following:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Query</span><span class="p">,</span><span class="w"> </span><span class="nx">Str</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">queryDescription</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="nx">Str</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Task description&#39;</span><span class="w"> </span><span class="p">})</span>
+</code></pre></div>
+<p>Then use it in a endpoint like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Query</span><span class="p">,</span><span class="w"> </span><span class="nx">Str</span><span class="p">,</span><span class="w"> </span><span class="nx">Int</span><span class="p">,</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">Example</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;ToDo&#39;</span><span class="p">],</span>
-<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;List all ToDos&#39;</span><span class="p">,</span>
 <span class="w">    </span><span class="nx">parameters</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nx">page</span><span class="o">:</span><span class="w"> </span><span class="kt">Query</span><span class="p">(</span><span class="nb">Number</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Page number&#39;</span><span class="p">,</span>
-<span class="w">        </span><span class="nx">default</span><span class="o">:</span><span class="w"> </span><span class="kt">1</span><span class="p">,</span>
-<span class="w">        </span><span class="nx">required</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">,</span>
-<span class="w">      </span><span class="p">}),</span>
+<span class="w">      </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="kt">queryDescription</span><span class="p">,</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="nx">responses</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="s1">&#39;200&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nx">currentPage</span><span class="o">:</span><span class="w"> </span><span class="kt">Number</span><span class="p">,</span>
-<span class="w">          </span><span class="nx">nextPage</span><span class="o">:</span><span class="w"> </span><span class="kt">Number</span><span class="p">,</span>
-<span class="w">          </span><span class="nx">results</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="nb">String</span><span class="p">],</span>
-<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{},</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">  </span><span class="p">}</span>
-<span class="w">  </span><span class="c1">// ...</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">object</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">validatedDescription</span><span class="o">:</span><span class="w"> </span><span class="kt">data.query.description</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<h4 id="example-enumeration">Example Enumeration:<a class="headerlink" href="#example-enumeration" title="Permanent link">&para;</a></h4>
-<p>Enumerations like the other types can be defined both inline or as a variable outside the schema.</p>
-<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Enumeration</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<h2 id="zod-types">Zod types<a class="headerlink" href="#zod-types" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>Zod is a TypeScript-first schema declaration and validation library. I'm using the term "schema" to broadly refer to
+any data type, from a simple string to a complex nested object.</p>
+<p>Zod is designed to be as developer-friendly as possible. The goal is to eliminate duplicative type declarations. With
+Zod, you declare a validator once and Zod will automatically infer the static TypeScript type. It's easy to compose
+simpler types into complex data structures.</p>
+</blockquote>
+<p>Zod types can be used everywhere the Native types are used (because native types are actually just Zod wrappers).</p>
+<p>Zod allows you to have a much more granular control over what is a valid input or not.</p>
+<p>For example you could define a <code>Query</code> parameter that only accepts number bellow or equal to 10 with the following line.</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Query</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">z</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;zod&#39;</span>
 
-<span class="nx">parameters</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nx">format</span><span class="o">:</span><span class="w"> </span><span class="kt">Query</span><span class="p">(</span><span class="nx">Enumeration</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Format the response should be returned&#39;</span><span class="p">,</span>
-<span class="w">    </span><span class="k">default</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;json&#39;</span><span class="p">,</span>
-<span class="w">    </span><span class="nx">required</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">,</span>
-<span class="w">    </span><span class="nx">values</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nx">json</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;json&#39;</span><span class="p">,</span>
-<span class="w">      </span><span class="nx">csv</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;csv&#39;</span><span class="p">,</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">queryResponseLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="nx">z</span><span class="p">.</span><span class="nx">coerce</span><span class="p">.</span><span class="kt">number</span><span class="p">().</span><span class="nx">lte</span><span class="p">(</span><span class="mf">10</span><span class="p">))</span>
+</code></pre></div>
+<p>Then use it in a endpoint like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">Example</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">parameters</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">limit</span><span class="o">:</span><span class="w"> </span><span class="kt">queryResponseLimit</span><span class="p">,</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">  </span><span class="p">}),</span>
-<span class="p">}</span>
-</code></pre></div>
-<h4 id="example-enumeration-not-case-sensitive">Example Enumeration not case sensitive:<a class="headerlink" href="#example-enumeration-not-case-sensitive" title="Permanent link">&para;</a></h4>
-<p>This way, the client can call any combination of upper and lower characters and it will still be a valid input.</p>
-<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Enumeration</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<span class="w">    </span><span class="nx">responses</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s1">&#39;200&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">}</span>
 
-<span class="kd">const</span><span class="w"> </span><span class="nx">formatsEnum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Enumeration</span><span class="p">({</span>
-<span class="w">  </span><span class="nx">enumCaseSensitive</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">,</span>
-<span class="w">  </span><span class="nx">values</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nx">json</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;json&#39;</span><span class="p">,</span>
-<span class="w">    </span><span class="nx">csv</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;csv&#39;</span><span class="p">,</span>
-<span class="w">  </span><span class="p">},</span>
-<span class="p">})</span>
-
-<span class="nx">parameters</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nx">format</span><span class="o">:</span><span class="w"> </span><span class="kt">Query</span><span class="p">(</span><span class="nx">formatsEnum</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Format the response should be returned&#39;</span><span class="p">,</span>
-<span class="w">    </span><span class="k">default</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;json&#39;</span><span class="p">,</span>
-<span class="w">    </span><span class="nx">required</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">,</span>
-<span class="w">  </span><span class="p">}),</span>
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">object</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">validatedLimit</span><span class="o">:</span><span class="w"> </span><span class="kt">data.query.limit</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
 
@@ -800,7 +858,7 @@ or <code>Boolean</code>.</p>
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../basic-usage/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Basic usage" rel="prev">
+        <a href=".." class="md-footer__link md-footer__link--prev" aria-label="Previous: itty-router-openapi" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -809,20 +867,20 @@ or <code>Boolean</code>.</p>
               <span class="md-footer__direction">
                 Previous
               </span>
-              Basic usage
+              itty-router-openapi
             </div>
           </div>
         </a>
       
       
         
-        <a href="../migrating-from-itty-router/" class="md-footer__link md-footer__link--next" aria-label="Next: Migrating from itty router" rel="next">
+        <a href="../user-guide/first-steps/" class="md-footer__link md-footer__link--next" aria-label="Next: First steps" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Migrating from itty router
+              First steps
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -866,10 +924,12 @@ or <code>Boolean</code>.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["search.suggest", "search.highlight", "content.tabs.link"], "search": "../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["search.suggest", "search.highlight", "content.tabs.link", "navigation.indexes", "content.tooltips", "navigation.path", "content.code.annotate", "content.code.copy", "content.code.select"], "search": "../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
       <script src="../assets/javascripts/bundle.9c69f0bc.min.js"></script>
+      
+        <script src="../termynal.js"></script>
       
     
   </body>

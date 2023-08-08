@@ -10,12 +10,14 @@
       
       
       
+        <link rel="canonical" href="https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/openapi-schema-customizations/">
+      
       <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.1">
     
     
       
-        <title>Openapi schema customizations - itty-router-openapi</title>
+        <title>OpenAPI schema customizations - itty-router-openapi</title>
       
     
     
@@ -37,6 +39,8 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
+    
+      <link rel="stylesheet" href="../../termynal.css">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -66,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#4-core-openapi-schema-customizations" class="md-skip">
+        <a href="#openapi-schema-customizations" class="md-skip">
           Skip to content
         </a>
       
@@ -99,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Openapi schema customizations
+              OpenAPI schema customizations
             
           </span>
         </div>
@@ -248,53 +252,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/" class="md-nav__link">
-        Features
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../basic-usage/" class="md-nav__link">
-        Basic usage
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../types/" class="md-nav__link">
         Types
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../migrating-from-itty-router/" class="md-nav__link">
-        Migrating from itty router
       </a>
     </li>
   
@@ -311,18 +270,40 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
       
       
       
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
       
-        <label class="md-nav__link" for="__nav_6">
+      
+        <label class="md-nav__link" for="__nav_3">
           User Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="User Guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_6">
+        <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
           User Guide
         </label>
@@ -487,18 +468,32 @@
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
       
       
       
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
       
-        <label class="md-nav__link" for="__nav_7">
+      
+        <label class="md-nav__link" for="__nav_4">
           Advanced User Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Advanced User Guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_7">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           Advanced User Guide
         </label>
@@ -525,7 +520,7 @@
   
     <li class="md-nav__item">
       <a href="../openai-plugin/" class="md-nav__link">
-        Openai plugin
+        OpenAI plugin support
       </a>
     </li>
   
@@ -539,7 +534,7 @@
   
     <li class="md-nav__item">
       <a href="../ci-cd-pipelines/" class="md-nav__link">
-        Ci cd pipelines
+        CI/CD
       </a>
     </li>
   
@@ -553,7 +548,7 @@
   
     <li class="md-nav__item">
       <a href="../event-listener-worker/" class="md-nav__link">
-        Event listener worker
+        Worker using addEventListener
       </a>
     </li>
   
@@ -586,46 +581,12 @@
       <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
       
       
+        
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Openapi schema customizations
-          <span class="md-nav__icon md-icon"></span>
-        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Openapi schema customizations
+        OpenAPI schema customizations
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#4-core-openapi-schema-customizations" class="md-nav__link">
-    4. Core openapi schema customizations
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-hiding-routes-in-the-openapi-schema" class="md-nav__link">
-    5. Hiding routes in the OpenAPI schema
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -634,6 +595,21 @@
           
         </ul>
       </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migrating-from-itty-router/" class="md-nav__link">
+        Migrating existing itty-router applications
+      </a>
     </li>
   
 
@@ -655,28 +631,8 @@
   
   
   
+    
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#4-core-openapi-schema-customizations" class="md-nav__link">
-    4. Core openapi schema customizations
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-hiding-routes-in-the-openapi-schema" class="md-nav__link">
-    5. Hiding routes in the OpenAPI schema
-  </a>
-  
-</li>
-      
-    </ul>
   
 </nav>
                   </div>
@@ -690,10 +646,8 @@
                 
 
 
-  <h1>Openapi schema customizations</h1>
-
-<h3 id="4-core-openapi-schema-customizations">4. Core openapi schema customizations<a class="headerlink" href="#4-core-openapi-schema-customizations" title="Permanent link">&para;</a></h3>
-<p>Besides adding a schema to your endpoints, its also recomended you customize your schema. This can be done by passing
+<h1 id="openapi-schema-customizations">OpenAPI schema customizations<a class="headerlink" href="#openapi-schema-customizations" title="Permanent link">&para;</a></h1>
+<p>Besides adding a schema to your endpoints, its also recommended you customize your schema. This can be done by passing
 the schema argument when creating your router. All <a href="https://swagger.io/specification/#schema">OpenAPI Fixed Fields</a> are
 available.</p>
 <p>The example bellow will change the schema title, and add a Bearer token authentication to all endpoints</p>
@@ -719,18 +673,6 @@ available.</p>
 <span class="w">  </span><span class="p">},</span>
 <span class="p">})</span>
 </code></pre></div>
-<h3 id="5-hiding-routes-in-the-openapi-schema">5. Hiding routes in the OpenAPI schema<a class="headerlink" href="#5-hiding-routes-in-the-openapi-schema" title="Permanent link">&para;</a></h3>
-<p>Hiding routes can be archived by registering your endpoints in the original <code>itty-router</code>,as shown here:</p>
-<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
-
-<span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">()</span>
-
-<span class="nx">router</span><span class="p">.</span><span class="nx">original</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span>
-<span class="w">  </span><span class="s1">&#39;/todos/:id&#39;</span><span class="p">,</span>
-<span class="w">  </span><span class="p">({</span><span class="w"> </span><span class="nx">params</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Response</span><span class="p">(</span><span class="sb">`Todo #</span><span class="si">${</span><span class="nx">params</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">)</span>
-<span class="p">)</span>
-</code></pre></div>
-<p>This endpoint will still be accessible, but will not be shown in the schema.</p>
 
 
 
@@ -765,6 +707,21 @@ available.</p>
           </div>
         </a>
       
+      
+        
+        <a href="../../migrating-from-itty-router/" class="md-footer__link md-footer__link--next" aria-label="Next: Migrating existing itty-router applications" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Migrating existing itty-router applications
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
       
     </nav>
   
@@ -802,10 +759,12 @@ available.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["search.suggest", "search.highlight", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["search.suggest", "search.highlight", "content.tabs.link", "navigation.indexes", "content.tooltips", "navigation.path", "content.code.annotate", "content.code.copy", "content.code.select"], "search": "../../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.9c69f0bc.min.js"></script>
+      
+        <script src="../../termynal.js"></script>
       
     
   </body>

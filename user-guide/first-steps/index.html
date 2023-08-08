@@ -10,6 +10,8 @@
       
       
       
+        <link rel="canonical" href="https://cloudflare.github.io/itty-router-openapi/user-guide/first-steps/">
+      
       <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.1">
     
@@ -38,6 +40,8 @@
       
     
     
+      <link rel="stylesheet" href="../../termynal.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -64,6 +68,11 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
+      
+        
+        <a href="#creating-your-first-endpoint" class="md-skip">
+          Skip to content
+        </a>
       
     </div>
     <div data-md-component="announce">
@@ -243,53 +252,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../features/" class="md-nav__link">
-        Features
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../basic-usage/" class="md-nav__link">
-        Basic usage
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../types/" class="md-nav__link">
         Types
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../migrating-from-itty-router/" class="md-nav__link">
-        Migrating from itty router
       </a>
     </li>
   
@@ -308,18 +272,40 @@
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
       
       
       
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
       
-        <label class="md-nav__link" for="__nav_6">
+      
+        <label class="md-nav__link" for="__nav_3">
           User Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="User Guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_6">
+        <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
           User Guide
         </label>
@@ -338,9 +324,38 @@
       
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          First steps
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         First steps
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creating-your-first-endpoint" class="md-nav__link">
+    Creating your first endpoint
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -490,18 +505,32 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
       
       
       
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
       
-        <label class="md-nav__link" for="__nav_7">
+      
+        <label class="md-nav__link" for="__nav_4">
           Advanced User Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Advanced User Guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_7">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           Advanced User Guide
         </label>
@@ -528,7 +557,7 @@
   
     <li class="md-nav__item">
       <a href="../../advanced-user-guide/openai-plugin/" class="md-nav__link">
-        Openai plugin
+        OpenAI plugin support
       </a>
     </li>
   
@@ -542,7 +571,7 @@
   
     <li class="md-nav__item">
       <a href="../../advanced-user-guide/ci-cd-pipelines/" class="md-nav__link">
-        Ci cd pipelines
+        CI/CD
       </a>
     </li>
   
@@ -556,7 +585,7 @@
   
     <li class="md-nav__item">
       <a href="../../advanced-user-guide/event-listener-worker/" class="md-nav__link">
-        Event listener worker
+        Worker using addEventListener
       </a>
     </li>
   
@@ -584,7 +613,7 @@
   
     <li class="md-nav__item">
       <a href="../../advanced-user-guide/openapi-schema-customizations/" class="md-nav__link">
-        Openapi schema customizations
+        OpenAPI schema customizations
       </a>
     </li>
   
@@ -593,6 +622,21 @@
           
         </ul>
       </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migrating-from-itty-router/" class="md-nav__link">
+        Migrating existing itty-router applications
+      </a>
     </li>
   
 
@@ -615,6 +659,21 @@
   
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creating-your-first-endpoint" class="md-nav__link">
+    Creating your first endpoint
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -629,7 +688,66 @@
 
   <h1>First steps</h1>
 
+<p>First, create a new directory, and use <a href="https://github.com/cloudflare/wrangler2">wrangler</a>, our command line tool for
+building Cloudflare Workers, which we assume
+you have <a href="https://github.com/cloudflare/wrangler2#installation">installed</a> already, to initialize the project:</p>
+<div class="termy" data-termynal data-ty-macos data-ty-title="bash"><span data-ty>mkdir openapi-example &amp;&amp; cd openapi-example<br>wrangler init<br></span><span data-ty="progress"></span><span data-ty></span></div>
 
+<p>And install itty-router-openapi</p>
+<div class="termy" data-termynal data-ty-macos data-ty-title="bash"><span data-ty>npm i @cloudflare/itty-router-openapi --save<br></span><span data-ty="progress"></span><span data-ty></span></div>
+
+<p>Then in the <code>src/index.ts</code> place this, the smallest router you can have in itty-router-openapi.</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">()</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">fetch</span><span class="o">:</span><span class="w"> </span><span class="kt">router.handle</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Now when running <code>wrangler dev</code> you see server logs</p>
+<div class="termy" data-termynal data-ty-macos data-ty-title="bash"><span data-ty="input" data-ty-prompt="$">wrangler dev</span><span data-ty><br> ⛅️ wrangler 3.4.0<br>------------------<br>wrangler dev now uses local mode by default, powered by 🔥 Miniflare and 👷 workerd.<br>To run an edge preview session for your Worker, use wrangler dev --remote<br>⎔ Starting local server...<br>⎔ Reloading local server...<br>[mf:inf] Ready on http://127.0.0.1:8787/<br>[mf:inf] Updated and ready on http://127.0.0.1:8787/<br></span></div>
+
+<p>You can now open <code>http://127.0.0.1:8787/docs</code> in your browser to see the Swagger UI, that will hold
+your future endpoints.</p>
+<p>// TODO screenshot /docs</p>
+<p>You can also open the <code>http://127.0.0.1:8787/redocs</code> to see an alternative version with the same endpoints.</p>
+<p>// TODO screenshot /redocs</p>
+<h2 id="creating-your-first-endpoint">Creating your first endpoint<a class="headerlink" href="#creating-your-first-endpoint" title="Permanent link">&para;</a></h2>
+<p>This is the simplest endpoint you can create, that don't receive any parameters, neither have a response format
+defined.</p>
+<p>As defined in the OpenAPI spec, all endpoint must have at least 1 response schema, and all response schemas
+must have a description.</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ListEndpoint</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">responses</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s1">&#39;200&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Successfull response&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">object</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;cloudflare&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;workers&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>After this you must register the endpoint in the initial router, so your <code>src/index.ts</code> should look something
+like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">()</span>
+<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/list/&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">ListEndpoint</span><span class="p">)</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">fetch</span><span class="o">:</span><span class="w"> </span><span class="kt">router.handle</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Now when opening the <code>/docs</code> you will see your new endpoint and be able to test it right away.</p>
+<p>// TODO screenshot /docs with endpoint</p>
 
 
 
@@ -650,7 +768,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../../migrating-from-itty-router/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Migrating from itty router" rel="prev">
+        <a href="../../types/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Types" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -659,7 +777,7 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Migrating from itty router
+              Types
             </div>
           </div>
         </a>
@@ -716,10 +834,12 @@
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["search.suggest", "search.highlight", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["search.suggest", "search.highlight", "content.tabs.link", "navigation.indexes", "content.tooltips", "navigation.path", "content.code.annotate", "content.code.copy", "content.code.select"], "search": "../../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.9c69f0bc.min.js"></script>
+      
+        <script src="../../termynal.js"></script>
       
     
   </body>

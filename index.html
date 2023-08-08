@@ -10,6 +10,8 @@
       
       
       
+        <link rel="canonical" href="https://cloudflare.github.io/itty-router-openapi/">
+      
       <link rel="icon" href="assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.1">
     
@@ -37,6 +39,8 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
+    
+      <link rel="stylesheet" href="termynal.css">
     
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -267,8 +271,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    Features
+  <a href="#why-create-another-router-library-for-workers" class="md-nav__link">
+    Why create another router library for workers?
   </a>
   
 </li>
@@ -280,40 +284,24 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feedback-and-contributions" class="md-nav__link">
+    Feedback and contributions
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
       
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="features/" class="md-nav__link">
-        Features
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="basic-usage/" class="md-nav__link">
-        Basic usage
-      </a>
     </li>
   
 
@@ -340,37 +328,44 @@
   
   
   
-    <li class="md-nav__item">
-      <a href="migrating-from-itty-router/" class="md-nav__link">
-        Migrating from itty router
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
     
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
       
       
       
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
       
-        <label class="md-nav__link" for="__nav_6">
+      
+        <label class="md-nav__link" for="__nav_3">
           User Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="User Guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_6">
+        <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
           User Guide
         </label>
@@ -533,18 +528,32 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
       
       
       
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
       
-        <label class="md-nav__link" for="__nav_7">
+      
+        <label class="md-nav__link" for="__nav_4">
           Advanced User Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Advanced User Guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_7">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           Advanced User Guide
         </label>
@@ -571,7 +580,7 @@
   
     <li class="md-nav__item">
       <a href="advanced-user-guide/openai-plugin/" class="md-nav__link">
-        Openai plugin
+        OpenAI plugin support
       </a>
     </li>
   
@@ -585,7 +594,7 @@
   
     <li class="md-nav__item">
       <a href="advanced-user-guide/ci-cd-pipelines/" class="md-nav__link">
-        Ci cd pipelines
+        CI/CD
       </a>
     </li>
   
@@ -599,7 +608,7 @@
   
     <li class="md-nav__item">
       <a href="advanced-user-guide/event-listener-worker/" class="md-nav__link">
-        Event listener worker
+        Worker using addEventListener
       </a>
     </li>
   
@@ -627,7 +636,7 @@
   
     <li class="md-nav__item">
       <a href="advanced-user-guide/openapi-schema-customizations/" class="md-nav__link">
-        Openapi schema customizations
+        OpenAPI schema customizations
       </a>
     </li>
   
@@ -636,6 +645,21 @@
           
         </ul>
       </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="migrating-from-itty-router/" class="md-nav__link">
+        Migrating existing itty-router applications
+      </a>
     </li>
   
 
@@ -667,8 +691,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    Features
+  <a href="#why-create-another-router-library-for-workers" class="md-nav__link">
+    Why create another router library for workers?
   </a>
   
 </li>
@@ -676,6 +700,20 @@
         <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     Installation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    Example
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feedback-and-contributions" class="md-nav__link">
+    Feedback and contributions
   </a>
   
 </li>
@@ -695,27 +733,148 @@
 
 
 <h1 id="itty-router-openapi">itty-router-openapi<a class="headerlink" href="#itty-router-openapi" title="Permanent link">&para;</a></h1>
-<p>This library provides an easy and compact OpenAPI 3 schema generator and validator
-for <a href="https://developers.cloudflare.com/workers/">Cloudflare Workers</a>.</p>
-<p><code>itty-router-openapi</code> is built on top of <a href="https://github.com/kwhitley/itty-router">itty-router</a> and extends some of its
+<p align="center">
+    <em>OpenAPI 3 and 3.1 schema generator and validator for <a href="https://developers.cloudflare.com/workers/" target="_blank">Cloudflare Workers</a></em>
+</p>
+
+<hr />
+<p><strong>Documentation</strong>: <a href="https://cloudflare.github.io/itty-router-openapi/">https://cloudflare.github.io/itty-router-openapi/</a></p>
+<p><strong>Source Code</strong>: <a href="https://github.com/cloudflare/itty-router-openapi/">https://github.com/cloudflare/itty-router-openapi/</a></p>
+<hr />
+<p><a href="https://github.com/cloudflare/itty-router-openapi">itty-router-openapi</a> is a library that
+extends <a href="https://github.com/kwhitley/itty-router">itty-router</a>, a powerful and lightweight routing system for Cloudflare
+Workers, already familiar to many developers, and adds an easy-to-use and
+compact <a href="https://swagger.io/specification/">OpenAPI 3 and 3.1</a> schema generator and
+validator.</p>
+<p>itty-route-openapi can also have class-based routes, allowing the developer to quickly build on top of and extend other
+endpoints while reusing code.</p>
+<p>The key features are:</p>
+<ul>
+<li>OpenAPI 3 and 3.1 schema generator</li>
+<li><a href="https://cloudflare.github.io/itty-router-openapi/user-guide/query-parameters/">Query</a>, 
+<a href="https://cloudflare.github.io/itty-router-openapi/user-guide/path-parameters/">Path</a>, 
+<a href="https://cloudflare.github.io/itty-router-openapi/user-guide/request-body/">Request Body</a> and 
+<a href="https://cloudflare.github.io/itty-router-openapi/user-guide/header-parameters/">Header</a> validator</li>
+<li>Fully written in typescript</li>
+<li>Class-based endpoints</li>
+<li>Out of the box <a href="https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/openai-plugin/">OpenAI plugin support</a></li>
+<li><a href="https://cloudflare.github.io/itty-router-openapi/migrating-from-itty-router/">Drop-in replacement</a> for existing itty-router applications</li>
+</ul>
+<p>A template repository is available
+at <a href="https://github.com/cloudflare/workers-sdk/tree/main/templates/worker-openapi">cloudflare/workers-sdk</a>,
+with a live demo <a href="https://worker-openapi-example.radar.cloudflare.com/docs">here</a>.</p>
+<h2 id="why-create-another-router-library-for-workers">Why create another router library for workers?<a class="headerlink" href="#why-create-another-router-library-for-workers" title="Permanent link">&para;</a></h2>
+<p>This framework built on top of <a href="https://github.com/kwhitley/itty-router">itty-router</a> and extends some of its
 core features, such as adding class-based endpoints. It also provides a simple and iterative path for migrating from old
 applications based on <code>itty-router</code>.</p>
-<p>A template repository is available
-at <a href="https://github.com/cloudflare/workers-sdk/tree/main/templates/worker-openapi">cloudflare/templates</a>,
-with a live demo <a href="https://worker-openapi-example.radar.cloudflare.com/docs">here</a>.</p>
-<p>There is a Tutorial Section <a href="https://github.com/cloudflare/itty-router-openapi/blob/main/TUTORIAL.md">available here</a>!</p>
-<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h2>
+<p>Building APIs and maintaining good documentation on the parameters and fields of your API hard. However, there is an
+open standard that makes this documentation process much more effortless, called <a href="https://www.openapis.org/">OpenAPI</a>.</p>
+<p>OpenAPI "defines a standard, language-agnostic interface to RESTful APIs which allows both humans and computers to
+discover and understand the capabilities of the service without access to source code, documentation, or through network
+traffic inspection." This allows other machines to reliably parse those definitions and use the remote APIs easily,
+without additional implementation logic.</p>
+<p>Some of the top requirements for Radar 2.0 were having better API documentation, improving the deployment lifecycle with
+end-to-end testing, and making it publicly available to Cloudflare customers. OpenAPI support quickly jumped out as the
+obvious choice to help us on all these fronts.</p>
+<p>However, we struggled to find an existing OpenAPI framework that checked all our boxes:</p>
 <ul>
-<li>[x] Drop-in replacement for existing itty-router applications</li>
-<li>[x] OpenAPI 3 and 3.1 schema generator and validator</li>
-<li>[x] Query, Path, Request Body and Header validator</li>
-<li>[x] Fully written in typescript</li>
-<li>[x] Class-based endpoints</li>
-<li>[x] Out of the box OpenAI plugin support</li>
+<li>Easy integration with Cloudflare Workers</li>
+<li>Input validation for endpoints parameters</li>
+<li>Actual code-based schema generation (not just generated from comments or manually)</li>
 </ul>
+<p>Since we couldn't find anything that suited us, as many engineers do, we opted for the second-best alternative: building
+our own and open-source it.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>npm i @cloudflare/itty-router-openapi --save
+<p>First, create a new directory, and use <a href="https://github.com/cloudflare/wrangler2">wrangler</a>, our command line tool for
+building Cloudflare Workers, which we assume
+you have <a href="https://github.com/cloudflare/wrangler2#installation">installed</a> already, to initialize the project:</p>
+<div class="termy" data-termynal data-ty-macos data-ty-title="bash"><span data-ty>mkdir openapi-example &amp;&amp; cd openapi-example<br>wrangler init<br></span><span data-ty="progress"></span><span data-ty></span></div>
+
+<p>Now install <code>itty-router-openapi</code>:</p>
+<div class="termy" data-termynal data-ty-macos data-ty-title="bash"><span data-ty>npm i @cloudflare/itty-router-openapi --save<br></span><span data-ty="progress"></span><span data-ty></span></div>
+
+<h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
+<p>Let's create our first class-based endpoint called TaskFetch in src/tasks.ts now.</p>
+<p>Make sure that ‘Task' is global, otherwise you must redefine <code>responses.schema.task</code> with every endpoint.</p>
+<p>When defining the schema, you can interchangeably use native typescript types or use the included types to set required
+flags, descriptions, and other fields.</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="p">,</span><span class="w"> </span><span class="nx">Path</span><span class="p">,</span><span class="w"> </span><span class="nx">Str</span><span class="p">,</span><span class="w"> </span><span class="nx">DateOnly</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">Task</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="w"> </span><span class="nx">example</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;lorem&#39;</span><span class="w"> </span><span class="p">}),</span>
+<span class="w">  </span><span class="nx">slug</span><span class="o">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="w"> </span><span class="nx">required</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">}),</span>
+<span class="w">  </span><span class="nx">completed</span><span class="o">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">due_date</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">DateOnly</span><span class="p">(),</span>
+<span class="p">}</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">TaskFetch</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;Tasks&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Get a single Task by slug&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">parameters</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">taskSlug</span><span class="o">:</span><span class="w"> </span><span class="kt">Path</span><span class="p">(</span><span class="nx">Str</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Task slug&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="p">}),</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">responses</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s1">&#39;200&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">metaData</span><span class="o">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">          </span><span class="nx">task</span><span class="o">:</span><span class="w"> </span><span class="kt">Task</span><span class="p">,</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">Record</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">any</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Retrieve the validated slug</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">taskSlug</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span>
+
+<span class="w">    </span><span class="c1">// Actually fetch a task using the taskSlug</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">metaData</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">meta</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;data&#39;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="nx">task</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;my task&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">slug</span><span class="o">:</span><span class="w"> </span><span class="kt">taskSlug</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;this needs to be done&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">completed</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">due_date</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">().</span><span class="nx">toISOString</span><span class="p">().</span><span class="nx">slice</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="mf">10</span><span class="p">),</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div>
+<p>Now initialize a new OpenAPIRouter, and reference our newly created endpoint as a regular ‘itty-router’ .get route:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">TaskFetch</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./tasks&#39;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">()</span>
+<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/api/tasks/:taskSlug/&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">TaskFetch</span><span class="p">)</span>
+
+<span class="c1">// 404 for everything else</span>
+<span class="nx">router</span><span class="p">.</span><span class="nx">all</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Response</span><span class="p">(</span><span class="s1">&#39;Not Found.&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="kt">404</span><span class="w"> </span><span class="p">}))</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">fetch</span><span class="o">:</span><span class="w"> </span><span class="kt">router.handle</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Finally, run <code>wrangler dev</code> and head to <code>/docs</code> our <code>/redocs</code> with your browser.</p>
+<p>You'll be greeted with a beautiful OpenAPI page that you can use to test and call your new endpoint.</p>
+<p><img alt="Tutorial Example Preview" src="https://raw.githubusercontent.com/cloudflare/itty-router-openapi/main/docs/images/tutorial-example.png" /></p>
+<p>Pretty easy, right?</p>
+<h2 id="feedback-and-contributions">Feedback and contributions<a class="headerlink" href="#feedback-and-contributions" title="Permanent link">&para;</a></h2>
+<p><a href="https://github.com/cloudflare/itty-router-openapi">itty-router-openapi</a> aims to be at the core of new APIs built using
+Workers and define a pattern to allow everyone to
+have an OpenAPI-compliant schema without worrying about implementation details or reinventing the wheel.</p>
+<p>itty-router-openapi is considered stable and production ready and is being used with
+the <a href="https://developers.cloudflare.com/radar/">Radar 2.0 public API</a>.</p>
+<p>Currently this package is maintained by the <a href="https://radar.cloudflare.com/">Cloudflare Radar Team</a> and features are
+prioritized based on the Radar roadmap.</p>
+<p>Nonetheless you can still open pull requests or issues in this repository and they will get reviewed.</p>
+<p>You can also talk to us in the <a href="https://community.cloudflare.com/">Cloudflare Community</a> or
+the <a href="https://discord.com/channels/595317990191398933/1035553707116478495">Radar Discord Channel</a></p>
 
 
 
@@ -737,13 +896,13 @@ with a live demo <a href="https://worker-openapi-example.radar.cloudflare.com/do
       
       
         
-        <a href="features/" class="md-footer__link md-footer__link--next" aria-label="Next: Features" rel="next">
+        <a href="types/" class="md-footer__link md-footer__link--next" aria-label="Next: Types" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Features
+              Types
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -787,10 +946,12 @@ with a live demo <a href="https://worker-openapi-example.radar.cloudflare.com/do
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": ".", "features": ["search.suggest", "search.highlight", "content.tabs.link"], "search": "assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": ".", "features": ["search.suggest", "search.highlight", "content.tabs.link", "navigation.indexes", "content.tooltips", "navigation.path", "content.code.annotate", "content.code.copy", "content.code.select"], "search": "assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
       <script src="assets/javascripts/bundle.9c69f0bc.min.js"></script>
+      
+        <script src="termynal.js"></script>
       
     
   </body>
