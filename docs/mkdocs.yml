@@ -1,0 +1,77 @@
+site_name: itty-router-openapi
+site_description: OpenAPI 3 schema generator and validator for Cloudflare Workers
+#site_url: https://itty-router-openapi.opensource.cloudflare.com/
+docs_dir: pages
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to dark mode
+    - scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
+  features:
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+  language: en
+repo_name: cloudflare/itty-router-openapi
+repo_url: https://github.com/cloudflare/itty-router-openapi
+edit_uri: ''
+plugins:
+  - search
+  - markdownextradata:
+      data: data
+nav:
+  - itty-router-openapi: index.md
+  - features.md
+  - basic-usage.md
+  - types.md
+  - migrating-from-itty-router.md
+  - User Guide:
+      - user-guide/first-steps.md
+      - user-guide/path-parameters.md
+      - user-guide/query-parameters.md
+      - user-guide/request-body.md
+      - user-guide/header-parameters.md
+      - user-guide/response-model.md
+      - user-guide/router-options.md
+      - user-guide/nested-routers.md
+      - user-guide/security.md
+      - user-guide/cors.md
+  - Advanced User Guide:
+      - advanced-user-guide/custom-response-formats.md
+      - advanced-user-guide/openai-plugin.md
+      - advanced-user-guide/ci-cd-pipelines.md
+      - advanced-user-guide/event-listener-worker.md
+      - advanced-user-guide/hiding-routes-in-openapi-schema.md
+      - advanced-user-guide/openapi-schema-customizations.md
+markdown_extensions:
+  - toc:
+      permalink: true
+  - markdown.extensions.codehilite:
+      guess_lang: false
+  - mdx_include:
+      base_path: pages
+  - admonition
+  - codehilite
+  - extra
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format ''
+  - pymdownx.tabbed
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/cloudflare/itty-router-openapi
