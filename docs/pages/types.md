@@ -57,7 +57,7 @@ export class Example extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: object) {
+  async handle(request: Request, env: any, context: any, data: any) {
     return {
       validatedDescription: data.query.description
     }
@@ -104,10 +104,12 @@ export class Example extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: object) {
+  async handle(request: Request, env: any, context: any, data: any) {
     return {
       validatedLimit: data.query.limit
     }
   }
 }
 ```
+
+Read the Zod documentation [here](https://zod.dev/)!

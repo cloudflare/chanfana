@@ -76,7 +76,7 @@ import { OpenAPIRouter, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
 export class ToDoList extends OpenAPIRoute {
   static schema = { ... }
 
-  async handle(request: Request, env, context, data: Record<string, any>) {
+  async handle(request: Request, env, context, data: any) {
     const { page } = data
 
     return {
@@ -103,7 +103,7 @@ import { OpenAPIRouter, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
 export class ToDoList extends OpenAPIRoute {
   static schema = { ... }
 
-  async handle(request: Request, data: Record<string, any>) {
+  async handle(request: Request, data: any) {
     const { page } = data
 
     return {

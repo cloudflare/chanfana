@@ -133,12 +133,7 @@ export class TaskFetch extends OpenAPIRoute {
     },
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-    data: Record<string, any>
-  ) {
+  async handle(request: Request, env: any, context: any, data: any) {
     // Retrieve the validated slug
     const { taskSlug } = data
 

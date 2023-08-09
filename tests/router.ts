@@ -70,12 +70,7 @@ export class ToDoList extends OpenAPIRoute {
     },
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-    data: Record<string, any>
-  ) {
+  async handle(request: Request, env: any, context: any, data: any) {
     return {
       params: data,
       results: ['lorem', 'ipsum'],
@@ -103,12 +98,7 @@ export class ToDoGet extends OpenAPIRoute {
     },
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-    data: Record<string, any>
-  ) {
+  async handle(request: Request, env: any, context: any, data: any) {
     return {
       todo: {
         lorem: 'lorem',
@@ -146,12 +136,7 @@ export class ToDoCreate extends OpenAPIRoute {
     },
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-    data: Record<string, any>
-  ) {
+  async handle(request: Request, env: any, context: any, data: any) {
     return {
       todo: data.body,
     }

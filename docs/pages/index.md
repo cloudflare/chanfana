@@ -100,15 +100,7 @@ When defining the schema, you can interchangeably use native typescript types or
 flags, descriptions, and other fields.
 
 ```ts
-import { OpenAPIRoute, Path, Str, DateOnly } from '@cloudflare/itty-router-openapi'
-
-const Task = {
-  name: new Str({ example: 'lorem' }),
-  slug: String,
-  description: new Str({ required: false }),
-  completed: Boolean,
-  due_date: new DateOnly(),
-}
+import { DateOnly, OpenAPIRoute, Path, Str, OpenAPIRouter } from '@cloudflare/itty-router-openapi'
 
 export class TaskFetch extends OpenAPIRoute {
   static schema = {
@@ -123,13 +115,19 @@ export class TaskFetch extends OpenAPIRoute {
       '200': {
         schema: {
           metaData: {},
-          task: Task,
+          task: {
+            name: new Str({ example: 'lorem' }),
+            slug: String,
+            description: new Str({ required: false }),
+            completed: Boolean,
+            due_date: new DateOnly(),
+          },
         },
       },
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(request: Request, env: any, context: any, data: any) {
     // Retrieve the validated slug
     const { taskSlug } = data
 
@@ -147,13 +145,6 @@ export class TaskFetch extends OpenAPIRoute {
     }
   }
 }
-```
-
-Now initialize a new OpenAPIRouter, and reference our newly created endpoint as a regular ‘itty-router’ .get route:
-
-```ts
-import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
-import { TaskFetch } from './tasks'
 
 const router = OpenAPIRouter()
 router.get('/api/tasks/:taskSlug/', TaskFetch)
@@ -164,6 +155,13 @@ router.all('*', () => new Response('Not Found.', { status: 404 }))
 export default {
   fetch: router.handle,
 }
+```
+
+Now initialize a new OpenAPIRouter, and reference our newly created endpoint as a regular ‘itty-router’ .get route:
+
+```ts
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
+import { TaskFetch } from './tasks'
 ```
 
 Finally, run `wrangler dev` and head to `/docs` our `/redocs` with your browser.

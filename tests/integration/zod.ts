@@ -36,12 +36,7 @@ class ToDoGet extends OpenAPIRoute {
     },
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-    data: Record<string, any>
-  ) {
+  async handle(request: Request, env: any, context: any, data: any) {
     return {
       todo: {
         lorem: 'lorem',

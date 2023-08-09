@@ -14,7 +14,7 @@ export class ToDoList extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(request: Request, env: any, context: any, data: any) {
     // ...
   }
 }
@@ -43,7 +43,7 @@ export class ToDoList extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(request: Request, env: any, context: any, data: any) {
     // ...
   }
 }

@@ -1,17 +1,25 @@
-Example query parameter:
+**Please make sure to read the [Types](../types.md) section before continuing.**
 
-```ts
-import { OpenAPIRoute, Query, Int, Str } from '@cloudflare/itty-router-openapi'
 
-export class ToDoList extends OpenAPIRoute {
+You can declare `Query` parameters in the `parameters` property of your endpoint schema.
+
+The validated data is available under `data.query.<name>`, where name is the key used inside the `parameters` property.
+ 
+## Basic parameter
+
+For basic parameters you are fine using the Native types, this should cover almost everything you need to build a big
+project.
+
+```ts hl_lines="8-10"
+import { OpenAPIRoute, Query, Int } from '@cloudflare/itty-router-openapi'
+
+export class ToDoFetch extends OpenAPIRoute {
   static schema = {
     tags: ['ToDo'],
-    summary: 'List all ToDos',
+    summary: 'Fetch a ToDo',
     parameters: {
-      page: Query(Int, {
-        description: 'Page number',
-        default: 1,
-        required: false,
+      limit: Query(Int, {
+        description: 'Number of results to return',
       }),
     },
   }
@@ -20,90 +28,43 @@ export class ToDoList extends OpenAPIRoute {
     request: Request,
     env: any,
     context: any,
-    data: Record<string, any>
+    data: any
   ) {
-    const { page } = data
+    const { limit } = data.query
     // ...
   }
 }
-
-router.get('/todos', ToDoList)
 ```
 
+## Advanced parameters
 
+If you need a more advanced control over the validation, you should use [Zod](https://zod.dev/).
 
-### 2. Using Javascript types
+While the previous example will work well, you might want more control, like make the limit something between 10 and 100.
 
-If you are planning on using this lib with Typescript, then declaring schemas is even easier than with Javascript
-because instead of importing the parameter types, you can use the native Typescript data types `String`, `Number`,
-or `Boolean`.
+```ts hl_lines="9-11"
+import { OpenAPIRoute, Query } from '@cloudflare/itty-router-openapi'
+import {z} from 'zod'
 
-```ts
-export class ToDoList extends OpenAPIRoute {
+export class ToDoFetch extends OpenAPIRoute {
   static schema = {
     tags: ['ToDo'],
-    summary: 'List all ToDos',
+    summary: 'List ToDos',
     parameters: {
-      page: Query(Number, {
-        description: 'Page number',
-        default: 1,
-        required: false,
+      limit: Query(z.coerce.number().gte(10).lte(100), {
+        description: 'Number of results to return',
       }),
     },
-    responses: {
-      '200': {
-        schema: {
-          currentPage: Number,
-          nextPage: Number,
-          results: [String],
-        },
-      },
-    },
   }
-  // ...
-}
-```
 
-## Example Enumeration:
-
-Enumerations like the other types can be defined both inline or as a variable outside the schema.
-
-```ts
-import { Enumeration } from '@cloudflare/itty-router-openapi'
-
-parameters = {
-  format: Query(Enumeration, {
-    description: 'Format the response should be returned',
-    default: 'json',
-    required: false,
-    values: {
-      json: 'json',
-      csv: 'csv',
-    },
-  }),
-}
-```
-
-#### Example Enumeration not case sensitive:
-
-This way, the client can call any combination of upper and lower characters and it will still be a valid input.
-
-```ts
-import { Enumeration } from '@cloudflare/itty-router-openapi'
-
-const formatsEnum = new Enumeration({
-  enumCaseSensitive: false,
-  values: {
-    json: 'json',
-    csv: 'csv',
-  },
-})
-
-parameters = {
-  format: Query(formatsEnum, {
-    description: 'Format the response should be returned',
-    default: 'json',
-    required: false,
-  }),
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: any
+  ) {
+    const { limit } = data.query
+    // ...
+  }
 }
 ```

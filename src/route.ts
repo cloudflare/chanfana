@@ -63,25 +63,33 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
       parameters.body = requestBody
     }
 
-    if (schema.responses) {
-      for (const [key, value] of Object.entries(schema.responses)) {
-        let responseSchema: object = (value.schema as object) || {}
+    if (!schema.responses) {
+      // No response was provided in the schema, default to a blank one
+      schema.responses = {
+        '200': {
+          description: 'Successfull response',
+          schema: {},
+        },
+      }
+    }
 
-        if (!isAnyZodType(responseSchema)) {
-          responseSchema = legacyTypeIntoZod(responseSchema)
-        }
+    for (const [key, value] of Object.entries(schema.responses)) {
+      let responseSchema: object = (value.schema as object) || {}
 
-        const contentType = value.contentType || 'application/json'
+      if (!isAnyZodType(responseSchema)) {
+        responseSchema = legacyTypeIntoZod(responseSchema)
+      }
 
-        // @ts-ignore
-        responses[key] = {
-          description: value.description,
-          content: {
-            [contentType]: {
-              schema: responseSchema,
-            },
+      const contentType = value.contentType || 'application/json'
+
+      // @ts-ignore
+      responses[key] = {
+        description: value.description,
+        content: {
+          [contentType]: {
+            schema: responseSchema,
           },
-        }
+        },
       }
     }
 

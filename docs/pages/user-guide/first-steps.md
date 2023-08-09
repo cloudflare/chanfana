@@ -61,23 +61,11 @@ You can also open the `http://127.0.0.1:8787/redocs` to see an alternative versi
 This is the simplest endpoint you can create, that don't receive any parameters, neither have a response format
 defined.
 
-As defined in the OpenAPI spec, all endpoint must have at least 1 response schema, and all response schemas
-must have a description.
-
 ```ts
 import { OpenAPIRoute } from '@cloudflare/itty-router-openapi'
 
 export class ListEndpoint extends OpenAPIRoute {
-  static schema = {
-    responses: {
-      '200': {
-        description: 'Successfull response',
-        schema: {},
-      },
-    },
-  }
-
-  async handle(request: Request, env: any, context: any, data: object) {
+  async handle(request: Request, env: any, context: any, data: any) {
     return ["cloudflare", "workers"]
   }
 }

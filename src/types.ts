@@ -37,7 +37,7 @@ export declare type OpenAPIRouteSchema = Omit<
 > & {
   requestBody?: Record<string, any>
   parameters?: Record<string, RouteParameter> | RouteParameter[]
-  responses: {
+  responses?: {
     [statusCode: string]: RouteResponse
   }
 }
@@ -81,7 +81,7 @@ export interface ParameterLocation extends StringParameterType {
 }
 
 export interface RouteValidated {
-  data: Record<string, any>
+  data: any
   errors: Record<string, any>
 }
 

@@ -3,6 +3,8 @@ site_description: OpenAPI 3 schema generator and validator for Cloudflare Worker
 site_url: https://cloudflare.github.io/itty-router-openapi/
 docs_dir: pages
 theme:
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
   name: material
   palette:
     - scheme: slate
