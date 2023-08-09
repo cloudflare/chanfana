@@ -1,4 +1,4 @@
-### 8. Cloudflare Worker using addEventListener
+# Worker using addEventListener
 
 If you want to use the `addEventListener` instead of exporting an object, you can define your worker like this:
 

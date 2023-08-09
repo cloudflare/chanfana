@@ -1,76 +1,113 @@
-### 2. Using Javascript types
+Types are used everywhere in this framework, from defining parameters to response formats.
 
-If you are planning on using this lib with Typescript, then declaring schemas is even easier than with Javascript
-because instead of importing the parameter types, you can use the native Typescript data types `String`, `Number`,
-or `Boolean`.
+There are 2 API's to define types in itty-router-open, but we recommend that you choose one and stick to it.
+
+Native types, are types developed exclusive to this framework, they are pretty straight forward and easy to use, but are
+some limitations.
+
+Zod types, are as the name says, types from the [Zod](https://github.com/colinhacks/zod) library, they are much more
+verbose
+than the native types, but allows you to define almost everything.
+
+## Native types
+
+All of theses Types can be imported like:
+```ts
+import { Email } from '@cloudflare/itty-router-openapi'
+```
+
+| Name        |                      Arguments                       |
+|-------------|:----------------------------------------------------:|
+| Num         |             description example default              |
+| Int         |             description example default              |
+| Str         |          description example default format          |
+| Enumeration | description example default values enumCaseSensitive |
+| DateTime    |             description example default              |
+| DateOnly    |             description example default              |
+| Bool        |             description example default              |
+| Regex       |   description example default pattern patternError   |
+| Email       |             description example default              |
+| Uuid        |             description example default              |
+| Hostname    |             description example default              |
+| Ipv4        |             description example default              |
+| Ipv6        |             description example default              |
+
+As an example, you would define a string query parameter as the following:
 
 ```ts
-export class ToDoList extends OpenAPIRoute {
+import { Query, Str } from '@cloudflare/itty-router-openapi'
+
+const queryDescription = Query(Str, { description: 'Task description' })
+```
+
+Then use it in a endpoint like this:
+
+```ts
+import { Query, Str, Int, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
+
+export class Example extends OpenAPIRoute {
   static schema = {
-    tags: ['ToDo'],
-    summary: 'List all ToDos',
     parameters: {
-      page: Query(Number, {
-        description: 'Page number',
-        default: 1,
-        required: false,
-      }),
+      description: queryDescription,
     },
     responses: {
       '200': {
-        schema: {
-          currentPage: Number,
-          nextPage: Number,
-          results: [String],
-        },
+        schema: {},
       },
     },
   }
-  // ...
+
+  async handle(request: Request, env: any, context: any, data: object) {
+    return {
+      validatedDescription: data.query.description
+    }
+  }
 }
 ```
 
+## Zod types
 
-#### Example Enumeration:
+> Zod is a TypeScript-first schema declaration and validation library. I'm using the term "schema" to broadly refer to
+> any data type, from a simple string to a complex nested object.
 
-Enumerations like the other types can be defined both inline or as a variable outside the schema.
+> Zod is designed to be as developer-friendly as possible. The goal is to eliminate duplicative type declarations. With
+> Zod, you declare a validator once and Zod will automatically infer the static TypeScript type. It's easy to compose
+> simpler types into complex data structures.
+
+Zod types can be used everywhere the Native types are used (because native types are actually just Zod wrappers).
+
+Zod allows you to have a much more granular control over what is a valid input or not.
+
+For example you could define a `Query` parameter that only accepts number bellow or equal to 10 with the following line.
 
 ```ts
-import { Enumeration } from '@cloudflare/itty-router-openapi'
+import { Query } from '@cloudflare/itty-router-openapi'
+import {z} from 'zod'
 
-parameters = {
-  format: Query(Enumeration, {
-    description: 'Format the response should be returned',
-    default: 'json',
-    required: false,
-    values: {
-      json: 'json',
-      csv: 'csv',
+const queryResponseLimit = Query(z.coerce.number().lte(10))
+```
+
+Then use it in a endpoint like this:
+
+```ts
+import { OpenAPIRoute } from '@cloudflare/itty-router-openapi'
+
+export class Example extends OpenAPIRoute {
+  static schema = {
+    parameters: {
+      limit: queryResponseLimit,
     },
-  }),
-}
-```
+    responses: {
+      '200': {
+        schema: {},
+      },
+    },
+  }
 
-#### Example Enumeration not case sensitive:
-
-This way, the client can call any combination of upper and lower characters and it will still be a valid input.
-
-```ts
-import { Enumeration } from '@cloudflare/itty-router-openapi'
-
-const formatsEnum = new Enumeration({
-  enumCaseSensitive: false,
-  values: {
-    json: 'json',
-    csv: 'csv',
-  },
-})
-
-parameters = {
-  format: Query(formatsEnum, {
-    description: 'Format the response should be returned',
-    default: 'json',
-    required: false,
-  }),
+  async handle(request: Request, env: any, context: any, data: object) {
+    return {
+      validatedLimit: data.query.limit
+    }
+  }
 }
 ```

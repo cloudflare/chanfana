@@ -1,0 +1,3 @@
+name = "openapi-example"
+main = "src/index.ts"
+compatibility_date = "2023-08-08"

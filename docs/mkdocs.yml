@@ -1,6 +1,6 @@
 site_name: itty-router-openapi
 site_description: OpenAPI 3 schema generator and validator for Cloudflare Workers
-#site_url: https://itty-router-openapi.opensource.cloudflare.com/
+site_url: https://cloudflare.github.io/itty-router-openapi/
 docs_dir: pages
 theme:
   name: material
@@ -21,6 +21,12 @@ theme:
     - search.suggest
     - search.highlight
     - content.tabs.link
+    - navigation.indexes
+    - content.tooltips
+    - navigation.path
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
   icon:
     repo: fontawesome/brands/github
   language: en
@@ -29,14 +35,12 @@ repo_url: https://github.com/cloudflare/itty-router-openapi
 edit_uri: ''
 plugins:
   - search
+  - termynal
   - markdownextradata:
       data: data
 nav:
   - itty-router-openapi: index.md
-  - features.md
-  - basic-usage.md
   - types.md
-  - migrating-from-itty-router.md
   - User Guide:
       - user-guide/first-steps.md
       - user-guide/path-parameters.md
@@ -55,6 +59,7 @@ nav:
       - advanced-user-guide/event-listener-worker.md
       - advanced-user-guide/hiding-routes-in-openapi-schema.md
       - advanced-user-guide/openapi-schema-customizations.md
+  - migrating-from-itty-router.md
 markdown_extensions:
   - toc:
       permalink: true

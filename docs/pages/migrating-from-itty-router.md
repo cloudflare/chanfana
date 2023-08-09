@@ -1,4 +1,4 @@
-## Migrating from existing `itty-router` applications
+# Migrating existing itty-router applications
 
 All it takes is changing one line of code. After installing `itty-router-openapi` replace `Router` with the
 new `OpenAPIRouter` function.
@@ -20,5 +20,5 @@ router.get('/todos/:id', ({ params }) => new Response(`Todo #${params.id}`))
 // ...
 ```
 
-Now, when running the application, go to `/docs`. You will see your endpoints listed with the query parameters parsed
-and ready to be invoked.
+Now, when running the application, go to `/docs`. You will see your endpoints listed with the Path parameters
+automatically parsed and ready to be invoked.

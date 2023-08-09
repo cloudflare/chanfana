@@ -1,6 +1,4 @@
-### 9. Custom responses formats
-
-Describing a binary file:
+## Describing a binary file:
 
 ```ts
 import { OpenAPIRoute, Str } from '@cloudflare/itty-router-openapi'
@@ -16,13 +14,13 @@ export class ToDoList extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, data: Record<string, any>) {
+  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
     // ...
   }
 }
 ```
 
-Describing a XML response:
+## Describing a XML response:
 
 ```ts
 import { OpenAPIRoute, Str } from '@cloudflare/itty-router-openapi'
@@ -45,7 +43,7 @@ export class ToDoList extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, data: Record<string, any>) {
+  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
     // ...
   }
 }

@@ -1,4 +1,4 @@
-### 6. Accessing the `openapi.json` schema
+# CI/CD
 
 For CI/CD pipelines, you can read the complete `openapi.json` schemas by calling the `schema` property from the router
 instance.

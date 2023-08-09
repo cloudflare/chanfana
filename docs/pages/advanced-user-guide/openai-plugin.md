@@ -1,4 +1,4 @@
-## OpenAI plugin support
+# OpenAI plugin support
 
 In the `aiPlugin` field you can define all fields from
 the [plugin manifest](https://platform.openai.com/docs/plugins/getting-started)
