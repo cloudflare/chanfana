@@ -27,6 +27,10 @@ export function convertParams(field: any, params: any): ZodType {
     // @ts-ignore
     field = field.default(params.default)
 
+  if (params.example) {
+    field = field.openapi({ example: params.example })
+  }
+
   return field
 }
 
