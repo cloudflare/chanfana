@@ -1,4 +1,4 @@
-**Please make sure to read the [Types](../types.md) section before continuing.**
+**Please make sure to read the [Types](../types.md) page before continuing.**
 
 
 You can declare `Query` parameters in the `parameters` property of your endpoint schema.
