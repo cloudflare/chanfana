@@ -6,11 +6,13 @@ import {
   ZodRequestBody,
 } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
 import { RouteConfig } from '@asteasolutions/zod-to-openapi'
+import { OpenAPIObjectConfigV31 } from '@asteasolutions/zod-to-openapi/dist/v3.1/openapi-generator'
+import { OpenAPIObjectConfig } from '@asteasolutions/zod-to-openapi/dist/v3.0/openapi-generator'
 
 export interface RouterOptions {
   base?: string
   routes?: RouteEntry[]
-  schema?: Partial<OpenAPIObject>
+  schema?: Partial<OpenAPIObjectConfigV31 | OpenAPIObjectConfig>
   docs_url?: string
   redoc_url?: string
   openapi_url?: string

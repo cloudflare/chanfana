@@ -1,5 +1,3 @@
-### 7. Nested Routers
-
 For big projects, having all routes in the same file can be chaotic.
 
 In this example we split some routes to a different router

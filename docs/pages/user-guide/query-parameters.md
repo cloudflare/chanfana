@@ -68,3 +68,59 @@ export class ToDoFetch extends OpenAPIRoute {
   }
 }
 ```
+
+## Reusable parameters
+
+While you can define a variable with your parameter and then reference it in more than 1 endpoint, you will notice that
+you have to repeat the parameter name in all endpoints.
+
+```ts hl_lines="4-6 13"
+import { OpenAPIRoute, Query } from '@cloudflare/itty-router-openapi'
+import {z} from 'zod'
+
+const queryLimit = Query(z.coerce.number().gte(10).lte(100), {
+  description: 'Number of results to return',
+})
+
+export class ToDoFetch extends OpenAPIRoute {
+  static schema = {
+    tags: ['ToDo'],
+    summary: 'List ToDos',
+    parameters: {
+      limit: queryLimit,
+    },
+  }
+
+  // ...
+}
+```
+
+
+But if you need a parameter in more than a dozen endpoints, it can be tricky to make sure all have the same name.
+
+With this in mind we added support for you to define parameter in an array instead of an object, this way, you define
+the name you want the parameter to have in the variable and then reuse it everywhere:
+
+
+```ts hl_lines="5 13-15"
+import { OpenAPIRoute, Path } from '@cloudflare/itty-router-openapi'
+import {z} from 'zod'
+
+const queryLimit = Query(z.coerce.number().gte(10).lte(100), {
+  name: 'limit',
+  description: 'Number of results to return',
+})
+
+export class ToDoFetch extends OpenAPIRoute {
+  static schema = {
+    tags: ['ToDo'],
+    summary: 'List ToDos',
+    parameters: [
+      queryLimit,
+    ],
+  }
+
+  // ...
+}
+```
+
