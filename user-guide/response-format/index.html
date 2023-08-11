@@ -69,11 +69,6 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
-        
-        <a href="#example-responses" class="md-skip">
-          Skip to content
-        </a>
-      
     </div>
     <div data-md-component="announce">
       
@@ -378,38 +373,9 @@
       
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Response format
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
       <a href="./" class="md-nav__link md-nav__link--active">
         Response format
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#example-responses" class="md-nav__link">
-    Example responses:
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -657,21 +623,6 @@
   
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#example-responses" class="md-nav__link">
-    Example responses:
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -686,41 +637,73 @@
 
   <h1>Response format</h1>
 
-<h4 id="example-responses">Example responses:<a class="headerlink" href="#example-responses" title="Permanent link">&para;</a></h4>
-<p>Example with common values</p>
-<div class="highlight"><pre><span></span><code><span class="nx">responses</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="s1">&#39;200&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nx">result</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nx">series</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nx">timestamps</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;2023-01-01 00:00:00&#39;</span><span class="p">],</span>
-<span class="w">          </span><span class="nx">values</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.56</span><span class="p">],</span>
+<p><strong>Please make sure to read the <a href="../../types/">Types</a> page before continuing.</strong></p>
+<p>As said in the <a href="../../types/">Types</a> page, you can define response schemas using Native types or Zod types.</p>
+<p>But the easier way for this is to just define it using javascript variables, or copy paste your endpoints response after
+calling it.</p>
+<p>Here's an example of a response schema using variables</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">TimeseriesFetch</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;ToDo&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Fetch a ToDo&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">responses</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s1">&#39;200&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Timeseries response&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">series</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nx">timestamps</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;2023-01-01 00:00:00&#39;</span><span class="p">],</span>
+<span class="w">            </span><span class="nx">values</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.56</span><span class="p">],</span>
+<span class="w">          </span><span class="p">},</span>
 <span class="w">        </span><span class="p">},</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// ...</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Example with defined types</p>
-<div class="highlight"><pre><span></span><code><span class="nx">responses</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="s1">&#39;200&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nx">result</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nx">meta</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nx">confidenceInfo</span><span class="o">:</span><span class="w"> </span><span class="kt">schemaDateRange</span><span class="p">,</span>
-<span class="w">          </span><span class="nx">dateRange</span><span class="o">:</span><span class="w"> </span><span class="kt">schemaDateRange</span><span class="p">,</span>
-<span class="w">          </span><span class="nx">aggInterval</span><span class="o">:</span><span class="w"> </span><span class="kt">schemaAggInterval</span><span class="p">,</span>
-<span class="w">          </span><span class="nx">lastUpdated</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">DateTime</span><span class="p">(),</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">        </span><span class="nx">series</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nx">timestamps</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="ow">new</span><span class="w"> </span><span class="nx">DateTime</span><span class="p">()],</span>
-<span class="w">          </span><span class="nx">values</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="ow">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="w"> </span><span class="nx">example</span><span class="o">:</span><span class="w"> </span><span class="kt">0.56</span><span class="w"> </span><span class="p">})],</span>
+<p>And because this is all common javascript objects you can reuse your schemas like:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">annotations</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="s1">&#39;dataSource&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;NET&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;startDate&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;2023-08-11T10:00:00Z&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;endDate&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;2023-08-11T10:30:00Z&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;eventType&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;PIPELINE&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;description&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Internal issue&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;linkedUrl&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="s1">&#39;isInstantaneous&#39;</span><span class="o">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">]</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">TimeseriesFetch</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;ToDo&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Fetch a ToDo&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">responses</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s1">&#39;200&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Timeseries with meta response&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">meta</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nx">annotations</span><span class="o">:</span><span class="w"> </span><span class="kt">annotations</span>
+<span class="w">          </span><span class="p">},</span>
+<span class="w">          </span><span class="nx">series</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nx">timestamps</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;2023-01-01 00:00:00&#39;</span><span class="p">],</span>
+<span class="w">            </span><span class="nx">values</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0.56</span><span class="p">],</span>
+<span class="w">          </span><span class="p">},</span>
 <span class="w">        </span><span class="p">},</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// ...</span>
 <span class="p">}</span>
 </code></pre></div>
+<p>You can also define other response formats than <code>application/json</code> read more 
+<a href="../../advanced-user-guide/custom-response-formats/">here</a>.</p>
 
 
 

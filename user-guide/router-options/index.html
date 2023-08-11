@@ -428,6 +428,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#selecting-a-different-openapi-version" class="md-nav__link">
+    Selecting a different OpenAPI version
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -684,6 +691,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#selecting-a-different-openapi-version" class="md-nav__link">
+    Selecting a different OpenAPI version
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -758,6 +772,12 @@
 <td><code>boolean</code></td>
 <td>This will generate operation ids from class names for your endpoints when nothing is provided</td>
 <td>true</td>
+</tr>
+<tr>
+<td><code>openapiVersion</code></td>
+<td><code>string</code></td>
+<td>Use this property to switch between the 3 and 3.1 OpenAPI specification, by default this will be <code>3.1</code></td>
+<td><code>3.1</code></td>
 </tr>
 <tr>
 <td><code>aiPlugin</code></td>
@@ -841,6 +861,12 @@
 </tr>
 </tbody>
 </table>
+<h2 id="selecting-a-different-openapi-version">Selecting a different OpenAPI version<a class="headerlink" href="#selecting-a-different-openapi-version" title="Permanent link">&para;</a></h2>
+<p>By default itty-router-openapi generated OpenAPI 3.1 schemas, but you can revert back to 3.0 by updating your router configuration</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">openapiVersion</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;3&#39;</span><span class="p">,</span>
+<span class="p">})</span>
+</code></pre></div>
 
 
 

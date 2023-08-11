@@ -646,31 +646,52 @@
 
 <h1 id="openapi-schema-customizations">OpenAPI schema customizations<a class="headerlink" href="#openapi-schema-customizations" title="Permanent link">&para;</a></h1>
 <p>Besides adding a schema to your endpoints, its also recommended you customize your schema. This can be done by passing
-the schema argument when creating your router. All <a href="https://swagger.io/specification/#schema">OpenAPI Fixed Fields</a> are
+the schema argument when creating your router. </p>
+<p>All <a href="https://swagger.io/specification/#schema">OpenAPI Object Properties</a> except <code>paths</code>, <code>components</code> and <code>webhooks</code> are
 available.</p>
-<p>The example bellow will change the schema title, and add a Bearer token authentication to all endpoints</p>
+<p><code>paths</code> can only be added by registering routes like:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">()</span>
+<span class="nx">router</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/scan/metadata/&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">ScanMetadataCreate</span><span class="p">)</span>
+</code></pre></div>
+<p><code>components</code> can only be added by registering them in the main router like:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">()</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">bearerAuth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">router</span><span class="p">.</span><span class="nx">registry</span><span class="p">.</span><span class="nx">registerComponent</span><span class="p">(</span>
+<span class="w">  </span><span class="s1">&#39;securitySchemes&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="s1">&#39;bearerAuth&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;http&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">scheme</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;bearer&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">bearerFormat</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;JWT&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Every other property must be defined in your main/root router as such:</p>
 <div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">({</span>
 <span class="w">  </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nx">info</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Radar Worker API&#39;</span><span class="p">,</span>
 <span class="w">      </span><span class="nx">version</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;1.0&#39;</span><span class="p">,</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nx">components</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nx">securitySchemes</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nx">bearerAuth</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;http&#39;</span><span class="p">,</span>
-<span class="w">          </span><span class="nx">scheme</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;bearer&#39;</span><span class="p">,</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">      </span><span class="p">},</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nx">security</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="nx">servers</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nx">bearerAuth</span><span class="o">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">        </span><span class="s2">&quot;url&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;https://development.gigantic-server.com/v1&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;description&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Development server&quot;</span>
 <span class="w">      </span><span class="p">},</span>
-<span class="w">    </span><span class="p">],</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="s2">&quot;url&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;https://staging.gigantic-server.com/v1&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;description&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Staging server&quot;</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">        </span><span class="s2">&quot;url&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;https://api.gigantic-server.com/v1&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;description&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Production server&quot;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">},</span>
 <span class="p">})</span>
 </code></pre></div>
+<p>For more information on the structure of every available property you can read the specification for 
+<a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md">OpenAPI 3 here</a> and
+<a href="https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md">OpenAPI 3.1 here</a>.</p>
 
 
 
