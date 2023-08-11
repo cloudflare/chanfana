@@ -69,6 +69,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#register-the-security-component" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -366,22 +371,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../header-parameters/" class="md-nav__link">
-        Header parameters
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../response-model/" class="md-nav__link">
-        Response model
+      <a href="../response-format/" class="md-nav__link">
+        Response format
       </a>
     </li>
   
@@ -429,9 +420,52 @@
       
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Security
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Security
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#register-the-security-component" class="md-nav__link">
+    Register the security component
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#all-endpoints-require-security" class="md-nav__link">
+    All endpoints require security
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#some-endpoints-require-security" class="md-nav__link">
+    Some endpoints require security
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -446,6 +480,20 @@
     <li class="md-nav__item">
       <a href="../cors/" class="md-nav__link">
         Cors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../middleware/" class="md-nav__link">
+        Middleware
       </a>
     </li>
   
@@ -623,6 +671,35 @@
   
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#register-the-security-component" class="md-nav__link">
+    Register the security component
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#all-endpoints-require-security" class="md-nav__link">
+    All endpoints require security
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#some-endpoints-require-security" class="md-nav__link">
+    Some endpoints require security
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -637,7 +714,87 @@
 
   <h1>Security</h1>
 
+<p>For this page you <strong>must</strong> have some knowledge of how security works in OpenAPI, read more
+<a href="https://swagger.io/docs/specification/authentication/">here</a>.</p>
+<p>Please notice that currently security in itty-router-openapi is only for schema generation, if you want to
+add some kind of authentication, please read more in the <a href="../middleware/">middleware page</a>!</p>
+<h2 id="register-the-security-component">Register the security component<a class="headerlink" href="#register-the-security-component" title="Permanent link">&para;</a></h2>
+<p>The first step into security is to register your security component in your main router. </p>
+<p>Here's a simple Bearer token example:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">()</span>
 
+<span class="nx">router</span><span class="p">.</span><span class="nx">registry</span><span class="p">.</span><span class="nx">registerComponent</span><span class="p">(</span>
+<span class="w">  </span><span class="s1">&#39;securitySchemes&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="s1">&#39;BearerAuth&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="nx">http</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">scheme</span><span class="o">:</span><span class="w"> </span><span class="kt">bearer</span><span class="p">,</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>From this point onward you can either make all endpoints require security or apply the security requirement only in some
+endpoints.</p>
+<h2 id="all-endpoints-require-security">All endpoints require security<a class="headerlink" href="#all-endpoints-require-security" title="Permanent link">&para;</a></h2>
+<p>For this add the <code>security</code> component to your main <code>router</code> schema customization field</p>
+<p>Notice that the key used in security must be the same used to register the component</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">security</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="hll"><span class="w">        </span><span class="nx">BearerAuth</span><span class="o">:</span><span class="w"> </span><span class="p">[],</span>
+</span><span class="w">      </span><span class="p">},</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">})</span>
+
+<span class="nx">router</span><span class="p">.</span><span class="nx">registry</span><span class="p">.</span><span class="nx">registerComponent</span><span class="p">(</span>
+<span class="w">  </span><span class="s1">&#39;securitySchemes&#39;</span><span class="p">,</span>
+<span class="hll"><span class="w">  </span><span class="s1">&#39;BearerAuth&#39;</span><span class="p">,</span>
+</span><span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="nx">http</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">scheme</span><span class="o">:</span><span class="w"> </span><span class="kt">bearer</span><span class="p">,</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="some-endpoints-require-security">Some endpoints require security<a class="headerlink" href="#some-endpoints-require-security" title="Permanent link">&para;</a></h2>
+<p>For this add the <code>security</code> component to your main <code>endpoint</code> schema customization field</p>
+<p>Notice that the key used in security must be the same used to register the component</p>
+<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ScanMetadataCreate</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="kt">OpenAPIRouteSchema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;Scans&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Create Scan metadata&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">requestBody</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">scan_id</span><span class="o">:</span><span class="w"> </span><span class="kt">Uuid</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="kt">z.string</span><span class="p">().</span><span class="nx">url</span><span class="p">(),</span>
+<span class="w">      </span><span class="nx">destination_ip</span><span class="o">:</span><span class="w"> </span><span class="kt">z.string</span><span class="p">().</span><span class="nx">ip</span><span class="p">(),</span>
+<span class="w">      </span><span class="nx">timestamp</span><span class="o">:</span><span class="w"> </span><span class="kt">z.string</span><span class="p">().</span><span class="nx">datetime</span><span class="p">(),</span>
+<span class="w">      </span><span class="nx">console_logs</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="nx">z</span><span class="p">.</span><span class="kt">string</span><span class="p">()],</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">security</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="hll"><span class="w">        </span><span class="nx">bearerAuth</span><span class="o">:</span><span class="w"> </span><span class="p">[],</span>
+</span><span class="w">      </span><span class="p">},</span>
+<span class="w">    </span><span class="p">],</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// ...</span>
+<span class="p">}</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">()</span>
+
+<span class="nx">router</span><span class="p">.</span><span class="nx">registry</span><span class="p">.</span><span class="nx">registerComponent</span><span class="p">(</span>
+<span class="w">  </span><span class="s1">&#39;securitySchemes&#39;</span><span class="p">,</span>
+<span class="hll"><span class="w">  </span><span class="s1">&#39;BearerAuth&#39;</span><span class="p">,</span>
+</span><span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="nx">http</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">scheme</span><span class="o">:</span><span class="w"> </span><span class="kt">bearer</span><span class="p">,</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="p">)</span>
+
+<span class="nx">router</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/scan/metadata/&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">ScanMetadataCreate</span><span class="p">)</span>
+</code></pre></div>
+<p>For more informations on how to setup security read the OpenAPI spec 
+<a href="https://swagger.io/docs/specification/authentication/">here</a>.</p>
 
 
 

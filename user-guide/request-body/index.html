@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#example-requestbody" class="md-skip">
+        <a href="#basic-parameter" class="md-skip">
           Skip to content
         </a>
       
@@ -387,15 +387,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#example-requestbody" class="md-nav__link">
-    Example requestBody:
+  <a href="#basic-parameter" class="md-nav__link">
+    Basic parameter
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#request-body-validation" class="md-nav__link">
-    Request Body Validation
+  <a href="#advanced-parameters" class="md-nav__link">
+    Advanced parameters
   </a>
   
 </li>
@@ -415,22 +415,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../header-parameters/" class="md-nav__link">
-        Header parameters
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../response-model/" class="md-nav__link">
-        Response model
+      <a href="../response-format/" class="md-nav__link">
+        Response format
       </a>
     </li>
   
@@ -487,6 +473,20 @@
     <li class="md-nav__item">
       <a href="../cors/" class="md-nav__link">
         Cors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../middleware/" class="md-nav__link">
+        Middleware
       </a>
     </li>
   
@@ -671,15 +671,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#example-requestbody" class="md-nav__link">
-    Example requestBody:
+  <a href="#basic-parameter" class="md-nav__link">
+    Basic parameter
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#request-body-validation" class="md-nav__link">
-    Request Body Validation
+  <a href="#advanced-parameters" class="md-nav__link">
+    Advanced parameters
   </a>
   
 </li>
@@ -700,59 +700,93 @@
 
   <h1>Request body</h1>
 
-<h4 id="example-requestbody">Example requestBody:<a class="headerlink" href="#example-requestbody" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><span class="nx">requestBody</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nx">datasetId</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Int</span><span class="p">({</span><span class="w"> </span><span class="nx">example</span><span class="o">:</span><span class="w"> </span><span class="kt">3</span><span class="w"> </span><span class="p">}),</span>
-<span class="w">  </span><span class="nx">search</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">(),</span>
-<span class="p">}</span>
-</code></pre></div>
-<h2 id="request-body-validation">Request Body Validation<a class="headerlink" href="#request-body-validation" title="Permanent link">&para;</a></h2>
-<p>The <code>requestBody</code> is defined the same way as the normal <code>parameters</code>.
-The validated data will be available inside the <code>body</code> property in the <code>data</code> argument.</p>
-<p>Remember that <code>requestBody</code> is only available when the route method is not <code>GET</code>.</p>
-<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ToDoCreate</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<p><strong>Please make sure to read the <a href="../../types/">Types</a> section before continuing.</strong></p>
+<p>You can declare Body Requests in the <code>requestBody</code> property of your endpoint schema.</p>
+<p>The validated data is available under <code>data.body.&lt;name&gt;</code>, where name is the key used inside the <code>requestBody</code> property.</p>
+<p>For nested objects the validated data will be under the same position as defined, for example <code>data.body.task.name</code>.</p>
+<h2 id="basic-parameter">Basic parameter<a class="headerlink" href="#basic-parameter" title="Permanent link">&para;</a></h2>
+<p>For basic parameters you are fine using the Native types, this should cover almost everything you need to build a big
+project.</p>
+<p>Defining a schema using native types is as simple as defining a without any special parameters.</p>
+<p>In this example we are defining a object with an optional <code>description</code> and an array of strings <code>steps</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="p">,</span><span class="w"> </span><span class="nx">Query</span><span class="p">,</span><span class="w"> </span><span class="nx">Str</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ToDoCreate</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;ToDo&#39;</span><span class="p">],</span>
-<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Create a new Todo&#39;</span><span class="p">,</span>
-<span class="w">    </span><span class="nx">requestBody</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
-<span class="w">      </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="w"> </span><span class="nx">required</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">}),</span>
-<span class="w">      </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Enumeration</span><span class="p">({</span>
-<span class="w">        </span><span class="nx">values</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nx">nextWeek</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;nextWeek&#39;</span><span class="p">,</span>
-<span class="w">          </span><span class="nx">nextMonth</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;nextMonth&#39;</span><span class="p">,</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">      </span><span class="p">})</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nx">responses</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="s1">&#39;200&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nx">todo</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="kt">123</span><span class="p">,</span>
-<span class="w">            </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;My title&#39;</span><span class="p">,</span>
-<span class="w">          </span><span class="p">},</span>
-<span class="w">        </span><span class="p">},</span>
-<span class="w">      </span><span class="p">},</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Create a ToDo&#39;</span><span class="p">,</span>
+<span class="hll"><span class="w">    </span><span class="nx">requestBody</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+</span><span class="hll"><span class="w">      </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
+</span><span class="hll"><span class="w">      </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="nx">required</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">}),</span>
+</span><span class="hll"><span class="w">      </span><span class="nx">steps</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="ow">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="nx">example</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;open the door&#39;</span><span class="p">})]</span>
+</span><span class="hll"><span class="w">    </span><span class="p">}</span>
+</span><span class="w">  </span><span class="p">}</span>
 
-<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">body</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span>
-
-<span class="w">    </span><span class="c1">// Actually insert the data somewhere</span>
-
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nx">todo</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="kt">123</span><span class="p">,</span>
-<span class="w">        </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="kt">body.title</span><span class="p">,</span>
-<span class="w">      </span><span class="p">},</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span>
+<span class="w">    </span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span>
+<span class="w">  </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">newToDo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span><span class="p">.</span><span class="nx">body</span>
+<span class="w">    </span><span class="c1">// ...</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
+</code></pre></div>
+<h2 id="advanced-parameters">Advanced parameters<a class="headerlink" href="#advanced-parameters" title="Permanent link">&para;</a></h2>
+<p>If you need a more advanced control over the validation, you should use <a href="https://zod.dev/">Zod</a>.</p>
+<p>Zod types can be used inside itty-router-openapi native types!</p>
+<p>While the previous example will work well, you might want more control, like make the description a string or an array of strings.</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="p">,</span><span class="w"> </span><span class="nx">Query</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">z</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;zod&#39;</span>
 
-<span class="p">...</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ToDoCreate</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;ToDo&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Create a ToDo&#39;</span><span class="p">,</span>
+<span class="hll"><span class="w">    </span><span class="nx">requestBody</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+</span><span class="hll"><span class="w">      </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
+</span><span class="hll"><span class="w">      </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="kt">z.string</span><span class="p">().</span><span class="nx">or</span><span class="p">(</span><span class="nx">z</span><span class="p">.</span><span class="kt">string</span><span class="p">().</span><span class="nx">array</span><span class="p">()),</span>
+</span><span class="hll"><span class="w">      </span><span class="nx">steps</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="ow">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="nx">example</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;open the door&#39;</span><span class="p">})]</span>
+</span><span class="hll"><span class="w">    </span><span class="p">}</span>
+</span><span class="w">  </span><span class="p">}</span>
 
-<span class="nx">router</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/todos&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">ToDoCreate</span><span class="p">)</span>
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span>
+<span class="w">    </span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span>
+<span class="w">  </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">limit</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span><span class="p">.</span><span class="nx">query</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Or you can define the exact same request body as above all in Zod</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="p">,</span><span class="w"> </span><span class="nx">Query</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">z</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;zod&#39;</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ToDoCreate</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;ToDo&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Create a ToDo&#39;</span><span class="p">,</span>
+<span class="hll"><span class="w">    </span><span class="nx">requestBody</span><span class="o">:</span><span class="w"> </span><span class="kt">z.object</span><span class="p">({</span>
+</span><span class="hll"><span class="w">      </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="kt">z.string</span><span class="p">(),</span>
+</span><span class="hll"><span class="w">      </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="kt">z.string</span><span class="p">().</span><span class="nx">or</span><span class="p">(</span><span class="nx">z</span><span class="p">.</span><span class="kt">string</span><span class="p">().</span><span class="nx">array</span><span class="p">()),</span>
+</span><span class="hll"><span class="w">      </span><span class="nx">steps</span><span class="o">:</span><span class="w"> </span><span class="kt">z.string</span><span class="p">().</span><span class="nx">array</span><span class="p">()</span>
+</span><span class="hll"><span class="w">    </span><span class="p">})</span>
+</span><span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span>
+<span class="w">    </span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span>
+<span class="w">  </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">limit</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span><span class="p">.</span><span class="nx">query</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
 </code></pre></div>
 
 
@@ -790,13 +824,13 @@ The validated data will be available inside the <code>body</code> property in th
       
       
         
-        <a href="../header-parameters/" class="md-footer__link md-footer__link--next" aria-label="Next: Header parameters" rel="next">
+        <a href="../response-format/" class="md-footer__link md-footer__link--next" aria-label="Next: Response format" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Header parameters
+              Response format
             </div>
           </div>
           <div class="md-footer__button md-icon">

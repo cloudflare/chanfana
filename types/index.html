@@ -284,6 +284,33 @@
     Native types
   </a>
   
+    <nav class="md-nav" aria-label="Native types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#itty-router-openapi-types" class="md-nav__link">
+    itty-router-openapi types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#javascript-native-types" class="md-nav__link">
+    Javascript native types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#javascript-variables" class="md-nav__link">
+    Javascript variables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -413,22 +440,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/header-parameters/" class="md-nav__link">
-        Header parameters
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../user-guide/response-model/" class="md-nav__link">
-        Response model
+      <a href="../user-guide/response-format/" class="md-nav__link">
+        Response format
       </a>
     </li>
   
@@ -485,6 +498,20 @@
     <li class="md-nav__item">
       <a href="../user-guide/cors/" class="md-nav__link">
         Cors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/middleware/" class="md-nav__link">
+        Middleware
       </a>
     </li>
   
@@ -673,6 +700,33 @@
     Native types
   </a>
   
+    <nav class="md-nav" aria-label="Native types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#itty-router-openapi-types" class="md-nav__link">
+    itty-router-openapi types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#javascript-native-types" class="md-nav__link">
+    Javascript native types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#javascript-variables" class="md-nav__link">
+    Javascript variables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -700,15 +754,25 @@
 
 <p>Types are used everywhere in this framework, from defining parameters to response formats.</p>
 <p>There are 2 API's to define types in itty-router-open, but we recommend that you choose one and stick to it.</p>
-<p>Native types, are types developed exclusive to this framework, they are pretty straight forward and easy to use, but are
-some limitations.</p>
-<p>Zod types, are as the name says, types from the <a href="https://github.com/colinhacks/zod">Zod</a> library, they are much more
-verbose
-than the native types, but allows you to define almost everything.</p>
+<ul>
+<li>Native types</li>
+<li>Zod types</li>
+</ul>
 <h2 id="native-types">Native types<a class="headerlink" href="#native-types" title="Permanent link">&para;</a></h2>
-<p>All of theses Types can be imported like:</p>
-<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Email</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<p>Native types, are referred in this documentation as 3 things that work interchangeably:</p>
+<ul>
+<li>itty-router-openapi types (<code>Email</code>, <code>Ipv4</code>, ...)</li>
+<li>Javascript native types (<code>String</code>, <code>Number</code>, ...)</li>
+<li>Javascript variables (<code>'myvar</code> gets parsed as <code>String</code>, and so on for numbers and bools)</li>
+</ul>
+<p>When these types were defined we tried to make them as simple as possible, tried to add as much compatibility as
+possible.
+This is the main reason we support such wide variations.</p>
+<h3 id="itty-router-openapi-types">itty-router-openapi types<a class="headerlink" href="#itty-router-openapi-types" title="Permanent link">&para;</a></h3>
+<p>itty-router-openapi types are imported as the following:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Email</span><span class="p">,</span><span class="w"> </span><span class="nx">Str</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
 </code></pre></div>
+<p>Here is a list of all available itty-router-openapi types and the parameters available</p>
 <table>
 <thead>
 <tr>
@@ -719,62 +783,70 @@ than the native types, but allows you to define almost everything.</p>
 <tbody>
 <tr>
 <td>Num</td>
-<td align="center">description example default</td>
+<td align="center">description example default required</td>
 </tr>
 <tr>
 <td>Int</td>
-<td align="center">description example default</td>
+<td align="center">description example default required</td>
 </tr>
 <tr>
 <td>Str</td>
-<td align="center">description example default format</td>
+<td align="center">description example default format required</td>
 </tr>
 <tr>
 <td>Enumeration</td>
-<td align="center">description example default values enumCaseSensitive</td>
+<td align="center">description example default values enumCaseSensitive required</td>
 </tr>
 <tr>
 <td>DateTime</td>
-<td align="center">description example default</td>
+<td align="center">description example default required</td>
 </tr>
 <tr>
 <td>DateOnly</td>
-<td align="center">description example default</td>
+<td align="center">description example default required</td>
 </tr>
 <tr>
 <td>Bool</td>
-<td align="center">description example default</td>
+<td align="center">description example default required</td>
 </tr>
 <tr>
 <td>Regex</td>
-<td align="center">description example default pattern patternError</td>
+<td align="center">description example default pattern patternError required</td>
 </tr>
 <tr>
 <td>Email</td>
-<td align="center">description example default</td>
+<td align="center">description example default required</td>
 </tr>
 <tr>
 <td>Uuid</td>
-<td align="center">description example default</td>
+<td align="center">description example default required</td>
 </tr>
 <tr>
 <td>Hostname</td>
-<td align="center">description example default</td>
+<td align="center">description example default required</td>
 </tr>
 <tr>
 <td>Ipv4</td>
-<td align="center">description example default</td>
+<td align="center">description example default required</td>
 </tr>
 <tr>
 <td>Ipv6</td>
-<td align="center">description example default</td>
+<td align="center">description example default required</td>
 </tr>
 </tbody>
 </table>
-<p>As an example, you would define a string query parameter as the following:</p>
+<p>All itty-router-openapi types can be instantiated in 3 ways:</p>
+<ul>
+<li>normal class (<code>new Email({description: 'user email'})</code>)</li>
+<li>raw class (just <code>Email</code> and itty-router-openapi handles the instantiation)</li>
+<li>instantiation by parameter location (<code>Query(Str, { description: 'Task description' })</code>)</li>
+</ul>
+<p>As an example, you could define the same query parameter in these 3 ways:</p>
 <div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Query</span><span class="p">,</span><span class="w"> </span><span class="nx">Str</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
 
-<span class="kd">const</span><span class="w"> </span><span class="nx">queryDescription</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="nx">Str</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Task description&#39;</span><span class="w"> </span><span class="p">})</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">queryDescription1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="nx">Str</span><span class="p">)</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">queryDescription2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="ow">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="w"> </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Task description&#39;</span><span class="w"> </span><span class="p">}))</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">queryDescription3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="nx">Str</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Task description&#39;</span><span class="w"> </span><span class="p">})</span>
 </code></pre></div>
 <p>Then use it in a endpoint like this:</p>
 <div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Query</span><span class="p">,</span><span class="w"> </span><span class="nx">Str</span><span class="p">,</span><span class="w"> </span><span class="nx">Int</span><span class="p">,</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
@@ -798,7 +870,126 @@ than the native types, but allows you to define almost everything.</p>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
+<h3 id="javascript-native-types">Javascript native types<a class="headerlink" href="#javascript-native-types" title="Permanent link">&para;</a></h3>
+<p>Javascript native types can be used everywhere the itty-router-openapi types are used, sometimes it just makes
+defining schemas simpler</p>
+<p>For example here is the same query parameters as above defined as javascript native types.
+In this case you cannot instantiate the type with the <code>new</code> keyword, so you must pass the parameters to the parameter
+location.</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Query</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">queryDescription1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">queryDescription3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="nb">String</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Task description&#39;</span><span class="w"> </span><span class="p">})</span>
+</code></pre></div>
+<h3 id="javascript-variables">Javascript variables<a class="headerlink" href="#javascript-variables" title="Permanent link">&para;</a></h3>
+<p>The main reason we support javascript variables is to make it as simple as possible to define schemas and even set as
+example.</p>
+<p>Here is an example of the same end result defined with a variable and as itty-router-openapi type.</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Query</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">queryDescription1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="s1">&#39;john cena&#39;</span><span class="p">)</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">queryDescription3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="nb">String</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">example</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;john cena&#39;</span><span class="w"> </span><span class="p">})</span>
+</code></pre></div>
+<p>Defining request bodies and response schemas is even easier with variables, here is another end result defined as
+variables and with itty-router-openapi type:</p>
+<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ExampleVariables</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">requestBody</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;john cena&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;John Felix Anthony Cena is an American professional wrestler.&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">height</span><span class="o">:</span><span class="w"> </span><span class="kt">1.85</span><span class="p">,</span>
+<span class="w">      </span><span class="nx">can_be_seen</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">,</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span>
+<span class="w">    </span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span>
+<span class="w">  </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ExampleIttyRouterOpenAPI</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">requestBody</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="w"> </span><span class="nx">example</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;john cena&#39;</span><span class="w"> </span><span class="p">}),</span>
+<span class="w">      </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="w"> </span><span class="nx">example</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;John Felix Anthony Cena is an American professional wrestler.&#39;</span><span class="w"> </span><span class="p">}),</span>
+<span class="w">      </span><span class="nx">height</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Num</span><span class="p">({</span><span class="w"> </span><span class="nx">example</span><span class="o">:</span><span class="w"> </span><span class="kt">1.85</span><span class="w"> </span><span class="p">}),</span>
+<span class="w">      </span><span class="nx">can_be_seen</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Bool</span><span class="p">({</span><span class="w"> </span><span class="nx">example</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">}),</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span>
+<span class="w">    </span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span>
+<span class="w">  </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Defining response bodies is such an easy task with variables, you literaly just have to call your endpoint, and
+copy-paste
+the response is your schema.</p>
+<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ExampleRequestBody</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">responses</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="s1">&#39;200&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Successful Response&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="s1">&#39;asn&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="s1">&#39;name&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;CLOUDFLARENET&#39;</span><span class="p">,</span>
+<span class="w">            </span><span class="s1">&#39;nameLong&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="w">            </span><span class="s1">&#39;aka&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Cloudflare&#39;</span><span class="p">,</span>
+<span class="w">            </span><span class="s1">&#39;asn&#39;</span><span class="o">:</span><span class="w"> </span><span class="mf">13335</span><span class="p">,</span>
+<span class="w">            </span><span class="s1">&#39;website&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;https://www.cloudflare.com&#39;</span><span class="p">,</span>
+<span class="w">            </span><span class="s1">&#39;country&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;US&#39;</span><span class="p">,</span>
+<span class="w">            </span><span class="s1">&#39;countryName&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;United States&#39;</span><span class="p">,</span>
+<span class="w">            </span><span class="s1">&#39;orgName&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Cloudflare, Inc.&#39;</span><span class="p">,</span>
+<span class="w">            </span><span class="s1">&#39;related&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">              </span><span class="p">{</span>
+<span class="w">                </span><span class="s1">&#39;name&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;CLOUDFLARENET-AUS&#39;</span><span class="p">,</span>
+<span class="w">                </span><span class="s1">&#39;aka&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="w">                </span><span class="s1">&#39;asn&#39;</span><span class="o">:</span><span class="w"> </span><span class="mf">14789</span><span class="p">,</span>
+<span class="w">                </span><span class="s1">&#39;estimatedUsers&#39;</span><span class="o">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">              </span><span class="p">},</span>
+<span class="w">              </span><span class="p">{</span>
+<span class="w">                </span><span class="s1">&#39;name&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;CLOUDFLARENET-SFO&#39;</span><span class="p">,</span>
+<span class="w">                </span><span class="s1">&#39;aka&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="w">                </span><span class="s1">&#39;asn&#39;</span><span class="o">:</span><span class="w"> </span><span class="mf">394536</span><span class="p">,</span>
+<span class="w">                </span><span class="s1">&#39;estimatedUsers&#39;</span><span class="o">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">              </span><span class="p">},</span>
+<span class="w">              </span><span class="p">{</span>
+<span class="w">                </span><span class="s1">&#39;name&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;CLOUDFLARENET-SFO05&#39;</span><span class="p">,</span>
+<span class="w">                </span><span class="s1">&#39;aka&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+<span class="w">                </span><span class="s1">&#39;asn&#39;</span><span class="o">:</span><span class="w"> </span><span class="mf">395747</span><span class="p">,</span>
+<span class="w">                </span><span class="s1">&#39;estimatedUsers&#39;</span><span class="o">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">              </span><span class="p">},</span>
+<span class="w">            </span><span class="p">],</span>
+<span class="w">          </span><span class="p">},</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span>
+<span class="w">    </span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span>
+<span class="w">  </span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 <h2 id="zod-types">Zod types<a class="headerlink" href="#zod-types" title="Permanent link">&para;</a></h2>
+<p>Zod types, are as the name says, types from the <a href="https://github.com/colinhacks/zod">Zod</a> library, they are much more
+verbose than the native types, but allows you to define almost everything supported by the OpenAPI specification, like
+AnyOf, AllOF, etc.</p>
 <blockquote>
 <p>Zod is a TypeScript-first schema declaration and validation library. I'm using the term "schema" to broadly refer to
 any data type, from a simple string to a complex nested object.</p>
@@ -810,7 +1001,7 @@ simpler types into complex data structures.</p>
 <p>Zod allows you to have a much more granular control over what is a valid input or not.</p>
 <p>For example you could define a <code>Query</code> parameter that only accepts number bellow or equal to 10 with the following line.</p>
 <div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Query</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
-<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">z</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;zod&#39;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">z</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;zod&#39;</span>
 
 <span class="kd">const</span><span class="w"> </span><span class="nx">queryResponseLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="nx">z</span><span class="p">.</span><span class="nx">coerce</span><span class="p">.</span><span class="kt">number</span><span class="p">().</span><span class="nx">lte</span><span class="p">(</span><span class="mf">10</span><span class="p">))</span>
 </code></pre></div>

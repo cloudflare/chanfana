@@ -366,22 +366,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../header-parameters/" class="md-nav__link">
-        Header parameters
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../response-model/" class="md-nav__link">
-        Response model
+      <a href="../response-format/" class="md-nav__link">
+        Response format
       </a>
     </li>
   
@@ -447,6 +433,20 @@
         Cors
       </a>
       
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../middleware/" class="md-nav__link">
+        Middleware
+      </a>
     </li>
   
 
@@ -637,7 +637,28 @@
 
   <h1>Cors</h1>
 
+<p>CORS support is a feature from <a href="https://github.com/kwhitley/itty-router">itty-router</a>,
+read more about it <a href="https://itty.dev/itty-router/cors">here</a>.</p>
+<p>Here's a quick example for setting up CORS for your endpoints:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;@cloudflare/itty-router-openapi&quot;</span><span class="p">;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createCors</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;itty-router&#39;</span>
 
+<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">();</span>
+<span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">preflight</span><span class="p">,</span><span class="w"> </span><span class="nx">corsify</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createCors</span><span class="p">()</span>
+
+<span class="c1">// embed preflight upstream to handle all OPTIONS requests</span>
+<span class="nx">router</span><span class="p">.</span><span class="nx">all</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">preflight</span><span class="p">)</span>
+
+<span class="c1">// register the endpoints that will need cors after the previous line</span>
+<span class="nx">router</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/api/auth/register&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">AuthRegister</span><span class="p">);</span>
+<span class="nx">router</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s1">&#39;/api/auth/login&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">AuthLogin</span><span class="p">);</span>
+
+<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">fetch</span><span class="o">:</span><span class="w"> </span><span class="kt">async</span><span class="w"> </span><span class="p">(</span><span class="nx">request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="p">,</span><span class="w"> </span><span class="nx">ctx</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">       </span><span class="k">return</span><span class="w"> </span><span class="nx">router</span><span class="p">.</span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="p">,</span><span class="w"> </span><span class="nx">ctx</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">corsify</span><span class="p">)</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="p">};</span>
+</code></pre></div>
 
 
 
@@ -674,13 +695,13 @@
       
       
         
-        <a href="../../advanced-user-guide/custom-response-formats/" class="md-footer__link md-footer__link--next" aria-label="Next: Custom response formats" rel="next">
+        <a href="../middleware/" class="md-footer__link md-footer__link--next" aria-label="Next: Middleware" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Custom response formats
+              Middleware
             </div>
           </div>
           <div class="md-footer__button md-icon">

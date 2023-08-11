@@ -372,6 +372,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#reusable-parameters" class="md-nav__link">
+    Reusable parameters
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -415,22 +422,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../header-parameters/" class="md-nav__link">
-        Header parameters
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../response-model/" class="md-nav__link">
-        Response model
+      <a href="../response-format/" class="md-nav__link">
+        Response format
       </a>
     </li>
   
@@ -487,6 +480,20 @@
     <li class="md-nav__item">
       <a href="../cors/" class="md-nav__link">
         Cors
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../middleware/" class="md-nav__link">
+        Middleware
       </a>
     </li>
   
@@ -684,6 +691,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#reusable-parameters" class="md-nav__link">
+    Reusable parameters
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -759,6 +773,51 @@ project.</p>
 <span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">todoId</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span><span class="p">.</span><span class="nx">params</span>
 <span class="w">    </span><span class="c1">// ...</span>
 <span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="reusable-parameters">Reusable parameters<a class="headerlink" href="#reusable-parameters" title="Permanent link">&para;</a></h2>
+<p>While you can define a variable with your parameter and then reference it in more than 1 endpoint, you will notice that
+you have to repeat the parameter name in all endpoints.</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="p">,</span><span class="w"> </span><span class="nx">Path</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">z</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;zod&#39;</span>
+
+<span class="hll"><span class="kd">const</span><span class="w"> </span><span class="nx">pathTodoId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Path</span><span class="p">(</span><span class="nx">z</span><span class="p">.</span><span class="nx">coerce</span><span class="p">.</span><span class="kt">number</span><span class="p">().</span><span class="nx">lt</span><span class="p">(</span><span class="mf">10</span><span class="p">),</span><span class="w"> </span><span class="p">{</span>
+</span><span class="hll"><span class="w">  </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;ToDo ID&#39;</span><span class="p">,</span>
+</span><span class="hll"><span class="p">})</span>
+</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ToDoFetch</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;ToDo&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Fetch a ToDo&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">parameters</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="hll"><span class="w">      </span><span class="nx">todoId</span><span class="o">:</span><span class="w"> </span><span class="kt">pathTodoId</span><span class="p">,</span>
+</span><span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>But if you need a parameter in more than a dozen endpoints, it can be tricky to make sure all have the same name.</p>
+<p>With this in mind we added support for you to define parameter in an array instead of an object, this way, you define
+the name you want the parameter to have in the variable and then reuse it everywhere:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="p">,</span><span class="w"> </span><span class="nx">Path</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">z</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;zod&#39;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">pathTodoId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Path</span><span class="p">(</span><span class="nx">z</span><span class="p">.</span><span class="nx">coerce</span><span class="p">.</span><span class="kt">number</span><span class="p">().</span><span class="nx">lt</span><span class="p">(</span><span class="mf">10</span><span class="p">),</span><span class="w"> </span><span class="p">{</span>
+<span class="hll"><span class="w">  </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;todoId&#39;</span><span class="p">,</span>
+</span><span class="w">  </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;ToDo ID&#39;</span><span class="p">,</span>
+<span class="p">})</span>
+
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">ToDoFetch</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;ToDo&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Fetch a ToDo&#39;</span><span class="p">,</span>
+<span class="hll"><span class="w">    </span><span class="nx">parameters</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+</span><span class="hll"><span class="w">      </span><span class="nx">pathTodoId</span><span class="p">,</span>
+</span><span class="hll"><span class="w">    </span><span class="p">],</span>
+</span><span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// ...</span>
 <span class="p">}</span>
 </code></pre></div>
 
