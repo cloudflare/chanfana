@@ -190,6 +190,11 @@ export class Enumeration {
     if (Array.isArray(values))
       values = Object.fromEntries(values.map((x) => [x, x]))
 
+    const originalKeys: [string, ...string[]] = Object.keys(values) as [
+      string,
+      ...string[]
+    ]
+
     if (params.enumCaseSensitive === false) {
       values = Object.keys(values).reduce((accumulator, key) => {
         // @ts-ignore
@@ -207,7 +212,9 @@ export class Enumeration {
     if ([undefined, true].includes(params.enumCaseSensitive)) {
       field = z.enum(keys)
     } else {
-      field = z.preprocess((val) => String(val).toLowerCase(), z.enum(keys))
+      field = z
+        .preprocess((val) => String(val).toLowerCase(), z.enum(keys))
+        .openapi({ enum: originalKeys })
     }
 
     field = field.transform((val) => values[val])
