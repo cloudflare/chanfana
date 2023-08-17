@@ -158,7 +158,7 @@ export class TaskFetch extends OpenAPIRoute {
 
 export class TaskList extends OpenAPIRoute {
   static schema = {
-    tags: [Tasks],
+    tags: ['Tasks'],
     summary: 'List all tasks',
     parameters: {
       page: Query(Int, {
