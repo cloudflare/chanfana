@@ -617,20 +617,10 @@ export function extractParameter(
 }
 
 export function extractQueryParameters(request: Request): Record<string, any> {
-  const url = decodeURIComponent(request.url).split('?')
-
-  if (url.length === 1) {
-    return {}
-  }
-
-  const query = url.slice(1).join('?')
-
+  const { searchParams } = new URL(request.url)
   const params: Record<string, any> = {}
-  for (const param of query.split('&')) {
-    const paramSplitted = param.split('=')
-    const key = paramSplitted[0]
-    const value = paramSplitted[1]
 
+  searchParams.forEach((value, key) => {
     if (params[key] === undefined) {
       params[key] = value
     } else if (!Array.isArray(params[key])) {
@@ -638,7 +628,7 @@ export function extractQueryParameters(request: Request): Record<string, any> {
     } else {
       params[key].push(value)
     }
-  }
+  })
 
   return params
 }
