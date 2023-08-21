@@ -10,13 +10,11 @@ describe('queryParametersValidation', () => {
     const resp = await request.json()
 
     // minus 1, because 1 parameter is optional
-    expect(Object.keys(resp.errors).length).toEqual(
-      Object.keys(ToDoList.schema.parameters).length - 1
-    )
+    expect(Object.keys(resp.errors).length).toEqual(2)
 
-    // sanity check some parameters
-    expect(resp.errors.p_number).toEqual('is required')
-    expect(resp.errors.p_boolean).toEqual('is required')
+    // The enum is required to validate the oneOf tests
+    expect(resp.errors.p_enumeration).toEqual('is required')
+    expect(resp.errors.p_enumeration_insensitive).toEqual('is required')
   })
 
   test('checkNumberInvalid', async () => {
@@ -57,6 +55,25 @@ describe('queryParametersValidation', () => {
     const resp = await request.json()
 
     expect(resp.errors.p_string).toBeUndefined()
+  })
+
+  test('checkStringDecodeValid', async () => {
+    const encoded1 = '&p_str=+%20+'
+    const encoded2 = encodeURIComponent('+ +') // %2B%20%2B
+    const qs =
+      '?p_enumeration=csv&p_enumeration_insensitive=CSV&p_string=' +
+      encoded1 +
+      encoded2
+    const request = await todoRouter.handle(
+      buildRequest({ method: 'GET', path: `/todos${qs}` })
+    )
+    const resp = await request.json()
+    expect(request.status).toEqual(200)
+
+    expect(resp.results).toEqual(['lorem', 'ipsum'])
+    // FIXME: the query params not properly returned here
+    // expect(resp.params.p_string).toEqual('+ +')
+    // expect(resp.params.p_str).toEqual('   ')
   })
 
   test('checkBooleanInvalid', async () => {

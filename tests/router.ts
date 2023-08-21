@@ -23,18 +23,33 @@ export class ToDoList extends OpenAPIRoute {
     tags: ['ToDo'],
     summary: 'List all ToDos',
     parameters: {
-      p_number: Query(Number),
-      p_string: Query(String),
-      p_boolean: Query(Boolean),
-      p_int: Query(Int),
-      p_num: Query(Num),
-      p_str: Query(Str),
-      p_bool: Query(Bool),
+      p_number: Query(Number, {
+        required: false,
+      }),
+      p_string: Query(String, {
+        required: false,
+      }),
+      p_boolean: Query(Boolean, {
+        required: false,
+      }),
+      p_int: Query(Int, {
+        required: false,
+      }),
+      p_num: Query(Num, {
+        required: false,
+      }),
+      p_str: Query(Str, {
+        required: false,
+      }),
+      p_bool: Query(Bool, {
+        required: false,
+      }),
       p_enumeration: Query(Enumeration, {
         values: {
           json: 'ENUM_JSON',
           csv: 'ENUM_CSV',
         },
+        required: true,
       }),
       p_enumeration_insensitive: Query(Enumeration, {
         values: {
@@ -42,18 +57,34 @@ export class ToDoList extends OpenAPIRoute {
           csv: 'csv',
         },
         enumCaseSensitive: false,
+        required: true,
       }),
-      p_datetime: Query(DateTime),
-      p_dateonly: Query(DateOnly),
+      p_datetime: Query(DateTime, {
+        required: false,
+      }),
+      p_dateonly: Query(DateOnly, {
+        required: false,
+      }),
       p_regex: Query(Regex, {
         pattern:
           '^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$',
+        required: false,
       }),
-      p_email: Query(Email),
-      p_uuid: Query(Uuid),
-      p_hostname: Query(Hostname),
-      p_ipv4: Query(Ipv4),
-      p_ipv6: Query(Ipv6),
+      p_email: Query(Email, {
+        required: false,
+      }),
+      p_uuid: Query(Uuid, {
+        required: false,
+      }),
+      p_hostname: Query(Hostname, {
+        required: false,
+      }),
+      p_ipv4: Query(Ipv4, {
+        required: false,
+      }),
+      p_ipv6: Query(Ipv6, {
+        required: false,
+      }),
       p_optional: Query(Int, {
         required: false,
       }),
