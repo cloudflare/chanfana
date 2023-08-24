@@ -1,6 +1,6 @@
 import { OpenAPIRouteSchema, RouteOptions, RouteValidated } from './types'
 import { extractQueryParameters } from './parameters'
-import { z } from 'zod'
+import { z, ZodObject } from 'zod'
 import { isAnyZodType, legacyTypeIntoZod } from './zod/utils'
 import { RouteConfig } from '@asteasolutions/zod-to-openapi'
 import { jsonResp } from './utils'
@@ -172,6 +172,13 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
     return resp
   }
 
+  extractQueryParameters(
+    request: Request,
+    schema?: ZodObject<any>
+  ): Record<string, any> | null {
+    return extractQueryParameters(request, schema)
+  }
+
   async validateRequest(request: Request): Promise<RouteValidated> {
     // @ts-ignore
     const schema: RouteConfig = this.__proto__.constructor.getSchemaZod()
@@ -192,7 +199,10 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
       unvalidatedData['headers'] = {}
     }
 
-    const queryParams = extractQueryParameters(request, schema.request?.query)
+    const queryParams = this.extractQueryParameters(
+      request,
+      schema.request?.query
+    )
     if (queryParams) unvalidatedData['query'] = queryParams
 
     if (schema.request?.headers) {
