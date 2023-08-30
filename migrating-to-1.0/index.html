@@ -10,14 +10,14 @@
       
       
       
-        <link rel="canonical" href="https://cloudflare.github.io/itty-router-openapi/migrating-from-itty-router/">
+        <link rel="canonical" href="https://cloudflare.github.io/itty-router-openapi/migrating-to-1.0/">
       
       <link rel="icon" href="../assets/logo.svg">
       <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.1">
     
     
       
-        <title>Migrating existing itty-router applications - itty-router-openapi</title>
+        <title>Migrating to 1.0 - itty-router-openapi</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#migrating-existing-itty-router-applications" class="md-skip">
+        <a href="#what-changed" class="md-skip">
           Skip to content
         </a>
       
@@ -102,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Migrating existing itty-router applications
+              Migrating to 1.0
             
           </span>
         </div>
@@ -293,6 +293,8 @@
         
           
         
+          
+        
       
       
         <label class="md-nav__link" for="__nav_3">
@@ -441,6 +443,20 @@
     <li class="md-nav__item">
       <a href="../user-guide/middleware/" class="md-nav__link">
         Middleware
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/migrating-from-itty-router/" class="md-nav__link">
+        Migrating existing itty-router applications
       </a>
     </li>
   
@@ -599,12 +615,87 @@
       <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
       
       
-        
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Migrating to 1.0
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Migrating existing itty-router applications
+        Migrating to 1.0
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-changed" class="md-nav__link">
+    What changed
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    Breaking changes
+  </a>
+  
+    <nav class="md-nav" aria-label="Breaking changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#regex-now-must-be-in-the-regexp-format-instead-of-string" class="md-nav__link">
+    Regex now must be in the RegExp format instead of string
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation-errors-format-is-now-different" class="md-nav__link">
+    Validation errors format is now different
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#raiseunknownparameters-now-default-to-true" class="md-nav__link">
+    raiseUnknownParameters now default to true
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-and-path-parameters-each-now-have-its-own-object-inside-the-data-argument" class="md-nav__link">
+    Query and path parameters each now have its own object inside the data argument
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#missing-optional-parameters-will-also-be-missing-in-the-validated-data-object" class="md-nav__link">
+    Missing optional parameters will also be missing in the validated data object
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -627,8 +718,69 @@
   
   
   
-    
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-changed" class="md-nav__link">
+    What changed
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    Breaking changes
+  </a>
+  
+    <nav class="md-nav" aria-label="Breaking changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#regex-now-must-be-in-the-regexp-format-instead-of-string" class="md-nav__link">
+    Regex now must be in the RegExp format instead of string
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation-errors-format-is-now-different" class="md-nav__link">
+    Validation errors format is now different
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#raiseunknownparameters-now-default-to-true" class="md-nav__link">
+    raiseUnknownParameters now default to true
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query-and-path-parameters-each-now-have-its-own-object-inside-the-data-argument" class="md-nav__link">
+    Query and path parameters each now have its own object inside the data argument
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#missing-optional-parameters-will-also-be-missing-in-the-validated-data-object" class="md-nav__link">
+    Missing optional parameters will also be missing in the validated data object
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -642,26 +794,116 @@
                 
 
 
-<h1 id="migrating-existing-itty-router-applications">Migrating existing itty-router applications<a class="headerlink" href="#migrating-existing-itty-router-applications" title="Permanent link">&para;</a></h1>
-<p>All it takes is changing one line of code. After installing <code>itty-router-openapi</code> replace <code>Router</code> with the
-new <code>OpenAPIRouter</code> function.</p>
-<div class="highlight"><pre><span></span><code><span class="c1">// Old router</span>
-<span class="c1">//import { Router } from &#39;itty-router&#39;</span>
-<span class="c1">//const router = Router()</span>
+  <h1>Migrating to 1.0</h1>
 
-<span class="c1">// New router</span>
-<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
-
-<span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">()</span>
-
-<span class="c1">// Old routes remain the same</span>
-<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/todos&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Response</span><span class="p">(</span><span class="s1">&#39;Todos Index!&#39;</span><span class="p">))</span>
-<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/todos/:id&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">({</span><span class="w"> </span><span class="nx">params</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Response</span><span class="p">(</span><span class="sb">`Todo #</span><span class="si">${</span><span class="nx">params</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">))</span>
-
-<span class="c1">// ...</span>
+<h2 id="what-changed">What changed<a class="headerlink" href="#what-changed" title="Permanent link">&para;</a></h2>
+<p>The 1.0 update is a big change from the previous version, mainly focusing on bringing support for 
+<a href="https://zod.dev">Zod</a> everywhere!</p>
+<p>There are a lot of DX improvements and small issues fixed under the hood, but everything besides the breaking changes bellow
+should not affect your day to day operations.</p>
+<h2 id="breaking-changes">Breaking changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h2>
+<h3 id="regex-now-must-be-in-the-regexp-format-instead-of-string">Regex now must be in the RegExp format instead of string<a class="headerlink" href="#regex-now-must-be-in-the-regexp-format-instead-of-string" title="Permanent link">&para;</a></h3>
+<p>Previously, Regex expressions for the <code>Regex</code> parameter type were strings, but now they are defined using the <code>RegExp</code> 
+format.</p>
+<p>To upgrade the old expressions, just replace the <code>'</code> you had before with <code>/</code>:</p>
+<div class="highlight"><span class="filename">Old version</span><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Regex</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">param</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Regex</span><span class="p">(</span><span class="s1">&#39;^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$&#39;</span><span class="p">)</span>
 </code></pre></div>
-<p>Now, when running the application, go to <code>/docs</code>. You will see your endpoints listed with the Path parameters
-automatically parsed and ready to be invoked.</p>
+<div class="highlight"><span class="filename">New version</span><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Regex</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">param</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Regex</span><span class="p">(</span><span class="sr">/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h3 id="validation-errors-format-is-now-different">Validation errors format is now different<a class="headerlink" href="#validation-errors-format-is-now-different" title="Permanent link">&para;</a></h3>
+<p>Previously, validation errors gave very little information, about what was wrong and where it was wrong.</p>
+<p>Here's an example of a failing enum validation previously:</p>
+<div class="highlight"><span class="filename">Old Version</span><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;product&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;is not one of available options&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;success&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Here's an example of the same request, but running on the newer itty-router-openapi version</p>
+<div class="highlight"><span class="filename">New Version</span><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;errors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;received&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;testing&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;code&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;invalid_enum_value&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;options&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">&quot;http&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;&quot;</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">&quot;query&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s2">&quot;product&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="mi">0</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Invalid enum value. Expected &#39;http&#39; | &#39;all&#39; | &#39;&#39;, received &#39;testing&#39;&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;success&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>As you can see, now we get much more information about what type of validation failed, the path to that field in the
+request, and available options.</p>
+<hr />
+<h3 id="raiseunknownparameters-now-default-to-true">raiseUnknownParameters now default to true<a class="headerlink" href="#raiseunknownparameters-now-default-to-true" title="Permanent link">&para;</a></h3>
+<p>The <code>raiseUnknownParameters</code> flag was introduced recently as a way to make the api more strict during validation.
+It works but raising an error every time an endpoint receives an unexpected parameter.</p>
+<p>Until now this flag was opt-in, in order to not break any existing application, but we took this
+1.0 opportunity to turn it on by default.</p>
+<p>You can still disable it in the <code>Router</code> configurations, read more <a href="../user-guide/router-options/">here</a>.</p>
+<hr />
+<h3 id="query-and-path-parameters-each-now-have-its-own-object-inside-the-data-argument">Query and path parameters each now have its own object inside the data argument<a class="headerlink" href="#query-and-path-parameters-each-now-have-its-own-object-inside-the-data-argument" title="Permanent link">&para;</a></h3>
+<p>Until now the <code>query</code> and <code>path</code> parameters were at the root of the <code>data</code> argument.</p>
+<div class="highlight"><span class="filename">Old version</span><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">TaskList</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">parameters</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">slug</span><span class="o">:</span><span class="w"> </span><span class="kt">Path</span><span class="p">(</span><span class="nb">String</span><span class="p">),</span>
+<span class="w">      </span><span class="nx">page</span><span class="o">:</span><span class="w"> </span><span class="kt">Query</span><span class="p">(</span><span class="nx">Int</span><span class="p">),</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">object</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Retrieve the validated page</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">page</span><span class="p">,</span><span class="w"> </span><span class="nx">slug</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span>
+
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>This caused some confusion, on why are these fields at the root, and body fields are inside the <code>body</code> property?
+It was also impossible to get a path and a query parameter with the same name.</p>
+<p>In the new version we moved the path to the <code>params</code> property and the query to the <code>query</code> property
+of the data object.</p>
+<div class="highlight"><span class="filename">New version</span><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">TaskList</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">parameters</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">slug</span><span class="o">:</span><span class="w"> </span><span class="kt">Path</span><span class="p">(</span><span class="nb">String</span><span class="p">),</span>
+<span class="w">      </span><span class="nx">page</span><span class="o">:</span><span class="w"> </span><span class="kt">Query</span><span class="p">(</span><span class="nx">Int</span><span class="p">),</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">object</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Retrieve the validated page</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">page</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span><span class="p">.</span><span class="nx">query</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">slug</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span><span class="p">.</span><span class="nx">path</span>
+
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="missing-optional-parameters-will-also-be-missing-in-the-validated-data-object">Missing optional parameters will also be missing in the validated data object<a class="headerlink" href="#missing-optional-parameters-will-also-be-missing-in-the-validated-data-object" title="Permanent link">&para;</a></h3>
+<p>Previously, when a parameter was optional, and you didn't sent it in the request, it would always be
+set to <code>null</code> in the data object.</p>
+<p>This was a problem to differentiate when a parameter was optional, but you actually sent it with a value of
+<code>null</code>.</p>
+<p>In the new version, optional parameters that are not sent will be left undefined, so now you <strong>need to check</strong>
+the parameter is defined before using it.</p>
 
 
 
