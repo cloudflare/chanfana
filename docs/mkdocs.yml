@@ -48,13 +48,13 @@ nav:
       - user-guide/path-parameters.md
       - user-guide/query-parameters.md
       - user-guide/request-body.md
-#      - user-guide/header-parameters.md  TODO
       - user-guide/response-format.md
       - user-guide/router-options.md
       - user-guide/nested-routers.md
       - user-guide/security.md
       - user-guide/cors.md
       - user-guide/middleware.md
+      - user-guide/migrating-from-itty-router.md
   - Advanced User Guide:
       - advanced-user-guide/custom-response-formats.md
       - advanced-user-guide/openai-plugin.md
@@ -62,7 +62,7 @@ nav:
       - advanced-user-guide/event-listener-worker.md
       - advanced-user-guide/hiding-routes-in-openapi-schema.md
       - advanced-user-guide/openapi-schema-customizations.md
-  - migrating-from-itty-router.md
+  - migrating-to-1.0.md
 markdown_extensions:
   - toc:
       permalink: true
