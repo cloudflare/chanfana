@@ -11,12 +11,7 @@ class EndpointWithoutOperationId extends OpenAPIRoute {
     responses: {},
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-    data: Record<string, any>
-  ) {
+  async handle(request: Request, env: any, context: any, data: any) {
     return {
       msg: 'EndpointWithoutOperationId',
     }
@@ -30,12 +25,7 @@ class EndpointWithOperationId extends OpenAPIRoute {
     summary: 'Get a single ToDo',
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-    data: Record<string, any>
-  ) {
+  async handle(request: Request, env: any, context: any, data: any) {
     return {
       msg: 'EndpointWithOperationId',
     }

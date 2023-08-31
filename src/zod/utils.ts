@@ -27,6 +27,10 @@ export function isSpecificZodType(field: any, typeName: string): boolean {
 export function legacyTypeIntoZod(type: any, params?: any): ZodType {
   params = params || {}
 
+  if (type === null) {
+    return new Str({ required: false, ...params }) as ZodType<ZodString>
+  }
+
   if (isAnyZodType(type)) {
     if (params) {
       return convertParams(type, params)

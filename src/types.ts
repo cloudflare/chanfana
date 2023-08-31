@@ -6,11 +6,13 @@ import {
   ZodRequestBody,
 } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
 import { RouteConfig } from '@asteasolutions/zod-to-openapi'
+import { OpenAPIObjectConfigV31 } from '@asteasolutions/zod-to-openapi/dist/v3.1/openapi-generator'
+import { OpenAPIObjectConfig } from '@asteasolutions/zod-to-openapi/dist/v3.0/openapi-generator'
 
 export interface RouterOptions {
   base?: string
   routes?: RouteEntry[]
-  schema?: Partial<OpenAPIObject>
+  schema?: Partial<OpenAPIObjectConfigV31 | OpenAPIObjectConfig>
   docs_url?: string
   redoc_url?: string
   openapi_url?: string
@@ -37,7 +39,7 @@ export declare type OpenAPIRouteSchema = Omit<
 > & {
   requestBody?: Record<string, any>
   parameters?: Record<string, RouteParameter> | RouteParameter[]
-  responses: {
+  responses?: {
     [statusCode: string]: RouteResponse
   }
 }
@@ -81,7 +83,7 @@ export interface ParameterLocation extends StringParameterType {
 }
 
 export interface RouteValidated {
-  data: Record<string, any>
+  data: any
   errors: Record<string, any>
 }
 
