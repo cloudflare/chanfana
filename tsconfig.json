@@ -14,14 +14,14 @@
     "noFallthroughCasesInSwitch": true,
     "pretty": true,
     "resolveJsonModule": true,
-    "rootDir": "src",
+    "rootDir": "./",
     "skipLibCheck": true,
     "strict": true,
     "traceResolution": false,
     "outDir": "",
     "target": "esnext",
     "module": "esnext",
-    "types": ["@types/node", "@types/jest", "@cloudflare/workers-types", "@types/service-worker-mock"]
+    "types": ["@types/node", "@types/jest", "@types/service-worker-mock", "@cloudflare/workers-types"]
   },
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/example.ts"],
   "include": ["src", "tests", "example"]

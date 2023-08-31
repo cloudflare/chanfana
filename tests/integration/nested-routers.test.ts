@@ -4,6 +4,7 @@ import { OpenAPIRoute } from '../../src/route'
 import { Path } from '../../src/parameters'
 import { OpenAPIRouter } from '../../src/openapi'
 import { buildRequest } from '../utils'
+import { jsonResp } from '../../src/utils'
 
 const innerRouter = OpenAPIRouter({ base: '/api/v1' })
 class ToDoGet extends OpenAPIRoute {
@@ -15,6 +16,7 @@ class ToDoGet extends OpenAPIRoute {
     },
     responses: {
       '200': {
+        description: 'example',
         schema: {
           todo: {
             lorem: String,
@@ -25,12 +27,7 @@ class ToDoGet extends OpenAPIRoute {
     },
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-    data: Record<string, any>
-  ) {
+  async handle(request: Request, env: any, context: any, data: any) {
     return {
       todo: {
         lorem: 'lorem',
@@ -41,9 +38,7 @@ class ToDoGet extends OpenAPIRoute {
 }
 
 innerRouter.get('/todo/:id', ToDoGet)
-innerRouter.all('*', () =>
-  Response.json({ message: 'Not Found' }, { status: 404 })
-)
+innerRouter.all('*', () => jsonResp({ message: 'Not Found' }, { status: 404 }))
 
 const router = OpenAPIRouter({
   schema: {

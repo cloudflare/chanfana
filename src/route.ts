@@ -1,193 +1,250 @@
-import {
-  OpenAPIRouteSchema,
-  OpenAPISchema,
-  RouteOptions,
-  RouteValidated,
-} from './types'
-import { ApiException } from './exceptions'
-import {
-  Body,
-  extractParameter,
-  extractQueryParameters,
-  getFormatedParameters,
-  Parameter,
-  Resp,
-} from './parameters'
+import { OpenAPIRouteSchema, RouteOptions, RouteValidated } from './types'
+import { extractQueryParameters } from './parameters'
+import { z, ZodObject } from 'zod'
+import { isAnyZodType, legacyTypeIntoZod } from './zod/utils'
+import { RouteConfig } from '@asteasolutions/zod-to-openapi'
+import { jsonResp } from './utils'
+import { IRequest } from 'itty-router'
 
-export class OpenAPIRoute implements OpenAPIRouteSchema {
+export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
+  handle(request: I, ...args: A): any {
+    throw new Error('Method not implemented.')
+  }
+
   static isRoute = true
 
-  static schema: OpenAPISchema
+  static schema: OpenAPIRouteSchema
   params: RouteOptions
 
   constructor(params: RouteOptions) {
     this.params = params
   }
 
-  static getSchema(): OpenAPISchema {
+  static getSchema(): OpenAPIRouteSchema {
     return this.schema
   }
 
-  get schema(): OpenAPISchema {
+  schema(): OpenAPIRouteSchema {
     // @ts-ignore
     return this.__proto__.constructor.schema
   }
 
-  getSchema(): OpenAPISchema {
+  getSchema(): OpenAPIRouteSchema {
     // @ts-ignore
     return this.__proto__.constructor.getSchema()
   }
 
-  static getParsedSchema(): Record<any, any> {
-    const schema = this.getSchema()
+  getSchemaZod(): RouteConfig {
+    // @ts-ignore
+    return this.__proto__.constructor.getSchemaZod()
+  }
 
-    let requestBody = null
-    if (schema.requestBody) {
-      requestBody = new Body(schema.requestBody, {
-        contentType: schema.requestBody.contentType,
-      }).getValue()
+  static getSchemaZod(): RouteConfig {
+    // Deep copy
+    const schema = { ...this.getSchema() }
+
+    let parameters: any = {}
+    let requestBody: object = schema.requestBody as object
+    const responses: any = {}
+
+    if (requestBody) {
+      if (!isAnyZodType(requestBody)) {
+        requestBody = legacyTypeIntoZod(requestBody)
+      }
+
+      requestBody = {
+        content: {
+          'application/json': {
+            schema: requestBody,
+          },
+        },
+      }
+
+      parameters.body = requestBody
     }
 
-    const responses: Record<string, any> = {}
-    if (schema.responses) {
-      for (const [key, value] of Object.entries(schema.responses)) {
-        const resp = new Resp(value.schema, value)
-        responses[key] = resp.getValue()
+    if (!schema.responses) {
+      // No response was provided in the schema, default to a blank one
+      schema.responses = {
+        '200': {
+          description: 'Successfull response',
+          schema: {},
+        },
       }
     }
 
+    for (const [key, value] of Object.entries(schema.responses)) {
+      let responseSchema: object = (value.schema as object) || {}
+
+      if (!isAnyZodType(responseSchema)) {
+        responseSchema = legacyTypeIntoZod(responseSchema)
+      }
+
+      const contentType = value.contentType || 'application/json'
+
+      // @ts-ignore
+      responses[key] = {
+        description: value.description,
+        content: {
+          [contentType]: {
+            schema: responseSchema,
+          },
+        },
+      }
+    }
+
+    if (schema.parameters) {
+      let values = schema.parameters
+      const _params: any = {}
+
+      // Convert parameter array into object
+      if (Array.isArray(values)) {
+        values = values.reduce(
+          // @ts-ignore
+          (obj, item) => Object.assign(obj, { [item.name]: item }),
+          {}
+        )
+      }
+
+      for (const [key, value] of Object.entries(values as Record<any, any>)) {
+        if (!_params[value.location]) {
+          _params[value.location] = {}
+        }
+
+        _params[value.location][key] = value.type
+      }
+
+      for (const [key, value] of Object.entries(_params)) {
+        _params[key] = z.object(value as any)
+      }
+
+      parameters = {
+        ...parameters,
+        ..._params,
+      }
+    }
+
+    delete schema.requestBody
+    delete schema.parameters
+    // @ts-ignore
+    delete schema.responses
+
     // Deep copy
+    //@ts-ignore
     return {
       ...schema,
-      parameters: schema.parameters
-        ? getFormatedParameters(schema.parameters)
-        : [],
+      request: {
+        ...parameters,
+      },
       responses: responses,
-      ...(requestBody ? { requestBody: requestBody } : {}),
     }
   }
 
-  jsonResp(params: { data: Record<string, any>; status?: number }): Response {
-    return new Response(JSON.stringify(params.data), {
-      headers: {
-        'content-type': 'application/json;charset=UTF-8',
-      },
-      status: params.status || 200,
-    })
-  }
-
   handleValidationError(errors: Record<string, any>): Response {
-    return this.jsonResp({
-      data: {
+    return jsonResp(
+      {
         errors: errors,
         success: false,
         result: {},
       },
-      status: 400,
-    })
+      {
+        status: 400,
+      }
+    )
   }
 
   async execute(...args: any[]) {
     const { data, errors } = await this.validateRequest(args[0])
 
-    if (Object.keys(errors).length > 0) {
+    if (errors) {
       return this.handleValidationError(errors)
     }
 
     args.push(data)
 
+    // @ts-ignore
     const resp = await this.handle(...args)
 
     if (!(resp instanceof Response) && typeof resp === 'object') {
-      return this.jsonResp({ data: resp })
+      return jsonResp(resp)
     }
 
     return resp
   }
 
+  extractQueryParameters(
+    request: Request,
+    schema?: ZodObject<any>
+  ): Record<string, any> | null {
+    return extractQueryParameters(request, schema)
+  }
+
   async validateRequest(request: Request): Promise<RouteValidated> {
-    const params = this.getSchema().parameters || {}
-    const requestBody = this.getSchema().requestBody
-    const queryParams = extractQueryParameters(request)
+    // @ts-ignore
+    const schema: RouteConfig = this.__proto__.constructor.getSchemaZod()
+    const unvalidatedData: any = {}
 
-    const validatedObj: Record<string, any> = {}
-    const validationErrors: Record<string, any> = {}
-
-    // check for query unknown parameters
-    if (this.params?.raiseUnknownParameters) {
-      for (const key of Object.keys(queryParams)) {
-        if (Array.isArray(params)) {
-          let exists = false
-          for (const param of params) {
-            if (param.params.name === key) {
-              exists = true
-              break
-            }
-          }
-
-          if (!exists) {
-            validationErrors[key] = `is an unknown parameter`
-          }
-        } else {
-          if (params[key] === undefined) {
-            validationErrors[key] = `is an unknown parameter`
-          }
-        }
-      }
+    const rawSchema: any = {}
+    if (schema.request?.params) {
+      rawSchema['params'] = schema.request?.params
+      // @ts-ignore
+      unvalidatedData['params'] = request.params
+    }
+    if (schema.request?.query) {
+      rawSchema['query'] = schema.request?.query
+      unvalidatedData['query'] = {}
+    }
+    if (schema.request?.headers) {
+      rawSchema['headers'] = schema.request?.headers
+      unvalidatedData['headers'] = {}
     }
 
-    for (const [key, value] of Object.entries(params)) {
-      // @ts-ignore
-      const param: Parameter = value
-      const name = param.params.name ? param.params.name : key
-      const rawData = extractParameter(
-        request,
-        queryParams,
-        name,
-        param.location
-      )
+    const queryParams = this.extractQueryParameters(
+      request,
+      schema.request?.query
+    )
+    if (queryParams) unvalidatedData['query'] = queryParams
 
-      try {
-        validatedObj[name] = param.validate(rawData)
-      } catch (e) {
-        validationErrors[name] = (e as ApiException).message
+    if (schema.request?.headers) {
+      unvalidatedData['headers'] = {}
+      // @ts-ignore
+      for (const header of Object.keys(schema.request?.headers.shape)) {
+        // @ts-ignore
+        unvalidatedData.headers[header] = request.headers.get(header)
       }
     }
 
     if (
       request.method.toLowerCase() !== 'get' &&
-      requestBody &&
-      (requestBody.contentType === undefined ||
-        requestBody.contentType === 'application/json')
+      schema.request?.body &&
+      schema.request?.body.content['application/json'] &&
+      schema.request?.body.content['application/json'].schema
     ) {
-      let json
-      let loaded = false
+      rawSchema['body'] = schema.request.body.content['application/json'].schema
 
+      // eslint-disable-next-line no-useless-catch
       try {
-        // @ts-ignore
-        json = await request.json()
-        loaded = true
+        unvalidatedData['body'] = await request.json()
       } catch (e) {
-        validationErrors['body'] = (e as ApiException).message
+        // TODO
+        throw e
       }
-
-      if (loaded)
-        try {
-          validatedObj['body'] = new Body(requestBody).validate(json)
-        } catch (e) {
-          validationErrors['body' + (e as ApiException).key] = (
-            e as ApiException
-          ).message
-        }
     }
+
+    let validationSchema: any = z.object(rawSchema)
+
+    if (
+      this.params?.raiseUnknownParameters === undefined ||
+      this.params?.raiseUnknownParameters === true
+    ) {
+      validationSchema = validationSchema.strict()
+    }
+
+    const validatedData = validationSchema.safeParse(unvalidatedData)
 
     return {
-      data: validatedObj,
-      errors: validationErrors,
+      data: validatedData.success ? validatedData.data : undefined,
+      errors: !validatedData.success ? validatedData.error.issues : undefined,
     }
-  }
-
-  handle(...args: any[]): Promise<Response | Record<string, any>> {
-    throw new Error('Method not implemented.')
   }
 }

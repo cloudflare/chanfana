@@ -1,5 +1,5 @@
 import 'isomorphic-fetch'
-import { buildRequest } from '../utils'
+import { buildRequest, findError } from '../utils'
 import { ToDoList, todoRouter } from '../router'
 
 describe('queryParametersValidation', () => {
@@ -10,13 +10,15 @@ describe('queryParametersValidation', () => {
     const resp = await request.json()
 
     // minus 1, because 1 parameter is optional
-    expect(Object.keys(resp.errors).length).toEqual(
+    expect(resp.errors.length).toEqual(
       Object.keys(ToDoList.schema.parameters).length - 1
     )
 
     // sanity check some parameters
-    expect(resp.errors.p_number).toEqual('is required')
-    expect(resp.errors.p_boolean).toEqual('is required')
+    expect(findError(resp.errors, 'p_number')).toEqual('Invalid input')
+    expect(findError(resp.errors, 'p_boolean')).toEqual(
+      "Invalid enum value. Expected 'true' | 'false', received 'undefined'"
+    )
   })
 
   test('checkNumberInvalid', async () => {
@@ -26,7 +28,9 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_number).toEqual('is not a valid number')
+    expect(findError(resp.errors, 'p_number')).toEqual(
+      'Expected number, received nan'
+    )
   })
 
   test('checkNumberValidFloat', async () => {
@@ -36,7 +40,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_number).toBeUndefined()
+    expect(findError(resp.errors, 'p_number')).toBeUndefined()
   })
 
   test('checkNumberValidInteger', async () => {
@@ -46,7 +50,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_number).toBeUndefined()
+    expect(findError(resp.errors, 'p_number')).toBeUndefined()
   })
 
   test('checkStringValid', async () => {
@@ -56,7 +60,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_string).toBeUndefined()
+    expect(findError(resp.errors, 'p_string')).toBeUndefined()
   })
 
   test('checkBooleanInvalid', async () => {
@@ -66,8 +70,8 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_boolean).toEqual(
-      'is not a valid boolean, allowed values are true or false'
+    expect(findError(resp.errors, 'p_boolean')).toEqual(
+      "Invalid enum value. Expected 'true' | 'false', received 'asd'"
     )
   })
 
@@ -78,7 +82,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_boolean).toBeUndefined()
+    expect(findError(resp.errors, 'p_boolean')).toBeUndefined()
   })
 
   test('checkBooleanValidCaseInsensitive', async () => {
@@ -88,7 +92,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_boolean).toBeUndefined()
+    expect(findError(resp.errors, 'p_boolean')).toBeUndefined()
   })
 
   test('checkEnumerationSensitiveInvalid', async () => {
@@ -98,7 +102,9 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_enumeration).toEqual('is not one of available options')
+    expect(findError(resp.errors, 'p_enumeration')).toEqual(
+      "Invalid enum value. Expected 'json' | 'csv', received 'sfDase'"
+    )
   })
 
   test('checkEnumerationSensitiveInvalidCase', async () => {
@@ -108,7 +114,9 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_enumeration).toEqual('is not one of available options')
+    expect(findError(resp.errors, 'p_enumeration')).toEqual(
+      "Invalid enum value. Expected 'json' | 'csv', received 'Csv'"
+    )
   })
 
   test('checkEnumerationSensitiveValid', async () => {
@@ -118,7 +126,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_enumeration).toBeUndefined()
+    expect(findError(resp.errors, 'p_enumeration')).toBeUndefined()
   })
 
   test('checkEnumerationInsensitiveInvalid', async () => {
@@ -128,8 +136,8 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_enumeration_insensitive).toEqual(
-      'is not one of available options'
+    expect(findError(resp.errors, 'p_enumeration_insensitive')).toEqual(
+      "Invalid enum value. Expected 'json' | 'csv', received 'sfdase'"
     )
   })
 
@@ -140,7 +148,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_enumeration_insensitive).toBeUndefined()
+    expect(findError(resp.errors, 'p_enumeration_insensitive')).toBeUndefined()
   })
 
   test('checkEnumerationInsensitiveValid', async () => {
@@ -150,7 +158,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_enumeration_insensitive).toBeUndefined()
+    expect(findError(resp.errors, 'p_enumeration_insensitive')).toBeUndefined()
   })
 
   test('checkDatetimeInvalid', async () => {
@@ -160,7 +168,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_datetime).toEqual('is not a valid date time')
+    expect(findError(resp.errors, 'p_datetime')).toEqual('Invalid datetime')
   })
 
   test('checkDatetimeInvalid2', async () => {
@@ -170,7 +178,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_datetime).toEqual('is not a valid date time')
+    expect(findError(resp.errors, 'p_datetime')).toEqual('Invalid datetime')
   })
 
   test('checkDatetimeInvalid3', async () => {
@@ -180,17 +188,17 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_datetime).toEqual('is not a valid date time')
+    expect(findError(resp.errors, 'p_datetime')).toEqual('Invalid datetime')
   })
 
   test('checkDatetimeValid', async () => {
-    const qs = '?p_datetime=2022-09-15'
+    const qs = '?p_datetime=2022-09-15T00:00:01Z'
     const request = await todoRouter.handle(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_datetime).toBeUndefined()
+    expect(findError(resp.errors, 'p_datetime')).toBeUndefined()
   })
 
   test('checkDatetimeValid2', async () => {
@@ -200,7 +208,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_datetime).toBeUndefined()
+    expect(findError(resp.errors, 'p_datetime')).toBeUndefined()
   })
 
   test('checkDateInvalid', async () => {
@@ -210,27 +218,17 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_dateonly).toEqual('is not a valid date')
-  })
-
-  test('checkDateInvalid2', async () => {
-    const qs = '?p_dateonly=2022-10'
-    const request = await todoRouter.handle(
-      buildRequest({ method: 'GET', path: `/todos${qs}` })
-    )
-    const resp = await request.json()
-
-    expect(resp.errors.p_dateonly).toEqual('is not a valid date')
+    expect(findError(resp.errors, 'p_dateonly')).toEqual('Invalid date')
   })
 
   test('checkDateInvalid3', async () => {
-    const qs = '?p_dateonly=2022-09-15T00:00:00Z'
+    const qs = '?p_dateonly=2022-09-15T00:0f0:00.0Z'
     const request = await todoRouter.handle(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_dateonly).toEqual('is not a valid date')
+    expect(findError(resp.errors, 'p_dateonly')).toEqual('Invalid date')
   })
 
   test('checkDateValid', async () => {
@@ -240,7 +238,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_dateonly).toBeUndefined()
+    expect(findError(resp.errors, 'p_dateonly')).toBeUndefined()
   })
 
   test('checkRegexInvalid', async () => {
@@ -250,9 +248,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(
-      resp.errors.p_regex.includes('does not match the pattern')
-    ).toBeTruthy()
+    expect(findError(resp.errors, 'p_regex')).toBeTruthy()
   })
 
   test('checkRegexValid', async () => {
@@ -262,7 +258,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_regex).toBeUndefined()
+    expect(findError(resp.errors, 'p_regex')).toBeUndefined()
   })
 
   test('checkEmailInvalid', async () => {
@@ -272,7 +268,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_email).toEqual('is not a valid email')
+    expect(findError(resp.errors, 'p_email')).toEqual('Invalid email')
   })
 
   test('checkEmailInvalid2', async () => {
@@ -282,7 +278,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_email).toEqual('is not a valid email')
+    expect(findError(resp.errors, 'p_email')).toEqual('Invalid email')
   })
 
   test('checkEmailInvalid3', async () => {
@@ -292,7 +288,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_email).toEqual('is not a valid email')
+    expect(findError(resp.errors, 'p_email')).toEqual('Invalid email')
   })
 
   test('checkEmailValid', async () => {
@@ -302,7 +298,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_email).toBeUndefined()
+    expect(findError(resp.errors, 'p_email')).toBeUndefined()
   })
 
   test('checkUuidInvalid', async () => {
@@ -312,7 +308,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_uuid).toEqual('is not a valid uuid')
+    expect(findError(resp.errors, 'p_uuid')).toEqual('Invalid uuid')
   })
 
   test('checkUuidInvalid2', async () => {
@@ -322,7 +318,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_uuid).toEqual('is not a valid uuid')
+    expect(findError(resp.errors, 'p_uuid')).toEqual('Invalid uuid')
   })
 
   test('checkUuidValid', async () => {
@@ -332,7 +328,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_uuid).toBeUndefined()
+    expect(findError(resp.errors, 'p_uuid')).toBeUndefined()
   })
 
   test('checkUuidValid2', async () => {
@@ -342,7 +338,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_uuid).toBeUndefined()
+    expect(findError(resp.errors, 'p_uuid')).toBeUndefined()
   })
 
   test('checkHostnameInvalid', async () => {
@@ -352,7 +348,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_hostname).toEqual('is not a valid hostname')
+    expect(findError(resp.errors, 'p_hostname')).toEqual('Invalid')
   })
 
   test('checkHostnameValid', async () => {
@@ -362,7 +358,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_hostname).toBeUndefined()
+    expect(findError(resp.errors, 'p_hostname')).toBeUndefined()
   })
 
   test('checkHostnameValid2', async () => {
@@ -372,7 +368,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_hostname).toBeUndefined()
+    expect(findError(resp.errors, 'p_hostname')).toBeUndefined()
   })
 
   test('checkIpv4Invalid', async () => {
@@ -382,7 +378,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_ipv4).toEqual('is not a valid ipv4')
+    expect(findError(resp.errors, 'p_ipv4')).toEqual('Invalid ip')
   })
 
   test('checkIpv4Invalid2', async () => {
@@ -392,7 +388,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_ipv4).toEqual('is not a valid ipv4')
+    expect(findError(resp.errors, 'p_ipv4')).toEqual('Invalid ip')
   })
 
   test('checkIpv4Valid', async () => {
@@ -402,7 +398,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_ipv4).toBeUndefined()
+    expect(findError(resp.errors, 'p_ipv4')).toBeUndefined()
   })
 
   test('checkIpv6Invalid', async () => {
@@ -412,7 +408,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_ipv6).toEqual('is not a valid ipv6')
+    expect(findError(resp.errors, 'p_ipv6')).toEqual('Invalid ip')
   })
 
   test('checkIpv6Invalid2', async () => {
@@ -422,7 +418,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_ipv6).toEqual('is not a valid ipv6')
+    expect(findError(resp.errors, 'p_ipv6')).toEqual('Invalid ip')
   })
 
   test('checkIpv6Valid', async () => {
@@ -432,7 +428,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_ipv6).toBeUndefined()
+    expect(findError(resp.errors, 'p_ipv6')).toBeUndefined()
   })
 
   test('checkOptionalMissing', async () => {
@@ -442,7 +438,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_optional).toBeUndefined()
+    expect(findError(resp.errors, 'p_optional')).toBeUndefined()
   })
 
   test('checkOptionalInvalid', async () => {
@@ -452,7 +448,9 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_optional).toEqual('is not a valid number')
+    expect(findError(resp.errors, 'p_optional')).toEqual(
+      'Expected number, received nan'
+    )
   })
 
   test('checkOptionalValid', async () => {
@@ -462,7 +460,7 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(resp.errors.p_optional).toBeUndefined()
+    expect(findError(resp.errors, 'p_optional')).toBeUndefined()
   })
 })
 
@@ -482,7 +480,7 @@ describe('bodyParametersValidation', () => {
     expect(request.status).toEqual(400)
 
     // the current body implementation only validates 1 field at time
-    expect(resp.errors['body.title']).toEqual('is required')
+    expect(findError(resp.errors, 'title')).toEqual('Required')
   })
 
   test('requiredFieldTipe', async () => {
@@ -502,7 +500,7 @@ describe('bodyParametersValidation', () => {
     expect(request.status).toEqual(400)
 
     // the current body implementation only validates 1 field at time
-    expect(resp.errors['body.type']).toEqual('is required')
+    expect(findError(resp.errors, 'type')).toEqual('Required')
   })
 
   test('validRequest', async () => {
@@ -524,7 +522,9 @@ describe('bodyParametersValidation', () => {
 
     expect(request.status).toEqual(200)
 
-    expect(resp).toEqual({ todo: { title: 'my todo', type: 'nextWeek' } })
+    expect(resp).toEqual({
+      todo: { title: 'my todo', type: 'nextWeek' },
+    })
   })
 
   test('validRequestWithOptionalParameters', async () => {

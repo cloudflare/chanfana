@@ -92,9 +92,9 @@ export class TaskFetch extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: Record<string, any>) {
+  async handle(request: Request, env: any, context: any, data: object) {
     // Retrieve the validated slug
-    const { taskSlug } = data
+    const { taskSlug } = data.params
 
     // Actually fetch a task using the taskSlug
 
@@ -177,9 +177,9 @@ export class TaskList extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, data: Record<string, any>) {
+  async handle(request: Request, data: object) {
     // Retrieve the validated slug
-    const { page, isCompleted } = data
+    const { page, isCompleted } = data.query
 
     // the page parameter is always not null, because of the default value
 

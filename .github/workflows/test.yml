@@ -15,8 +15,6 @@ on:
       - 'README.md'
       - 'LICENSE'
       - '.editorconfig'
-    branches:
-      - main
 
 jobs:
   test:
@@ -34,8 +32,8 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Install modules
-        run: yarn
+        run: npm install
       - name: Run build
-        run: yarn build
-#      - name: Run tests
-#        run: yarn test
+        run: npm run build
+      - name: Run tests
+        run: npm run test
