@@ -10,8 +10,8 @@ There are 2 API's to define types in itty-router-open, but we recommend that you
 Native types, are referred in this documentation as 3 things that work interchangeably:
 
 * itty-router-openapi types (`Email`, `Ipv4`, ...)
-* Javascript native types (`String`, `Number`, ...)
-* Javascript variables (`'myvar` gets parsed as `String`, and so on for numbers and bools)
+* JavaScript native types (`String`, `Number`, ...)
+* JavaScript variables (`'myvar'` gets parsed as `String`, and so on for numbers and bools)
 
 When these types were defined we tried to make them as simple as possible, tried to add as much compatibility as
 possible.
@@ -84,12 +84,12 @@ export class Example extends OpenAPIRoute {
 }
 ```
 
-### Javascript native types
+### JavaScript native types
 
-Javascript native types can be used everywhere the itty-router-openapi types are used, sometimes it just makes
+JavaScript native types can be used everywhere the itty-router-openapi types are used, sometimes it just makes
 defining schemas simpler
 
-For example here is the same query parameters as above defined as javascript native types.
+For example here is the same query parameters as above defined as JavaScript native types.
 In this case you cannot instantiate the type with the `new` keyword, so you must pass the parameters to the parameter
 location.
 
@@ -100,9 +100,9 @@ const queryDescription1 = Query(String)
 const queryDescription3 = Query(String, { description: 'Task description' })
 ```
 
-### Javascript variables
+### JavaScript variables
 
-The main reason we support javascript variables is to make it as simple as possible to define schemas and even set as
+The main reason we support JavaScript variables is to make it as simple as possible to define schemas and even set as
 example.
 
 Here is an example of the same end result defined with a variable and as itty-router-openapi type.
