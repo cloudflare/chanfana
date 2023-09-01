@@ -95,7 +95,7 @@ export class DateTime {
   constructor(params?: ParameterType) {
     return convertParams(
       z.string().datetime({
-        message: 'Must be in the following format: 2023-09-01T11:41:33.782Z',
+        message: 'Must be in the following format: YYYY-mm-ddTHH:MM:ssZ',
       }),
       params
     )
