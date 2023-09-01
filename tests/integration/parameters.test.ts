@@ -168,7 +168,9 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(findError(resp.errors, 'p_datetime')).toEqual('Invalid datetime')
+    expect(findError(resp.errors, 'p_datetime')).toEqual(
+      'Must be in the following format: 2023-09-01T11:41:33.782Z'
+    )
   })
 
   test('checkDatetimeInvalid2', async () => {
@@ -178,7 +180,9 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(findError(resp.errors, 'p_datetime')).toEqual('Invalid datetime')
+    expect(findError(resp.errors, 'p_datetime')).toEqual(
+      'Must be in the following format: 2023-09-01T11:41:33.782Z'
+    )
   })
 
   test('checkDatetimeInvalid3', async () => {
@@ -188,7 +192,9 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(findError(resp.errors, 'p_datetime')).toEqual('Invalid datetime')
+    expect(findError(resp.errors, 'p_datetime')).toEqual(
+      'Must be in the following format: 2023-09-01T11:41:33.782Z'
+    )
   })
 
   test('checkDatetimeValid', async () => {

@@ -93,7 +93,12 @@ export class DateTime {
   static generator = true
 
   constructor(params?: ParameterType) {
-    return convertParams(z.string().datetime(), params)
+    return convertParams(
+      z.string().datetime({
+        message: 'Must be in the following format: 2023-09-01T11:41:33.782Z',
+      }),
+      params
+    )
   }
 }
 
