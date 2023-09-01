@@ -168,7 +168,9 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(findError(resp.errors, 'p_datetime')).toEqual('Invalid datetime')
+    expect(findError(resp.errors, 'p_datetime')).toEqual(
+      'Must be in the following format: YYYY-mm-ddTHH:MM:ssZ'
+    )
   })
 
   test('checkDatetimeInvalid2', async () => {
@@ -178,7 +180,9 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(findError(resp.errors, 'p_datetime')).toEqual('Invalid datetime')
+    expect(findError(resp.errors, 'p_datetime')).toEqual(
+      'Must be in the following format: YYYY-mm-ddTHH:MM:ssZ'
+    )
   })
 
   test('checkDatetimeInvalid3', async () => {
@@ -188,7 +192,9 @@ describe('queryParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(findError(resp.errors, 'p_datetime')).toEqual('Invalid datetime')
+    expect(findError(resp.errors, 'p_datetime')).toEqual(
+      'Must be in the following format: YYYY-mm-ddTHH:MM:ssZ'
+    )
   })
 
   test('checkDatetimeValid', async () => {
