@@ -668,15 +668,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#raiseunknownparameters-now-default-to-true" class="md-nav__link">
-    raiseUnknownParameters now default to true
+  <a href="#raiseunknownparameters-now-defaults-to-true" class="md-nav__link">
+    raiseUnknownParameters now defaults to true
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#query-and-path-parameters-each-now-have-its-own-object-inside-the-data-argument" class="md-nav__link">
-    Query and path parameters each now have its own object inside the data argument
+  <a href="#query-and-path-parameters-each-now-have-their-own-object-inside-the-data-argument" class="md-nav__link">
+    Query and path parameters each now have their own object inside the data argument
   </a>
   
 </li>
@@ -755,15 +755,15 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#raiseunknownparameters-now-default-to-true" class="md-nav__link">
-    raiseUnknownParameters now default to true
+  <a href="#raiseunknownparameters-now-defaults-to-true" class="md-nav__link">
+    raiseUnknownParameters now defaults to true
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#query-and-path-parameters-each-now-have-its-own-object-inside-the-data-argument" class="md-nav__link">
-    Query and path parameters each now have its own object inside the data argument
+  <a href="#query-and-path-parameters-each-now-have-their-own-object-inside-the-data-argument" class="md-nav__link">
+    Query and path parameters each now have their own object inside the data argument
   </a>
   
 </li>
@@ -797,19 +797,22 @@
   <h1>Migrating to 1.0</h1>
 
 <h2 id="what-changed">What changed<a class="headerlink" href="#what-changed" title="Permanent link">&para;</a></h2>
-<p>The 1.0 update is a big change from the previous version, mainly focusing on bringing support for 
+<p>The 1.0 update is a big change from the previous version, mainly focusing on bringing support for
 <a href="https://zod.dev">Zod</a> everywhere!</p>
-<p>There are a lot of DX improvements and small issues fixed under the hood, but everything besides the breaking changes bellow
+<p>There are a lot of DX improvements and small issues fixed under the hood, but everything besides the breaking changes
+bellow
 should not affect your day to day operations.</p>
 <h2 id="breaking-changes">Breaking changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h2>
 <h3 id="regex-now-must-be-in-the-regexp-format-instead-of-string">Regex now must be in the RegExp format instead of string<a class="headerlink" href="#regex-now-must-be-in-the-regexp-format-instead-of-string" title="Permanent link">&para;</a></h3>
-<p>Previously, Regex expressions for the <code>Regex</code> parameter type were strings, but now they are defined using the <code>RegExp</code> 
+<p>Previously, Regex expressions for the <code>Regex</code> parameter type were strings, but now they are defined using the <code>RegExp</code>
 format.</p>
 <p>To upgrade the old expressions, just replace the <code>'</code> you had before with <code>/</code>:</p>
 <div class="highlight"><span class="filename">Old version</span><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Regex</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
 <span class="kd">const</span><span class="w"> </span><span class="nx">param</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Regex</span><span class="p">(</span><span class="s1">&#39;^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$&#39;</span><span class="p">)</span>
 </code></pre></div>
 <div class="highlight"><span class="filename">New version</span><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Regex</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
 <span class="kd">const</span><span class="w"> </span><span class="nx">param</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Regex</span><span class="p">(</span><span class="sr">/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/</span><span class="p">)</span>
 </code></pre></div>
 <hr />
@@ -850,14 +853,14 @@ format.</p>
 <p>As you can see, now we get much more information about what type of validation failed, the path to that field in the
 request, and available options.</p>
 <hr />
-<h3 id="raiseunknownparameters-now-default-to-true">raiseUnknownParameters now default to true<a class="headerlink" href="#raiseunknownparameters-now-default-to-true" title="Permanent link">&para;</a></h3>
+<h3 id="raiseunknownparameters-now-defaults-to-true">raiseUnknownParameters now defaults to true<a class="headerlink" href="#raiseunknownparameters-now-defaults-to-true" title="Permanent link">&para;</a></h3>
 <p>The <code>raiseUnknownParameters</code> flag was introduced recently as a way to make the api more strict during validation.
-It works but raising an error every time an endpoint receives an unexpected parameter.</p>
+It works by raising an error every time an endpoint receives an unexpected parameter.</p>
 <p>Until now this flag was opt-in, in order to not break any existing application, but we took this
 1.0 opportunity to turn it on by default.</p>
 <p>You can still disable it in the <code>Router</code> configurations, read more <a href="../user-guide/router-options/">here</a>.</p>
 <hr />
-<h3 id="query-and-path-parameters-each-now-have-its-own-object-inside-the-data-argument">Query and path parameters each now have its own object inside the data argument<a class="headerlink" href="#query-and-path-parameters-each-now-have-its-own-object-inside-the-data-argument" title="Permanent link">&para;</a></h3>
+<h3 id="query-and-path-parameters-each-now-have-their-own-object-inside-the-data-argument">Query and path parameters each now have their own object inside the data argument<a class="headerlink" href="#query-and-path-parameters-each-now-have-their-own-object-inside-the-data-argument" title="Permanent link">&para;</a></h3>
 <p>Until now the <code>query</code> and <code>path</code> parameters were at the root of the <code>data</code> argument.</p>
 <div class="highlight"><span class="filename">Old version</span><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">TaskList</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
@@ -875,8 +878,9 @@ It works but raising an error every time an endpoint receives an unexpected para
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>This caused some confusion, on why are these fields at the root, and body fields are inside the <code>body</code> property?
-It was also impossible to get a path and a query parameter with the same name.</p>
+<p>This led to some confusion regarding why these fields are placed at the root, while body fields are contained
+within the <code>body</code> property.
+Additionally, obtaining a path parameter and a query parameter with the same name wasn't possible.</p>
 <p>In the new version we moved the path to the <code>params</code> property and the query to the <code>query</code> property
 of the data object.</p>
 <div class="highlight"><span class="filename">New version</span><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">TaskList</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
@@ -890,7 +894,7 @@ of the data object.</p>
 <span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">object</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="c1">// Retrieve the validated page</span>
 <span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">page</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span><span class="p">.</span><span class="nx">query</span>
-<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">slug</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span><span class="p">.</span><span class="nx">path</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">slug</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span><span class="p">.</span><span class="nx">params</span>
 
 <span class="w">    </span><span class="c1">// ...</span>
 <span class="w">  </span><span class="p">}</span>
@@ -900,8 +904,8 @@ of the data object.</p>
 <h3 id="missing-optional-parameters-will-also-be-missing-in-the-validated-data-object">Missing optional parameters will also be missing in the validated data object<a class="headerlink" href="#missing-optional-parameters-will-also-be-missing-in-the-validated-data-object" title="Permanent link">&para;</a></h3>
 <p>Previously, when a parameter was optional, and you didn't sent it in the request, it would always be
 set to <code>null</code> in the data object.</p>
-<p>This was a problem to differentiate when a parameter was optional, but you actually sent it with a value of
-<code>null</code>.</p>
+<p>This posed an issue in distinguishing cases where a parameter was meant to be optional but was actually sent with a
+value of <code>null</code>.</p>
 <p>In the new version, optional parameters that are not sent will be left undefined, so now you <strong>need to check</strong>
 the parameter is defined before using it.</p>
 

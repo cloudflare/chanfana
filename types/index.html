@@ -296,14 +296,14 @@
         
           <li class="md-nav__item">
   <a href="#javascript-native-types" class="md-nav__link">
-    Javascript native types
+    JavaScript native types
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#javascript-variables" class="md-nav__link">
-    Javascript variables
+    JavaScript variables
   </a>
   
 </li>
@@ -728,14 +728,14 @@
         
           <li class="md-nav__item">
   <a href="#javascript-native-types" class="md-nav__link">
-    Javascript native types
+    JavaScript native types
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#javascript-variables" class="md-nav__link">
-    Javascript variables
+    JavaScript variables
   </a>
   
 </li>
@@ -778,8 +778,8 @@
 <p>Native types, are referred in this documentation as 3 things that work interchangeably:</p>
 <ul>
 <li>itty-router-openapi types (<code>Email</code>, <code>Ipv4</code>, ...)</li>
-<li>Javascript native types (<code>String</code>, <code>Number</code>, ...)</li>
-<li>Javascript variables (<code>'myvar</code> gets parsed as <code>String</code>, and so on for numbers and bools)</li>
+<li>JavaScript native types (<code>String</code>, <code>Number</code>, ...)</li>
+<li>JavaScript variables (<code>'myvar'</code> gets parsed as <code>String</code>, and so on for numbers and bools)</li>
 </ul>
 <p>When these types were defined we tried to make them as simple as possible, tried to add as much compatibility as
 possible.
@@ -886,10 +886,10 @@ This is the main reason we support such wide variations.</p>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<h3 id="javascript-native-types">Javascript native types<a class="headerlink" href="#javascript-native-types" title="Permanent link">&para;</a></h3>
-<p>Javascript native types can be used everywhere the itty-router-openapi types are used, sometimes it just makes
+<h3 id="javascript-native-types">JavaScript native types<a class="headerlink" href="#javascript-native-types" title="Permanent link">&para;</a></h3>
+<p>JavaScript native types can be used everywhere the itty-router-openapi types are used, sometimes it just makes
 defining schemas simpler</p>
-<p>For example here is the same query parameters as above defined as javascript native types.
+<p>For example here is the same query parameters as above defined as JavaScript native types.
 In this case you cannot instantiate the type with the <code>new</code> keyword, so you must pass the parameters to the parameter
 location.</p>
 <div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Query</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
@@ -897,8 +897,8 @@ location.</p>
 <span class="kd">const</span><span class="w"> </span><span class="nx">queryDescription1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="nb">String</span><span class="p">)</span>
 <span class="kd">const</span><span class="w"> </span><span class="nx">queryDescription3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Query</span><span class="p">(</span><span class="nb">String</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Task description&#39;</span><span class="w"> </span><span class="p">})</span>
 </code></pre></div>
-<h3 id="javascript-variables">Javascript variables<a class="headerlink" href="#javascript-variables" title="Permanent link">&para;</a></h3>
-<p>The main reason we support javascript variables is to make it as simple as possible to define schemas and even set as
+<h3 id="javascript-variables">JavaScript variables<a class="headerlink" href="#javascript-variables" title="Permanent link">&para;</a></h3>
+<p>The main reason we support JavaScript variables is to make it as simple as possible to define schemas and even set as
 example.</p>
 <p>Here is an example of the same end result defined with a variable and as itty-router-openapi type.</p>
 <div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Query</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
