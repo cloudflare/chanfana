@@ -131,7 +131,7 @@ export class TaskList extends OpenAPIRoute {
   async handle(request: Request, env: any, context: any, data: object) {
     // Retrieve the validated page
     const { page } = data.query
-    const { slug } = data.path
+    const { slug } = data.params
 
     // ...
   }
