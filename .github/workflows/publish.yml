@@ -13,7 +13,7 @@ jobs:
       - name: Setup .npmrc file to publish to npm
         uses: actions/setup-node@v1
         with:
-          node-version: '16.x'
+          node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
       - name: Set RELEASE_VERSION
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
