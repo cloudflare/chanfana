@@ -258,7 +258,7 @@ describe('queryParametersValidation', () => {
   })
 
   test('checkRegexValid', async () => {
-    const qs = '?p_regex=+919367788755'
+    const qs = '?p_regex=%2B919367788755'
     const request = await todoRouter.handle(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )

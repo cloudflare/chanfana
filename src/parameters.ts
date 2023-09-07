@@ -293,25 +293,14 @@ export function extractQueryParameters(
   request: Request,
   schema?: ZodObject<any>
 ): Record<string, any> | null {
-  const url = decodeURIComponent(request.url).split('?')
+  const { searchParams } = new URL(request.url)
 
-  if (url.length === 1) {
+  if (searchParams.size === 0) {
     return null
   }
 
-  let query = url.slice(1).join('?')
-
-  // RFC 3986 allows query string to start with &
-  if (query.startsWith('&')) {
-    query = query.substring(1)
-  }
-
   const params: Record<string, any> = {}
-  for (const param of query.split('&')) {
-    const paramSplit = param.split('=')
-    const key = paramSplit[0]
-    const value = paramSplit[1]
-
+  for (const [key, value] of searchParams.entries()) {
     if (params[key] === undefined) {
       params[key] = value
     } else if (!Array.isArray(params[key])) {
