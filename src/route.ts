@@ -44,10 +44,13 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
     const schema = { ...this.getSchema() }
 
     let parameters: any = {}
-    let requestBody: object = schema.requestBody as object
+    let requestBody: any = schema.requestBody as any
     const responses: any = {}
+    const customProperties: any = {}
 
-    if (requestBody) {
+    if (requestBody && requestBody.$customRequestBody) {
+      customProperties.requestBody = requestBody.content
+    } else if (requestBody) {
       if (!isAnyZodType(requestBody)) {
         requestBody = legacyTypeIntoZod(requestBody)
       }
@@ -137,6 +140,7 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
         ...parameters,
       },
       responses: responses,
+      ...customProperties,
     }
   }
 
