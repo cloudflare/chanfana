@@ -229,7 +229,7 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
       try {
         unvalidatedData['body'] = await request.json()
       } catch (e) {
-        unvalidatedData['body'] = undefined
+        unvalidatedData['body'] = {}
       }
     }
 
