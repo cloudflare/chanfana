@@ -4,6 +4,7 @@ import {
   ParameterType,
   RegexParameterType,
   RouteParameter,
+  StringParameterType,
 } from './types'
 import { z, ZodObject } from 'zod'
 import { isSpecificZodType, legacyTypeIntoZod } from './zod/utils'
@@ -84,7 +85,7 @@ export class Int {
 export class Str {
   static generator = true
 
-  constructor(params?: ParameterType) {
+  constructor(params?: StringParameterType) {
     return convertParams(z.string(), params)
   }
 }
