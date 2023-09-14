@@ -32,6 +32,10 @@ export function convertParams(field: any, params: any): ZodType {
     field = field.openapi({ example: params.example })
   }
 
+  if (params.format) {
+    field = field.openapi({ format: params.format })
+  }
+
   return field
 }
 
