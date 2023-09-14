@@ -4,6 +4,7 @@ import {
   ParameterType,
   RegexParameterType,
   RouteParameter,
+  StringParameterType,
 } from './types'
 import { z, ZodObject } from 'zod'
 import { isSpecificZodType, legacyTypeIntoZod } from './zod/utils'
@@ -29,6 +30,10 @@ export function convertParams(field: any, params: any): ZodType {
 
   if (params.example) {
     field = field.openapi({ example: params.example })
+  }
+
+  if (params.format) {
+    field = field.openapi({ format: params.format })
   }
 
   return field
@@ -84,7 +89,7 @@ export class Int {
 export class Str {
   static generator = true
 
-  constructor(params?: ParameterType) {
+  constructor(params?: StringParameterType) {
     return convertParams(z.string(), params)
   }
 }
