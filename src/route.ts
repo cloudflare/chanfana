@@ -226,12 +226,10 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
     ) {
       rawSchema['body'] = schema.request.body.content['application/json'].schema
 
-      // eslint-disable-next-line no-useless-catch
       try {
         unvalidatedData['body'] = await request.json()
       } catch (e) {
-        // TODO
-        throw e
+        unvalidatedData['body'] = {}
       }
     }
 
