@@ -24,20 +24,18 @@ endpoints while reusing code.
 The key features are:
 
 - OpenAPI 3 and 3.1 schema generator
-- [Query](https://cloudflare.github.io/itty-router-openapi/user-guide/query-parameters/), 
-[Path](https://cloudflare.github.io/itty-router-openapi/user-guide/path-parameters/), 
-[Request Body](https://cloudflare.github.io/itty-router-openapi/user-guide/request-body/) and 
-[Header](https://cloudflare.github.io/itty-router-openapi/user-guide/header-parameters/) validator
+- [Query](https://cloudflare.github.io/itty-router-openapi/user-guide/query-parameters/),
+  [Path](https://cloudflare.github.io/itty-router-openapi/user-guide/path-parameters/),
+  [Request Body](https://cloudflare.github.io/itty-router-openapi/user-guide/request-body/) and
+  [Header](https://cloudflare.github.io/itty-router-openapi/user-guide/header-parameters/) validator
 - Fully written in typescript
 - Class-based endpoints
 - Out of the box [OpenAI plugin support](https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/openai-plugin/)
 - [Drop-in replacement](https://cloudflare.github.io/itty-router-openapi/migrating-from-itty-router/) for existing itty-router applications
 
-
 A template repository is available
 at [cloudflare/workers-sdk](https://github.com/cloudflare/workers-sdk/tree/main/templates/worker-openapi),
 with a live demo [here](https://worker-openapi-example.radar.cloudflare.com/docs).
-
 
 ## Why create another router library for workers?
 
@@ -66,29 +64,35 @@ However, we struggled to find an existing OpenAPI framework that checked all our
 Since we couldn't find anything that suited us, as many engineers do, we opted for the second-best alternative: building
 our own and open-source it.
 
-## Installation
+## Quick setup
 
-First, create a new directory, and use [wrangler](https://github.com/cloudflare/wrangler2), our command line tool for
-building Cloudflare Workers, which we assume
-you have [installed](https://github.com/cloudflare/wrangler2#installation) already, to initialize the project:
+Get started fast using the `create-cloudflare` command line, just run this command to setup an initial project with
+some example routes:
 
 <!-- termynal -->
+
 ```bash
-mkdir openapi-example && cd openapi-example
-wrangler init
+npm create cloudflare@latest hello-world -- --type openapi
 
 ---> 100%
 ```
 
-Now install `itty-router-openapi`:
+Then to start the local server just run
+
+```bash
+cd hello-world
+wrangler dev
+```
+
+## Installation
 
 <!-- termynal -->
+
 ```bash
 npm i @cloudflare/itty-router-openapi --save
 
 ---> 100%
 ```
-
 
 ## Example
 
@@ -100,7 +104,20 @@ When defining the schema, you can interchangeably use native typescript types or
 flags, descriptions, and other fields.
 
 ```ts
-import { DateOnly, OpenAPIRoute, Path, Str, OpenAPIRouter } from '@cloudflare/itty-router-openapi'
+import {
+  OpenAPIRoute,
+  Path,
+  Str,
+  DateOnly,
+} from '@cloudflare/itty-router-openapi'
+
+const Task = {
+  name: new Str({ example: 'lorem' }),
+  slug: String,
+  description: new Str({ required: false }),
+  completed: Boolean,
+  due_date: new DateOnly(),
+}
 
 export class TaskFetch extends OpenAPIRoute {
   static schema = {
@@ -115,13 +132,7 @@ export class TaskFetch extends OpenAPIRoute {
       '200': {
         schema: {
           metaData: {},
-          task: {
-            name: new Str({ example: 'lorem' }),
-            slug: String,
-            description: new Str({ required: false }),
-            completed: Boolean,
-            due_date: new DateOnly(),
-          },
+          task: Task,
         },
       },
     },
@@ -145,6 +156,13 @@ export class TaskFetch extends OpenAPIRoute {
     }
   }
 }
+```
+
+Now initialize a new OpenAPIRouter, and reference our newly created endpoint as a regular ‘itty-router’ .get route:
+
+```ts
+import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
+import { TaskFetch } from './tasks'
 
 const router = OpenAPIRouter()
 router.get('/api/tasks/:taskSlug/', TaskFetch)
@@ -157,13 +175,6 @@ export default {
 }
 ```
 
-Now initialize a new OpenAPIRouter, and reference our newly created endpoint as a regular ‘itty-router’ .get route:
-
-```ts
-import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
-import { TaskFetch } from './tasks'
-```
-
 Finally, run `wrangler dev` and head to `/docs` our `/redocs` with your browser.
 
 You'll be greeted with a beautiful OpenAPI page that you can use to test and call your new endpoint.
@@ -171,7 +182,6 @@ You'll be greeted with a beautiful OpenAPI page that you can use to test and cal
 ![Tutorial Example Preview](https://raw.githubusercontent.com/cloudflare/itty-router-openapi/main/docs/images/tutorial-example.png)
 
 Pretty easy, right?
-
 
 ## Feedback and contributions
 

@@ -64,22 +64,27 @@ However, we struggled to find an existing OpenAPI framework that checked all our
 Since we couldn't find anything that suited us, as many engineers do, we opted for the second-best alternative: building
 our own and open-source it.
 
-## Installation
+## Quick setup
 
-First, create a new directory, and use [wrangler](https://github.com/cloudflare/wrangler2), our command line tool for
-building Cloudflare Workers, which we assume
-you have [installed](https://github.com/cloudflare/wrangler2#installation) already, to initialize the project:
+Get started fast using the `create-cloudflare` command line, just run this command to setup an initial project with
+some example routes:
 
 <!-- termynal -->
 
 ```bash
-mkdir openapi-example && cd openapi-example
-wrangler init
+npm create cloudflare@latest hello-world -- --type openapi
 
 ---> 100%
 ```
 
-Now install `itty-router-openapi`:
+Then to start the local server just run
+
+```bash
+cd hello-world
+wrangler dev
+```
+
+## Installation
 
 <!-- termynal -->
 
