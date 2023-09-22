@@ -276,6 +276,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#quick-setup" class="md-nav__link">
+    Quick setup
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     Installation
   </a>
@@ -712,6 +719,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#quick-setup" class="md-nav__link">
+    Quick setup
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installation" class="md-nav__link">
     Installation
   </a>
@@ -765,10 +779,10 @@ endpoints while reusing code.</p>
 <p>The key features are:</p>
 <ul>
 <li>OpenAPI 3 and 3.1 schema generator</li>
-<li><a href="https://cloudflare.github.io/itty-router-openapi/user-guide/query-parameters/">Query</a>, 
-<a href="https://cloudflare.github.io/itty-router-openapi/user-guide/path-parameters/">Path</a>, 
-<a href="https://cloudflare.github.io/itty-router-openapi/user-guide/request-body/">Request Body</a> and 
-<a href="https://cloudflare.github.io/itty-router-openapi/user-guide/header-parameters/">Header</a> validator</li>
+<li><a href="https://cloudflare.github.io/itty-router-openapi/user-guide/query-parameters/">Query</a>,
+  <a href="https://cloudflare.github.io/itty-router-openapi/user-guide/path-parameters/">Path</a>,
+  <a href="https://cloudflare.github.io/itty-router-openapi/user-guide/request-body/">Request Body</a> and
+  <a href="https://cloudflare.github.io/itty-router-openapi/user-guide/header-parameters/">Header</a> validator</li>
 <li>Fully written in typescript</li>
 <li>Class-based endpoints</li>
 <li>Out of the box <a href="https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/openai-plugin/">OpenAI plugin support</a></li>
@@ -798,13 +812,16 @@ obvious choice to help us on all these fronts.</p>
 </ul>
 <p>Since we couldn't find anything that suited us, as many engineers do, we opted for the second-best alternative: building
 our own and open-source it.</p>
-<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<p>First, create a new directory, and use <a href="https://github.com/cloudflare/wrangler2">wrangler</a>, our command line tool for
-building Cloudflare Workers, which we assume
-you have <a href="https://github.com/cloudflare/wrangler2#installation">installed</a> already, to initialize the project:</p>
-<div class="termy" data-termynal data-ty-macos data-ty-title="bash"><span data-ty>mkdir openapi-example &amp;&amp; cd openapi-example<br>wrangler init<br></span><span data-ty="progress"></span><span data-ty></span></div>
+<h2 id="quick-setup">Quick setup<a class="headerlink" href="#quick-setup" title="Permanent link">&para;</a></h2>
+<p>Get started fast using the <code>create-cloudflare</code> command line, just run this command to setup an initial project with
+some example routes:</p>
+<div class="termy" data-termynal data-ty-macos data-ty-title="bash"><span data-ty>npm create cloudflare@latest hello-world -- --type openapi<br></span><span data-ty="progress"></span><span data-ty></span></div>
 
-<p>Now install <code>itty-router-openapi</code>:</p>
+<p>Then to start the local server just run</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>hello-world
+wrangler<span class="w"> </span>dev
+</code></pre></div>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
 <div class="termy" data-termynal data-ty-macos data-ty-title="bash"><span data-ty>npm i @cloudflare/itty-router-openapi --save<br></span><span data-ty="progress"></span><span data-ty></span></div>
 
 <h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
@@ -812,7 +829,20 @@ you have <a href="https://github.com/cloudflare/wrangler2#installation">installe
 <p>Make sure that ‘Task' is global, otherwise you must redefine <code>responses.schema.task</code> with every endpoint.</p>
 <p>When defining the schema, you can interchangeably use native typescript types or use the included types to set required
 flags, descriptions, and other fields.</p>
-<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">DateOnly</span><span class="p">,</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="p">,</span><span class="w"> </span><span class="nx">Path</span><span class="p">,</span><span class="w"> </span><span class="nx">Str</span><span class="p">,</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">OpenAPIRoute</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">Path</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">Str</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">DateOnly</span><span class="p">,</span>
+<span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">Task</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="w"> </span><span class="nx">example</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;lorem&#39;</span><span class="w"> </span><span class="p">}),</span>
+<span class="w">  </span><span class="nx">slug</span><span class="o">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="w"> </span><span class="nx">required</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">}),</span>
+<span class="w">  </span><span class="nx">completed</span><span class="o">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">due_date</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">DateOnly</span><span class="p">(),</span>
+<span class="p">}</span>
 
 <span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">TaskFetch</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
@@ -827,13 +857,7 @@ flags, descriptions, and other fields.</p>
 <span class="w">      </span><span class="s1">&#39;200&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">          </span><span class="nx">metaData</span><span class="o">:</span><span class="w"> </span><span class="p">{},</span>
-<span class="w">          </span><span class="nx">task</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="w"> </span><span class="nx">example</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;lorem&#39;</span><span class="w"> </span><span class="p">}),</span>
-<span class="w">            </span><span class="nx">slug</span><span class="o">:</span><span class="w"> </span><span class="kt">String</span><span class="p">,</span>
-<span class="w">            </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">Str</span><span class="p">({</span><span class="w"> </span><span class="nx">required</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">}),</span>
-<span class="w">            </span><span class="nx">completed</span><span class="o">:</span><span class="w"> </span><span class="kt">Boolean</span><span class="p">,</span>
-<span class="w">            </span><span class="nx">due_date</span><span class="o">:</span><span class="w"> </span><span class="kt">new</span><span class="w"> </span><span class="nx">DateOnly</span><span class="p">(),</span>
-<span class="w">          </span><span class="p">},</span>
+<span class="w">          </span><span class="nx">task</span><span class="o">:</span><span class="w"> </span><span class="kt">Task</span><span class="p">,</span>
 <span class="w">        </span><span class="p">},</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">    </span><span class="p">},</span>
@@ -857,6 +881,10 @@ flags, descriptions, and other fields.</p>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
+</code></pre></div>
+<p>Now initialize a new OpenAPIRouter, and reference our newly created endpoint as a regular ‘itty-router’ .get route:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">TaskFetch</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./tasks&#39;</span>
 
 <span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">()</span>
 <span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/api/tasks/:taskSlug/&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">TaskFetch</span><span class="p">)</span>
@@ -867,10 +895,6 @@ flags, descriptions, and other fields.</p>
 <span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="nx">fetch</span><span class="o">:</span><span class="w"> </span><span class="kt">router.handle</span><span class="p">,</span>
 <span class="p">}</span>
-</code></pre></div>
-<p>Now initialize a new OpenAPIRouter, and reference our newly created endpoint as a regular ‘itty-router’ .get route:</p>
-<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
-<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">TaskFetch</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./tasks&#39;</span>
 </code></pre></div>
 <p>Finally, run <code>wrangler dev</code> and head to <code>/docs</code> our <code>/redocs</code> with your browser.</p>
 <p>You'll be greeted with a beautiful OpenAPI page that you can use to test and call your new endpoint.</p>
