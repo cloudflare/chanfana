@@ -56,6 +56,7 @@ nav:
       - user-guide/middleware.md
       - user-guide/migrating-from-itty-router.md
   - Advanced User Guide:
+      - advanced-user-guide/reusable-schemas.md
       - advanced-user-guide/custom-response-formats.md
       - advanced-user-guide/openai-plugin.md
       - advanced-user-guide/ci-cd-pipelines.md
