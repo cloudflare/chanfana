@@ -10,14 +10,14 @@
       
       
       
-        <link rel="canonical" href="https://cloudflare.github.io/itty-router-openapi/user-guide/nested-routers/">
+        <link rel="canonical" href="https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/reusable-schemas/">
       
       <link rel="icon" href="../../assets/logo.svg">
       <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.1">
     
     
       
-        <title>Nested routers - itty-router-openapi</title>
+        <title>Reusable Schemas - itty-router-openapi</title>
       
     
     
@@ -69,6 +69,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#reusable-schemas" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -97,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Nested routers
+              Reusable Schemas
             
           </span>
         </div>
@@ -258,14 +263,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
       
       
       
@@ -312,7 +315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../first-steps/" class="md-nav__link">
+      <a href="../../user-guide/first-steps/" class="md-nav__link">
         First steps
       </a>
     </li>
@@ -326,7 +329,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../path-parameters/" class="md-nav__link">
+      <a href="../../user-guide/path-parameters/" class="md-nav__link">
         Path parameters
       </a>
     </li>
@@ -340,7 +343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../query-parameters/" class="md-nav__link">
+      <a href="../../user-guide/query-parameters/" class="md-nav__link">
         Query parameters
       </a>
     </li>
@@ -354,7 +357,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../request-body/" class="md-nav__link">
+      <a href="../../user-guide/request-body/" class="md-nav__link">
         Request body
       </a>
     </li>
@@ -368,7 +371,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../response-format/" class="md-nav__link">
+      <a href="../../user-guide/response-format/" class="md-nav__link">
         Response format
       </a>
     </li>
@@ -382,7 +385,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../router-options/" class="md-nav__link">
+      <a href="../../user-guide/router-options/" class="md-nav__link">
         Router options
       </a>
     </li>
@@ -394,19 +397,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../user-guide/nested-routers/" class="md-nav__link">
         Nested routers
       </a>
-      
     </li>
   
 
@@ -418,7 +413,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../security/" class="md-nav__link">
+      <a href="../../user-guide/security/" class="md-nav__link">
         Security
       </a>
     </li>
@@ -432,7 +427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cors/" class="md-nav__link">
+      <a href="../../user-guide/cors/" class="md-nav__link">
         Cors
       </a>
     </li>
@@ -446,7 +441,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../middleware/" class="md-nav__link">
+      <a href="../../user-guide/middleware/" class="md-nav__link">
         Middleware
       </a>
     </li>
@@ -460,7 +455,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../migrating-from-itty-router/" class="md-nav__link">
+      <a href="../../user-guide/migrating-from-itty-router/" class="md-nav__link">
         Migrating existing itty-router applications
       </a>
     </li>
@@ -480,12 +475,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
       
       
       
@@ -524,11 +521,21 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../../advanced-user-guide/reusable-schemas/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Reusable Schemas
       </a>
+      
     </li>
   
 
@@ -540,7 +547,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced-user-guide/custom-response-formats/" class="md-nav__link">
+      <a href="../custom-response-formats/" class="md-nav__link">
         Custom response formats
       </a>
     </li>
@@ -554,7 +561,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced-user-guide/openai-plugin/" class="md-nav__link">
+      <a href="../openai-plugin/" class="md-nav__link">
         OpenAI plugin support
       </a>
     </li>
@@ -568,7 +575,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced-user-guide/ci-cd-pipelines/" class="md-nav__link">
+      <a href="../ci-cd-pipelines/" class="md-nav__link">
         CI/CD
       </a>
     </li>
@@ -582,7 +589,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced-user-guide/event-listener-worker/" class="md-nav__link">
+      <a href="../event-listener-worker/" class="md-nav__link">
         Worker using addEventListener
       </a>
     </li>
@@ -596,7 +603,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced-user-guide/hiding-routes-in-openapi-schema/" class="md-nav__link">
+      <a href="../hiding-routes-in-openapi-schema/" class="md-nav__link">
         Hiding routes in openapi schema
       </a>
     </li>
@@ -610,7 +617,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced-user-guide/openapi-schema-customizations/" class="md-nav__link">
+      <a href="../openapi-schema-customizations/" class="md-nav__link">
         OpenAPI schema customizations
       </a>
     </li>
@@ -624,7 +631,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../advanced-user-guide/streaming-responses/" class="md-nav__link">
+      <a href="../streaming-responses/" class="md-nav__link">
         Streaming responses
       </a>
     </li>
@@ -670,6 +677,8 @@
   
   
   
+    
+  
   
 </nav>
                   </div>
@@ -683,37 +692,79 @@
                 
 
 
-  <h1>Nested routers</h1>
-
-<p>For big projects, having all routes in the same file can be chaotic.</p>
-<p>In this example we split some routes to a different router</p>
-<div class="highlight"><pre><span></span><code><span class="c1">// api/attacks/router.ts</span>
-<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
-
-<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">attacksRouter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">({</span><span class="w"> </span><span class="nx">base</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;/api/v1/attacks&#39;</span><span class="w"> </span><span class="p">})</span>
-
-<span class="nx">attacksRouter</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/layer3/timeseries&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">AttacksLayer3Timeseries</span><span class="p">)</span>
-</code></pre></div>
-<div class="highlight"><pre><span></span><code><span class="c1">// router.ts</span>
-<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
-<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">attacksRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;api/attacks/router&#39;</span>
-
-<span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">({</span>
-<span class="w">  </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nx">info</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Radar Worker API&#39;</span><span class="p">,</span>
-<span class="w">      </span><span class="nx">version</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;1.0&#39;</span><span class="p">,</span>
+<h1 id="reusable-schemas">Reusable Schemas<a class="headerlink" href="#reusable-schemas" title="Permanent link">&para;</a></h1>
+<p>Before continuing, please learn more about <a href="https://learn.openapis.org/specification/components.html">Reusing Descriptions by OpenAPI</a>.</p>
+<p>To start reusing your schemas, all you need to do is call the <code>.openapi("schema name here")</code> after any schema you have
+defined. This includes <code>parameters</code>, <code>requestBody</code>, <code>responses</code> even <code>Enum</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is only available when using <a href="../../types/#itty-router-openapi-types">itty-router-openapi types</a> or 
+<a href="../../types/#zod-types">zod types</a></p>
+</div>
+<div class="highlight"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">PutMetadata</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="kt">OpenAPIRouteSchema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">operationId</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;post-bucket-put-object-metadata&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">tags</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s1">&#39;Buckets&#39;</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Update object metadata&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">parameters</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">bucket</span><span class="o">:</span><span class="w"> </span><span class="kt">Path</span><span class="p">(</span><span class="nb">String</span><span class="p">),</span>
+<span class="w">      </span><span class="nx">key</span><span class="o">:</span><span class="w"> </span><span class="kt">Path</span><span class="p">(</span><span class="nx">z</span><span class="p">.</span><span class="kt">string</span><span class="p">().</span><span class="nx">describe</span><span class="p">(</span><span class="s1">&#39;base64 encoded file key&#39;</span><span class="p">)),</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">  </span><span class="p">},</span>
-<span class="p">})</span>
+<span class="w">    </span><span class="nx">requestBody</span><span class="o">:</span><span class="w"> </span><span class="kt">z.object</span><span class="p">({</span>
+<span class="w">      </span><span class="nx">customMetadata</span><span class="o">:</span><span class="w"> </span><span class="kt">z.record</span><span class="p">(</span><span class="nx">z</span><span class="p">.</span><span class="kt">string</span><span class="p">(),</span><span class="w"> </span><span class="nx">z</span><span class="p">.</span><span class="nx">any</span><span class="p">())</span>
+<span class="w">    </span><span class="p">}).</span><span class="nx">openapi</span><span class="p">(</span><span class="s2">&quot;Object metadata&quot;</span><span class="p">)</span>
+<span class="w">  </span><span class="p">}</span>
 
-<span class="nx">router</span><span class="p">.</span><span class="nx">all</span><span class="p">(</span><span class="s1">&#39;/api/v1/attacks/*&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">attacksRouter</span><span class="p">)</span>
-
-<span class="c1">// Other routes</span>
-<span class="nx">router</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/api/v1/bgp/timeseries&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">BgpTimeseries</span><span class="p">)</span>
+<span class="w">  </span><span class="c1">// ...</span>
+<span class="p">}</span>
 </code></pre></div>
-<p>Now run <code>wrangler dev</code> and go to <code>/docs</code> with your browser, here you can verify that all nested routers appear correctly
-and you are able to call every endpoint.</p>
+<p>Then when running the server, it would get rendered like this:</p>
+<p><img alt="Reusable Parameters" src="https://raw.githubusercontent.com/cloudflare/itty-router-openapi/main/docs/reusable-parameters.png" /></p>
+<p>The OpenAPI spec will also reflect this, by moving the schemas out of the endpoint and into the <code>components</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;components&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;schemas&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;Object metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;customMetadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">          </span><span class="s2">&quot;customMetadata&quot;</span>
+<span class="w">        </span><span class="p">]</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Inside the endpoint schema, the reusable parameter is referenced by the name:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;paths&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;post&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;operationId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;post-bucket-put-object-metadata&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">        </span><span class="s2">&quot;Buckets&quot;</span>
+<span class="w">      </span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Update object metadata&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">      </span><span class="nt">&quot;requestBody&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;application/json&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nt">&quot;schema&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;#/components/schemas/Object metadata&quot;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">          </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;responses&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 
 
 
@@ -734,7 +785,7 @@ and you are able to call every endpoint.</p>
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../router-options/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Router options" rel="prev">
+        <a href="../../user-guide/migrating-from-itty-router/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Migrating existing itty-router applications" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -743,20 +794,20 @@ and you are able to call every endpoint.</p>
               <span class="md-footer__direction">
                 Previous
               </span>
-              Router options
+              Migrating existing itty-router applications
             </div>
           </div>
         </a>
       
       
         
-        <a href="../security/" class="md-footer__link md-footer__link--next" aria-label="Next: Security" rel="next">
+        <a href="../custom-response-formats/" class="md-footer__link md-footer__link--next" aria-label="Next: Custom response formats" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Security
+              Custom response formats
             </div>
           </div>
           <div class="md-footer__button md-icon">
