@@ -113,7 +113,7 @@ export class Regex {
   constructor(params: RegexParameterType) {
     return convertParams(
       // @ts-ignore
-      z.string().regex(params.pattern),
+      z.string().regex(params.pattern, params.patternError || 'Invalid'),
       params
     )
   }
