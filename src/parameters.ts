@@ -305,7 +305,13 @@ export function extractQueryParameters(
   }
 
   const params: Record<string, any> = {}
-  for (const [key, value] of searchParams.entries()) {
+  for (let [key, value] of searchParams.entries()) {
+    // Query parameters can be empty strings, that should equal to null as nothing was provided
+    if (value === '') {
+      // @ts-ignore
+      value = null
+    }
+
     if (params[key] === undefined) {
       params[key] = value
     } else if (!Array.isArray(params[key])) {

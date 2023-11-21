@@ -63,6 +63,18 @@ describe('queryParametersValidation', () => {
     expect(findError(resp.errors, 'p_string')).toBeUndefined()
   })
 
+  test('checkStringInvalidEmpty', async () => {
+    const qs = '?p_string='
+    const request = await todoRouter.handle(
+      buildRequest({ method: 'GET', path: `/todos${qs}` })
+    )
+    const resp = await request.json()
+
+    expect(findError(resp.errors, 'p_string')).toEqual(
+      'Expected string, received null'
+    )
+  })
+
   test('checkBooleanInvalid', async () => {
     const qs = '?p_boolean=asd'
     const request = await todoRouter.handle(
