@@ -32,7 +32,7 @@ export class PutMetadata extends OpenAPIRoute {
 
 Then when running the server, it would get rendered like this:
 
-![Reusable Parameters](https://raw.githubusercontent.com/cloudflare/itty-router-openapi/main/docs/reusable-parameters.png)
+![Reusable Parameters](https://raw.githubusercontent.com/cloudflare/itty-router-openapi/main/docs/images/reusable-parameters.png)
 
 The OpenAPI spec will also reflect this, by moving the schemas out of the endpoint and into the `components`:
 
