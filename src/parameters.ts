@@ -285,7 +285,7 @@ export function extractParameter(
     // @ts-ignore
     return request.params[name]
   }
-  if (location === 'header') {
+  if (location === 'headers') {
     // @ts-ignore
     return request.headers.get(name)
   }
