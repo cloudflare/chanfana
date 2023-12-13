@@ -267,7 +267,7 @@ export function Header(
 ): RouteParameter {
   return {
     name: params.name,
-    location: 'header',
+    location: 'headers',
     type: legacyTypeIntoZod(type, params),
   }
 }
