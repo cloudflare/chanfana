@@ -130,7 +130,7 @@ export class TaskFetch extends OpenAPIRoute {
     },
     responses: {
       '200': {
-        description: "Task fetched successfully",
+        description: 'Task fetched successfully',
         schema: {
           metaData: {},
           task: Task,

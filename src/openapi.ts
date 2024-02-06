@@ -66,7 +66,9 @@ export function OpenAPIRouter<
     })
   }
 
-  const router = Router({ base: options?.base, routes: options?.routes })
+  const routerToUse = options?.baseRouter || Router
+
+  const router = routerToUse({ base: options?.base, routes: options?.routes })
 
   const routerProxy: OpenAPIRouterType<RouteType, Args> = new Proxy(router, {
     // @ts-expect-error (we're adding an expected prop "path" to the get)
@@ -94,11 +96,9 @@ export function OpenAPIRouter<
             // Merge inner router definitions into outer router
             registry.merge(nestedRouter.registry)
           } else if (prop !== 'all') {
-            const parsedRoute =
-              (options?.base || '') +
-              route
-                .replace(/\/+(\/|$)/g, '$1') // strip double & trailing splash
-                .replace(/:(\w+)/g, '{$1}') // convert parameters into openapi compliant
+            const parsedRoute = ((options?.base || '') + route)
+              .replaceAll(/\/+(\/|$)/g, '$1') // strip double & trailing splash
+              .replaceAll(/:(\w+)/g, '{$1}') // convert parameters into openapi compliant
 
             // @ts-ignore
             let schema: RouteConfig = undefined
@@ -139,7 +139,11 @@ export function OpenAPIRouter<
                   // TODO: make sure this works
                   params: z.object(
                     params.reduce(
-                      (obj, item) => Object.assign(obj, { [item]: z.string() }),
+                      // matched parameters start with ':' so replace the first occurrence with nothing
+                      (obj, item) =>
+                        Object.assign(obj, {
+                          [item.replace(':', '')]: z.string(),
+                        }),
                       {}
                     )
                   ),

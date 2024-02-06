@@ -1,10 +1,6 @@
 import { RouteEntry } from 'itty-router'
-import { OpenAPIObject } from 'openapi3-ts/oas31'
-import { AnyZodObject, ZodType } from 'zod'
-import {
-  ResponseConfig,
-  ZodRequestBody,
-} from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
+import { ZodType } from 'zod'
+import { ResponseConfig } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
 import { RouteConfig } from '@asteasolutions/zod-to-openapi'
 import { OpenAPIObjectConfigV31 } from '@asteasolutions/zod-to-openapi/dist/v3.1/openapi-generator'
 import { OpenAPIObjectConfig } from '@asteasolutions/zod-to-openapi/dist/v3.0/openapi-generator'
@@ -20,6 +16,7 @@ export interface RouterOptions {
   raiseUnknownParameters?: boolean
   generateOperationIds?: boolean
   openapiVersion?: '3' | '3.1'
+  baseRouter?: any
 }
 
 export declare type RouteParameter = {
