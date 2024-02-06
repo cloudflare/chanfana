@@ -95,11 +95,9 @@ export function OpenAPIRouter<
             // Merge inner router definitions into outer router
             registry.merge(nestedRouter.registry)
           } else if (prop !== 'all') {
-            const parsedRoute =
-              (options?.base || '') +
-              route
-                .replace(/\/+(\/|$)/g, '$1') // strip double & trailing splash
-                .replace(/:(\w+)/g, '{$1}') // convert parameters into openapi compliant
+            const parsedRoute = ((options?.base || '') + route)
+              .replaceAll(/\/+(\/|$)/g, '$1') // strip double & trailing splash
+              .replaceAll(/:(\w+)/g, '{$1}') // convert parameters into openapi compliant
 
             // @ts-ignore
             let schema: RouteConfig = undefined
