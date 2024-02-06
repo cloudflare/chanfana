@@ -133,7 +133,7 @@ export function OpenAPIRouter<
                 },
               }
 
-              const params = route.match(/:(\w+)/g)
+              const params = ((options?.base || '') + route).match(/:(\w+)/g)
               if (params) {
                 schema.request = {
                   // TODO: make sure this works
