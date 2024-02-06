@@ -65,7 +65,9 @@ export function OpenAPIRouter<
     })
   }
 
-  const router = Router({ base: options?.base, routes: options?.routes })
+  const routerToUse = options?.baseRouter || Router
+
+  const router = routerToUse({ base: options?.base, routes: options?.routes })
 
   const routerProxy: OpenAPIRouterType<RouteType, Args> = new Proxy(router, {
     // @ts-expect-error (we're adding an expected prop "path" to the get)
@@ -138,7 +140,11 @@ export function OpenAPIRouter<
                   // TODO: make sure this works
                   params: z.object(
                     params.reduce(
-                      (obj, item) => Object.assign(obj, { [item]: z.string() }),
+                      // matched parameters start with ':' so replace the first occurrence with nothing
+                      (obj, item) =>
+                        Object.assign(obj, {
+                          [item.replace(':', '')]: z.string(),
+                        }),
                       {}
                     )
                   ),
