@@ -16,6 +16,7 @@ import { OpenAPIRegistryMerger } from './zod/registry'
 import { z } from 'zod'
 import { OpenAPIObject } from 'openapi3-ts/oas31'
 import { OpenAPIRoute } from './route'
+const yaml = require('js-yaml')
 
 export type Route = <
   RequestType = IRequest,
@@ -244,6 +245,18 @@ export function OpenAPIRouter<
         status: 200,
       })
     })
+
+    router.get(
+      (options?.openapi_url || '/openapi.json').replace('.json', '.yaml'),
+      () => {
+        return new Response(yaml.dump(getGeneratedSchema()), {
+          headers: {
+            'content-type': 'text/yaml;charset=UTF-8',
+          },
+          status: 200,
+        })
+      }
+    )
   }
 
   if (options?.aiPlugin && options?.openapi_url !== null) {
