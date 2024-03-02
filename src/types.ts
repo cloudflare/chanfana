@@ -16,6 +16,7 @@ export interface RouterOptions {
   raiseUnknownParameters?: boolean
   generateOperationIds?: boolean
   openapiVersion?: '3' | '3.1'
+  skipValidation?: boolean
   baseRouter?: any
 }
 
@@ -43,6 +44,7 @@ export declare type OpenAPIRouteSchema = Omit<
 
 export interface RouteOptions {
   raiseUnknownParameters: boolean
+  skipValidation: boolean
 }
 
 export interface ParameterType {
@@ -81,7 +83,7 @@ export interface ParameterLocation extends StringParameterType {
 
 export interface RouteValidated {
   data: any
-  errors: Record<string, any>
+  errors?: Record<string, any>
 }
 
 export enum SchemaVersion {
