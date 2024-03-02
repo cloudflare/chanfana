@@ -270,3 +270,25 @@ export class Example extends OpenAPIRoute {
 ```
 
 Read the Zod documentation [here](https://zod.dev/)!
+
+## Generating Zod types for your requests
+
+Often, you need to retrieve the request body while maintaining type definitions for that body. If you are using Zod for type validation, this becomes very straightforward!
+
+Here's how you can create a TypeScript type for your Zod schema:
+```ts
+const Task = z.object({
+  name: z.string(),
+  description: z.string().or(z.string().array()),
+  steps: z.string().array(),
+});
+type MyTaskType = z.infer<typeof Task>;
+```
+
+Now, you can simply execute the following:
+
+```
+const body = request.json<MyTaskType>();
+```
+
+Your body is now correctly typed!
