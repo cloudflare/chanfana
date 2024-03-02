@@ -233,6 +233,13 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
       }
     }
 
+    if (this.params?.skipValidation === true) {
+      return {
+        data: unvalidatedData,
+        errors: undefined,
+      }
+    }
+
     let validationSchema: any = z.object(rawSchema)
 
     if (

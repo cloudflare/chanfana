@@ -16,6 +16,7 @@ import { OpenAPIRegistryMerger } from './zod/registry'
 import { z } from 'zod'
 import { OpenAPIObject } from 'openapi3-ts/oas31'
 import { OpenAPIRoute } from './route'
+const yaml = require('js-yaml')
 
 export type Route = <
   RequestType = IRequest,
@@ -43,8 +44,8 @@ export function OpenAPIRouter<
   RequestType = IRequest,
   Args extends any[] = any[],
   RouteType = Equal<RequestType, IRequest> extends true
-    ? Route
-    : UniversalRoute<RequestType, Args>
+  ? Route
+  : UniversalRoute<RequestType, Args>
 >(options?: RouterOptions): OpenAPIRouterType<RouteType, Args> {
   const registry: OpenAPIRegistryMerger = new OpenAPIRegistryMerger()
 
@@ -65,7 +66,9 @@ export function OpenAPIRouter<
     })
   }
 
-  const router = Router({ base: options?.base, routes: options?.routes })
+  const routerToUse = options?.baseRouter || Router
+
+  const router = routerToUse({ base: options?.base, routes: options?.routes })
 
   const routerProxy: OpenAPIRouterType<RouteType, Args> = new Proxy(router, {
     // @ts-expect-error (we're adding an expected prop "path" to the get)
@@ -93,11 +96,9 @@ export function OpenAPIRouter<
             // Merge inner router definitions into outer router
             registry.merge(nestedRouter.registry)
           } else if (prop !== 'all') {
-            const parsedRoute =
-              (options?.base || '') +
-              route
-                .replace(/\/+(\/|$)/g, '$1') // strip double & trailing splash
-                .replace(/:(\w+)/g, '{$1}') // convert parameters into openapi compliant
+            const parsedRoute = ((options?.base || '') + route)
+              .replaceAll(/\/+(\/|$)/g, '$1') // strip double & trailing splash
+              .replaceAll(/:(\w+)/g, '{$1}') // convert parameters into openapi compliant
 
             // @ts-ignore
             let schema: RouteConfig = undefined
@@ -132,13 +133,17 @@ export function OpenAPIRouter<
                 },
               }
 
-              const params = route.match(/:(\w+)/g)
+              const params = ((options?.base || '') + route).match(/:(\w+)/g)
               if (params) {
                 schema.request = {
                   // TODO: make sure this works
                   params: z.object(
                     params.reduce(
-                      (obj, item) => Object.assign(obj, { [item]: z.string() }),
+                      // matched parameters start with ':' so replace the first occurrence with nothing
+                      (obj, item) =>
+                        Object.assign(obj, {
+                          [item.replace(':', '')]: z.string(),
+                        }),
                       {}
                     )
                   ),
@@ -188,6 +193,7 @@ export function OpenAPIRouter<
               return (...params: any[]) =>
                 new handler({
                   // raiseUnknownParameters: openapiConfig.raiseUnknownParameters,  TODO
+                  skipValidation: options?.skipValidation,
                 }).execute(...params)
             }
 
@@ -240,6 +246,18 @@ export function OpenAPIRouter<
         status: 200,
       })
     })
+
+    router.get(
+      (options?.openapi_url || '/openapi.json').replace('.json', '.yaml'),
+      () => {
+        return new Response(yaml.dump(getGeneratedSchema()), {
+          headers: {
+            'content-type': 'text/yaml;charset=UTF-8',
+          },
+          status: 200,
+        })
+      }
+    )
   }
 
   if (options?.aiPlugin && options?.openapi_url !== null) {
