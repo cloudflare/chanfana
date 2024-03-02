@@ -320,6 +320,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#generating-zod-types-for-your-requests" class="md-nav__link">
+    Generating Zod types for your requests
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -784,6 +791,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#generating-zod-types-for-your-requests" class="md-nav__link">
+    Generating Zod types for your requests
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1076,6 +1090,20 @@ simpler types into complex data structures.</p>
 <span class="p">}</span>
 </code></pre></div>
 <p>Read the Zod documentation <a href="https://zod.dev/">here</a>!</p>
+<h2 id="generating-zod-types-for-your-requests">Generating Zod types for your requests<a class="headerlink" href="#generating-zod-types-for-your-requests" title="Permanent link">&para;</a></h2>
+<p>Often, you need to retrieve the request body while maintaining type definitions for that body. If you are using Zod for type validation, this becomes very straightforward!</p>
+<p>Here's how you can create a TypeScript type for your Zod schema:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">const</span><span class="w"> </span><span class="nx">Task</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">z</span><span class="p">.</span><span class="nx">object</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="kt">z.string</span><span class="p">(),</span>
+<span class="w">  </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="kt">z.string</span><span class="p">().</span><span class="nx">or</span><span class="p">(</span><span class="nx">z</span><span class="p">.</span><span class="kt">string</span><span class="p">().</span><span class="nx">array</span><span class="p">()),</span>
+<span class="w">  </span><span class="nx">steps</span><span class="o">:</span><span class="w"> </span><span class="kt">z.string</span><span class="p">().</span><span class="nx">array</span><span class="p">(),</span>
+<span class="p">});</span>
+<span class="kr">type</span><span class="w"> </span><span class="nx">MyTaskType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">z</span><span class="p">.</span><span class="nx">infer</span><span class="o">&lt;</span><span class="ow">typeof</span><span class="w"> </span><span class="nx">Task</span><span class="o">&gt;</span><span class="p">;</span>
+</code></pre></div>
+<p>Now, you can simply execute the following:</p>
+<div class="highlight"><pre><span></span><code>const body = request.json&lt;MyTaskType&gt;();
+</code></pre></div>
+<p>Your body is now correctly typed!</p>
 
 
 
