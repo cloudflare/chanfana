@@ -1,4 +1,4 @@
-# itty-router-openapi
+# Itty-router-openAPI
 
 <p align="center">
     <em>OpenAPI 3 and 3.1 schema generator and validator for <a href="https://developers.cloudflare.com/workers/" target="_blank">Cloudflare Workers</a></em>
