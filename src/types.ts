@@ -1,5 +1,5 @@
 import { RouteEntry } from 'itty-router'
-import { ZodType } from 'zod'
+import { z } from 'zod'
 import { ResponseConfig } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
 import { RouteConfig } from '@asteasolutions/zod-to-openapi'
 import { OpenAPIObjectConfigV31 } from '@asteasolutions/zod-to-openapi/dist/v3.1/openapi-generator'
@@ -20,10 +20,10 @@ export interface RouterOptions {
   baseRouter?: any
 }
 
-export declare type RouteParameter = {
+export declare type RouteParameter<Z extends z.ZodType = z.ZodType> = {
   name?: string
   location: string
-  type: ZodType
+  type: Z
 }
 
 export declare type RouteResponse = Omit<ResponseConfig, 'content'> & {
@@ -135,3 +135,14 @@ export interface Auth {
 export interface VerificationTokens {
   openai: string
 }
+
+export type TypedParameter<Z extends z.ZodType> = Z &
+  (new (params?: ParameterType) => Z)
+
+export type InferredParameter<T> =
+  T extends RouteParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
+
+export type InferredData<P, B extends z.ZodType = z.ZodUndefined> =
+  P extends Record<string, RouteParameter<infer Z extends z.ZodType>>
+    ? { [K in keyof P]: InferredParameter<P[K]> } & { body: z.infer<B> }
+    : never

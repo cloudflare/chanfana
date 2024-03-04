@@ -5,18 +5,18 @@ import {
   RegexParameterType,
   RouteParameter,
   StringParameterType,
+  TypedParameter,
 } from './types'
-import { z, ZodObject } from 'zod'
+import { z } from 'zod'
 import { isSpecificZodType, legacyTypeIntoZod } from './zod/utils'
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
-import { ZodType } from 'zod'
 
 if (z.string().openapi === undefined) {
   // console.log('zod extension applied')
   extendZodWithOpenApi(z)
 }
 
-export function convertParams(field: any, params: any): ZodType {
+export function convertParams(field: any, params: any): z.ZodType {
   params = params || {}
   if (params.required === false)
     // @ts-ignore
@@ -60,7 +60,7 @@ export class Obj {
   }
 }
 
-export class Num {
+export const Num: TypedParameter<z.ZodNumber> = class Num {
   static generator = true
 
   constructor(params?: ParameterType) {
@@ -71,9 +71,9 @@ export class Num {
       type: 'number',
     })
   }
-}
+} as unknown as TypedParameter<z.ZodNumber>
 
-export class Int {
+export const Int: TypedParameter<z.ZodNumber> = class Int {
   static generator = true
 
   constructor(params?: ParameterType) {
@@ -84,17 +84,17 @@ export class Int {
       type: 'integer',
     })
   }
-}
+} as unknown as TypedParameter<z.ZodNumber>
 
-export class Str {
+export const Str: TypedParameter<z.ZodString> = class Str {
   static generator = true
 
   constructor(params?: StringParameterType) {
     return convertParams(z.string(), params)
   }
-}
+} as unknown as TypedParameter<z.ZodString>
 
-export class DateTime {
+export const DateTime: TypedParameter<z.ZodString> = class DateTime {
   static generator = true
 
   constructor(params?: ParameterType) {
@@ -105,9 +105,9 @@ export class DateTime {
       params
     )
   }
-}
+} as unknown as TypedParameter<z.ZodString>
 
-export class Regex {
+export const Regex: TypedParameter<z.ZodString> = class Regex {
   static generator = true
 
   constructor(params: RegexParameterType) {
@@ -117,25 +117,25 @@ export class Regex {
       params
     )
   }
-}
+} as unknown as TypedParameter<z.ZodString>
 
-export class Email {
+export const Email: TypedParameter<z.ZodString> = class Email {
   static generator = true
 
   constructor(params?: ParameterType) {
     return convertParams(z.string().email(), params)
   }
-}
+} as unknown as TypedParameter<z.ZodString>
 
-export class Uuid {
+export const Uuid: TypedParameter<z.ZodString> = class Uuid {
   static generator = true
 
   constructor(params?: ParameterType) {
     return convertParams(z.string().uuid(), params)
   }
-}
+} as unknown as TypedParameter<z.ZodString>
 
-export class Hostname {
+export const Hostname: TypedParameter<z.ZodString> = class Hostname {
   static generator = true
 
   constructor(params?: ParameterType) {
@@ -148,33 +148,33 @@ export class Hostname {
       params
     )
   }
-}
+} as unknown as TypedParameter<z.ZodString>
 
-export class Ipv4 {
+export const Ipv4: TypedParameter<z.ZodString> = class Ipv4 {
   static generator = true
 
   constructor(params?: ParameterType) {
     return convertParams(z.coerce.string().ip({ version: 'v4' }), params)
   }
-}
+} as unknown as TypedParameter<z.ZodString>
 
-export class Ipv6 {
+export const Ipv6: TypedParameter<z.ZodString> = class Ipv6 {
   static generator = true
 
   constructor(params?: ParameterType) {
     return convertParams(z.string().ip({ version: 'v6' }), params)
   }
-}
+} as unknown as TypedParameter<z.ZodString>
 
-export class DateOnly {
+export const DateOnly: TypedParameter<z.ZodString> = class DateOnly {
   static generator = true
 
   constructor(params?: ParameterType) {
     return convertParams(z.coerce.date(), params)
   }
-}
+} as unknown as TypedParameter<z.ZodString>
 
-export class Bool {
+export const Bool: TypedParameter<z.ZodBoolean> = class Bool {
   static generator = true
 
   constructor(params?: ParameterType) {
@@ -188,7 +188,7 @@ export class Bool {
       type: 'boolean',
     })
   }
-}
+} as unknown as TypedParameter<z.ZodBoolean>
 
 export class Enumeration {
   static generator = true
@@ -202,7 +202,7 @@ export class Enumeration {
 
     const originalKeys: [string, ...string[]] = Object.keys(values) as [
       string,
-      ...string[]
+      ...string[],
     ]
 
     if (params.enumCaseSensitive === false) {
@@ -215,7 +215,7 @@ export class Enumeration {
 
     const keys: [string, ...string[]] = Object.keys(values) as [
       string,
-      ...string[]
+      ...string[],
     ]
 
     let field
@@ -239,6 +239,28 @@ export class Enumeration {
   }
 }
 
+export function Query<Z extends z.ZodType>(type: Z): RouteParameter<Z>
+export function Query<Z extends z.ZodType>(
+  type: Z,
+  params: ParameterLocation & { required: false }
+): RouteParameter<z.ZodOptional<Z>>
+export function Query<Z extends z.ZodType>(
+  type: Z,
+  params: ParameterLocation
+): RouteParameter<Z>
+export function Query<Z extends z.ZodType>(
+  type: [Z]
+): RouteParameter<z.ZodArray<Z>>
+export function Query<Z extends z.ZodType>(
+  type: [Z],
+  params: ParameterLocation & { required: false }
+): RouteParameter<z.ZodOptional<z.ZodArray<Z>>>
+export function Query<Z extends z.ZodType>(
+  type: [Z],
+  params: ParameterLocation
+): RouteParameter<z.ZodArray<Z>>
+export function Query(type: any): RouteParameter
+export function Query(type: any, params: ParameterLocation): RouteParameter
 export function Query(
   type: any,
   params: ParameterLocation = {}
@@ -250,6 +272,28 @@ export function Query(
   }
 }
 
+export function Path<Z extends z.ZodType>(type: Z): RouteParameter<Z>
+export function Path<Z extends z.ZodType>(
+  type: Z,
+  params: ParameterLocation & { required: false }
+): RouteParameter<z.ZodOptional<Z>>
+export function Path<Z extends z.ZodType>(
+  type: Z,
+  params: ParameterLocation
+): RouteParameter<Z>
+export function Path<Z extends z.ZodType>(
+  type: [Z]
+): RouteParameter<z.ZodArray<Z>>
+export function Path<Z extends z.ZodType>(
+  type: [Z],
+  params: ParameterLocation & { required: false }
+): RouteParameter<z.ZodOptional<z.ZodArray<Z>>>
+export function Path<Z extends z.ZodType>(
+  type: [Z],
+  params: ParameterLocation
+): RouteParameter<z.ZodArray<Z>>
+export function Path(type: any): RouteParameter
+export function Path(type: any, params: ParameterLocation): RouteParameter
 export function Path(
   type: any,
   params: ParameterLocation = {}
@@ -261,6 +305,28 @@ export function Path(
   }
 }
 
+export function Header<Z extends z.ZodType>(type: Z): RouteParameter<Z>
+export function Header<Z extends z.ZodType>(
+  type: Z,
+  params: ParameterLocation & { required: false }
+): RouteParameter<z.ZodOptional<Z>>
+export function Header<Z extends z.ZodType>(
+  type: Z,
+  params: ParameterLocation
+): RouteParameter<Z>
+export function Header<Z extends z.ZodType>(
+  type: [Z]
+): RouteParameter<z.ZodArray<Z>>
+export function Header<Z extends z.ZodType>(
+  type: [Z],
+  params: ParameterLocation & { required: false }
+): RouteParameter<z.ZodOptional<z.ZodArray<Z>>>
+export function Header<Z extends z.ZodType>(
+  type: [Z],
+  params: ParameterLocation
+): RouteParameter<z.ZodArray<Z>>
+export function Header(type: any): RouteParameter
+export function Header(type: any, params: ParameterLocation): RouteParameter
 export function Header(
   type: any,
   params: ParameterLocation = {}
@@ -296,7 +362,7 @@ export function extractParameter(
 
 export function extractQueryParameters(
   request: Request,
-  schema?: ZodObject<any>
+  schema?: z.ZodObject<any>
 ): Record<string, any> | null {
   const { searchParams } = new URL(request.url)
 

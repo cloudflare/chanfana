@@ -17,7 +17,8 @@ import {
   Uuid,
   Path,
 } from '../src/parameters'
-import { OpenAPIRouteSchema } from '../src'
+import { OpenAPIRouteSchema, InferredData } from '../src'
+import { z } from 'zod'
 
 export class ToDoList extends OpenAPIRoute {
   static schema = {
@@ -143,10 +144,82 @@ export class ToDoCreate extends OpenAPIRoute {
   }
 }
 
+export namespace ToDoCreateParamsView {
+  const Body = z.object({
+    title: z.string(),
+    description: z.string().optional(),
+    type: z.enum(['nextWeek', 'nextMoth']),
+  })
+  const Parameters = {
+    p_int: Query(Int),
+    p_num: Query(Num),
+    p_num2: Query(new Num()),
+    p_str: Query(Str),
+    p_arrstr: Query([Str]),
+    p_bool: Query(Bool),
+    p_enumeration: Query(Enumeration, {
+      values: {
+        json: 'ENUM_JSON',
+        csv: 'ENUM_CSV',
+      },
+    }),
+    p_enumeration_insensitive: Query(Enumeration, {
+      values: {
+        json: 'json',
+        csv: 'csv',
+      },
+      enumCaseSensitive: false,
+    }),
+    p_datetime: Query(DateTime),
+    p_dateonly: Query(DateOnly),
+    p_regex: Query(Regex, {
+      pattern: /^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$/,
+    }),
+    p_email: Query(Email),
+    p_uuid: Query(Uuid),
+    p_hostname: Query(Hostname),
+    p_ipv4: Query(Ipv4),
+    p_ipv6: Query(Ipv6),
+    p_optional: Query(Int, {
+      required: false,
+    }),
+  }
+
+  export class Route extends OpenAPIRoute {
+    static schema = {
+      tags: ['ToDo'],
+      summary: 'List all ToDos',
+      parameters: Parameters,
+      responses: {
+        '200': {
+          description: 'example',
+          schema: {
+            params: {},
+            results: ['lorem'],
+          },
+        },
+      },
+    }
+
+    async handle(
+      request: Request,
+      env: any,
+      context: any,
+      data: InferredData<typeof Parameters, typeof Body>
+    ) {
+      return {
+        params: data,
+        results: ['lorem', 'ipsum'],
+      }
+    }
+  }
+}
+
 export const todoRouter = OpenAPIRouter({ openapiVersion: '3' })
 todoRouter.get('/todos', ToDoList)
 todoRouter.get('/todos/:id', ToDoGet)
 todoRouter.post('/todos', ToDoCreate)
+todoRouter.post('/todos-params', ToDoCreateParamsView.Route)
 
 // 404 for everything else
 todoRouter.all('*', () => new Response('Not Found.', { status: 404 }))
