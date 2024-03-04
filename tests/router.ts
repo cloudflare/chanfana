@@ -144,8 +144,8 @@ export class ToDoCreate extends OpenAPIRoute {
   }
 }
 
-export namespace ToDoCreateParamsView {
-  const Body = z.object({
+export namespace ToDoCreateTypedView {
+  const RequestBody = z.object({
     title: z.string(),
     description: z.string().optional(),
     type: z.enum(['nextWeek', 'nextMoth']),
@@ -190,6 +190,7 @@ export namespace ToDoCreateParamsView {
       tags: ['ToDo'],
       summary: 'List all ToDos',
       parameters: Parameters,
+      requestBody: RequestBody,
       responses: {
         '200': {
           description: 'example',
@@ -205,7 +206,7 @@ export namespace ToDoCreateParamsView {
       request: Request,
       env: any,
       context: any,
-      data: InferredData<typeof Parameters, typeof Body>
+      data: InferredData<typeof Parameters, typeof RequestBody>
     ) {
       return {
         params: data,
@@ -219,7 +220,7 @@ export const todoRouter = OpenAPIRouter({ openapiVersion: '3' })
 todoRouter.get('/todos', ToDoList)
 todoRouter.get('/todos/:id', ToDoGet)
 todoRouter.post('/todos', ToDoCreate)
-todoRouter.post('/todos-params', ToDoCreateParamsView.Route)
+todoRouter.post('/todos-typed', ToDoCreateTypedView.Route)
 
 // 404 for everything else
 todoRouter.all('*', () => new Response('Not Found.', { status: 404 }))
