@@ -58,6 +58,7 @@ nav:
   - Advanced User Guide:
       - advanced-user-guide/reusable-schemas.md
       - advanced-user-guide/custom-response-formats.md
+      - advanced-user-guide/custom-response-headers.md
       - advanced-user-guide/openai-plugin.md
       - advanced-user-guide/ci-cd-pipelines.md
       - advanced-user-guide/event-listener-worker.md
