@@ -26,5 +26,5 @@ export default defineConfig({
       ],
     }),
   ],
-  external: ['itty-router', 'zod', '@asteasolutions/zod-to-openapi'],
+  external: ['itty-router', 'zod', '@asteasolutions/zod-to-openapi', 'js-yaml'],
 })

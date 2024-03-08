@@ -16,7 +16,7 @@ import { OpenAPIRegistryMerger } from './zod/registry'
 import { z } from 'zod'
 import { OpenAPIObject } from 'openapi3-ts/oas31'
 import { OpenAPIRoute } from './route'
-const yaml = require('js-yaml')
+import yaml from 'js-yaml'
 
 export type Route = <
   RequestType = IRequest,
