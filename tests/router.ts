@@ -16,6 +16,7 @@ import {
   Str,
   Uuid,
   Path,
+  Header,
 } from '../src/parameters'
 import { OpenAPIRouteSchema, InferredData } from '../src'
 import { z } from 'zod'
@@ -153,7 +154,7 @@ export namespace ToDoCreateTypedView {
   const Parameters = {
     p_int: Query(Int),
     p_num: Query(Num),
-    p_num2: Query(new Num()),
+    p_num2: Path(new Num()),
     p_str: Query(Str),
     p_arrstr: Query([Str]),
     p_bool: Query(Bool),
@@ -171,13 +172,13 @@ export namespace ToDoCreateTypedView {
       enumCaseSensitive: false,
     }),
     p_datetime: Query(DateTime),
-    p_dateonly: Query(DateOnly),
+    p_dateonly: Path(DateOnly),
     p_regex: Query(Regex, {
       pattern: /^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$/,
     }),
     p_email: Query(Email),
     p_uuid: Query(Uuid),
-    p_hostname: Query(Hostname),
+    p_hostname: Header(Hostname),
     p_ipv4: Query(Ipv4),
     p_ipv6: Query(Ipv6),
     p_optional: Query(Int, {
@@ -186,7 +187,7 @@ export namespace ToDoCreateTypedView {
   }
 
   export class Route extends OpenAPIRoute {
-    static schema = {
+    static schema: OpenAPIRouteSchema = {
       tags: ['ToDo'],
       summary: 'List all ToDos',
       parameters: Parameters,
@@ -208,6 +209,13 @@ export namespace ToDoCreateTypedView {
       context: any,
       data: InferredData<typeof Parameters, typeof RequestBody>
     ) {
+      data.query.p_num
+      data.query.p_arrstr
+      data.query.p_datetime
+      data.params.p_num2
+      data.params.p_dateonly
+      data.headers.p_hostname
+      data.body.title
       return {
         params: data,
         results: ['lorem', 'ipsum'],

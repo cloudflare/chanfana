@@ -3,7 +3,9 @@ import {
   ParameterLocation,
   ParameterType,
   RegexParameterType,
-  RouteParameter,
+  HeaderParameter,
+  QueryParameter,
+  PathParameter,
   StringParameterType,
   TypedParameter,
 } from './types'
@@ -239,32 +241,32 @@ export class Enumeration {
   }
 }
 
-export function Query<Z extends z.ZodType>(type: Z): RouteParameter<Z>
+export function Query<Z extends z.ZodType>(type: Z): QueryParameter<Z>
 export function Query<Z extends z.ZodType>(
   type: Z,
   params: ParameterLocation & { required: false }
-): RouteParameter<z.ZodOptional<Z>>
+): QueryParameter<z.ZodOptional<Z>>
 export function Query<Z extends z.ZodType>(
   type: Z,
   params: ParameterLocation
-): RouteParameter<Z>
+): QueryParameter<Z>
 export function Query<Z extends z.ZodType>(
   type: [Z]
-): RouteParameter<z.ZodArray<Z>>
+): QueryParameter<z.ZodArray<Z>>
 export function Query<Z extends z.ZodType>(
   type: [Z],
   params: ParameterLocation & { required: false }
-): RouteParameter<z.ZodOptional<z.ZodArray<Z>>>
+): QueryParameter<z.ZodOptional<z.ZodArray<Z>>>
 export function Query<Z extends z.ZodType>(
   type: [Z],
   params: ParameterLocation
-): RouteParameter<z.ZodArray<Z>>
-export function Query(type: any): RouteParameter
-export function Query(type: any, params: ParameterLocation): RouteParameter
+): QueryParameter<z.ZodArray<Z>>
+export function Query(type: any): QueryParameter
+export function Query(type: any, params: ParameterLocation): QueryParameter
 export function Query(
   type: any,
   params: ParameterLocation = {}
-): RouteParameter {
+): QueryParameter {
   return {
     name: params.name,
     location: 'query',
@@ -272,32 +274,29 @@ export function Query(
   }
 }
 
-export function Path<Z extends z.ZodType>(type: Z): RouteParameter<Z>
+export function Path<Z extends z.ZodType>(type: Z): PathParameter<Z>
 export function Path<Z extends z.ZodType>(
   type: Z,
   params: ParameterLocation & { required: false }
-): RouteParameter<z.ZodOptional<Z>>
+): PathParameter<z.ZodOptional<Z>>
 export function Path<Z extends z.ZodType>(
   type: Z,
   params: ParameterLocation
-): RouteParameter<Z>
+): PathParameter<Z>
 export function Path<Z extends z.ZodType>(
   type: [Z]
-): RouteParameter<z.ZodArray<Z>>
+): PathParameter<z.ZodArray<Z>>
 export function Path<Z extends z.ZodType>(
   type: [Z],
   params: ParameterLocation & { required: false }
-): RouteParameter<z.ZodOptional<z.ZodArray<Z>>>
+): PathParameter<z.ZodOptional<z.ZodArray<Z>>>
 export function Path<Z extends z.ZodType>(
   type: [Z],
   params: ParameterLocation
-): RouteParameter<z.ZodArray<Z>>
-export function Path(type: any): RouteParameter
-export function Path(type: any, params: ParameterLocation): RouteParameter
-export function Path(
-  type: any,
-  params: ParameterLocation = {}
-): RouteParameter {
+): PathParameter<z.ZodArray<Z>>
+export function Path(type: any): PathParameter
+export function Path(type: any, params: ParameterLocation): PathParameter
+export function Path(type: any, params: ParameterLocation = {}): PathParameter {
   return {
     name: params.name,
     location: 'params',
@@ -305,32 +304,32 @@ export function Path(
   }
 }
 
-export function Header<Z extends z.ZodType>(type: Z): RouteParameter<Z>
+export function Header<Z extends z.ZodType>(type: Z): HeaderParameter<Z>
 export function Header<Z extends z.ZodType>(
   type: Z,
   params: ParameterLocation & { required: false }
-): RouteParameter<z.ZodOptional<Z>>
+): HeaderParameter<z.ZodOptional<Z>>
 export function Header<Z extends z.ZodType>(
   type: Z,
   params: ParameterLocation
-): RouteParameter<Z>
+): HeaderParameter<Z>
 export function Header<Z extends z.ZodType>(
   type: [Z]
-): RouteParameter<z.ZodArray<Z>>
+): HeaderParameter<z.ZodArray<Z>>
 export function Header<Z extends z.ZodType>(
   type: [Z],
   params: ParameterLocation & { required: false }
-): RouteParameter<z.ZodOptional<z.ZodArray<Z>>>
+): HeaderParameter<z.ZodOptional<z.ZodArray<Z>>>
 export function Header<Z extends z.ZodType>(
   type: [Z],
   params: ParameterLocation
-): RouteParameter<z.ZodArray<Z>>
-export function Header(type: any): RouteParameter
-export function Header(type: any, params: ParameterLocation): RouteParameter
+): HeaderParameter<z.ZodArray<Z>>
+export function Header(type: any): HeaderParameter
+export function Header(type: any, params: ParameterLocation): HeaderParameter
 export function Header(
   type: any,
   params: ParameterLocation = {}
-): RouteParameter {
+): HeaderParameter {
   return {
     name: params.name,
     location: 'headers',

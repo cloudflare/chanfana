@@ -26,6 +26,13 @@ export declare type RouteParameter<Z extends z.ZodType = z.ZodType> = {
   type: Z
 }
 
+export declare type QueryParameter<Z extends z.ZodType = z.ZodType> =
+  RouteParameter<Z> & { location: 'query' }
+export declare type PathParameter<Z extends z.ZodType = z.ZodType> =
+  RouteParameter<Z> & { location: 'params' }
+export declare type HeaderParameter<Z extends z.ZodType = z.ZodType> =
+  RouteParameter<Z> & { location: 'headers' }
+
 export declare type RouteResponse = Omit<ResponseConfig, 'content'> & {
   schema?: Record<any, any>
   contentType?: string
@@ -139,10 +146,28 @@ export interface VerificationTokens {
 export type TypedParameter<Z extends z.ZodType> = Z &
   (new (params?: ParameterType) => Z)
 
-export type InferredParameter<T> =
-  T extends RouteParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
+export type InferredQueryParameter<T> =
+  T extends QueryParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
+export type InferredPathParameter<T> =
+  T extends PathParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
+export type InferredHeaderParameter<T> =
+  T extends HeaderParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
 
-export type InferredData<P, B extends z.ZodType = z.ZodUndefined> =
-  P extends Record<string, RouteParameter<infer Z extends z.ZodType>>
-    ? { [K in keyof P]: InferredParameter<P[K]> } & { body: z.infer<B> }
-    : never
+export type InferredData<P, B extends z.ZodType = z.ZodUndefined> = {
+  headers: {
+    [K in keyof P as P[K] extends HeaderParameter<infer Z extends z.ZodType>
+      ? K
+      : never]: InferredHeaderParameter<P[K]>
+  }
+  params: {
+    [K in keyof P as P[K] extends PathParameter<infer Z extends z.ZodType>
+      ? K
+      : never]: InferredPathParameter<P[K]>
+  }
+  query: {
+    [K in keyof P as P[K] extends QueryParameter<infer Z extends z.ZodType>
+      ? K
+      : never]: InferredQueryParameter<P[K]>
+  }
+  body: z.infer<B>
+}
