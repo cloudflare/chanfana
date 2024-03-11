@@ -1,9 +1,16 @@
 import { RouteEntry } from 'itty-router'
-import { z } from 'zod'
-import { ResponseConfig } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
+import { z, AnyZodObject, ZodType } from 'zod'
+import {
+  ResponseConfig,
+  ZodMediaTypeObject,
+} from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
 import { RouteConfig } from '@asteasolutions/zod-to-openapi'
 import { OpenAPIObjectConfigV31 } from '@asteasolutions/zod-to-openapi/dist/v3.1/openapi-generator'
 import { OpenAPIObjectConfig } from '@asteasolutions/zod-to-openapi/dist/v3.0/openapi-generator'
+// @ts-ignore
+import { HeadersObject as HeadersObject30 } from 'openapi3-ts/dist/model/openapi30'
+// @ts-ignore
+import { HeadersObject as HeadersObject31 } from 'openapi3-ts/dist/model/openapi31'
 
 export interface RouterOptions {
   base?: string
@@ -26,6 +33,14 @@ export declare type RouteParameter<Z extends z.ZodType = z.ZodType> = {
   type: Z
 }
 
+export declare type MediaTypeObject = Omit<ZodMediaTypeObject, 'schema'> & {
+  schema: any // TODO enable type hint when legacy types drop the 'new'
+}
+
+export declare type ContentObject = {
+  [mediaType: string]: MediaTypeObject
+}
+
 export declare type QueryParameter<Z extends z.ZodType = z.ZodType> =
   RouteParameter<Z> & { location: 'query' }
 export declare type PathParameter<Z extends z.ZodType = z.ZodType> =
@@ -33,9 +48,18 @@ export declare type PathParameter<Z extends z.ZodType = z.ZodType> =
 export declare type HeaderParameter<Z extends z.ZodType = z.ZodType> =
   RouteParameter<Z> & { location: 'headers' }
 
-export declare type RouteResponse = Omit<ResponseConfig, 'content'> & {
+export declare type RouteResponse = Omit<
+  ResponseConfig,
+  'headers' | 'content'
+> & {
+  headers?:
+    | AnyZodObject
+    | HeadersObject30
+    | HeadersObject31
+    | Record<string, any>
   schema?: Record<any, any>
   contentType?: string
+  content?: ContentObject
 }
 
 export declare type OpenAPIRouteSchema = Omit<

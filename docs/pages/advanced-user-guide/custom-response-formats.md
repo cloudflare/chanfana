@@ -48,3 +48,34 @@ export class ToDoList extends OpenAPIRoute {
   }
 }
 ```
+
+## Describing multiple content types:
+
+```ts
+import { OpenAPIRoute, Str } from '@cloudflare/itty-router-openapi'
+
+export class ToDoList extends OpenAPIRoute {
+  static schema = {
+    summary: 'My summary of a custom pdf file endpoint.',
+    responses: {
+      '200': {
+        contentType: 'application/xml',
+        content: {
+          'application/json': {
+            schema: {
+              foo: 'bar'
+            }
+          },
+          'audio/mpeg': {
+            schema: new Str({ format: 'binary' })
+          }
+        },
+      },
+    },
+  }
+
+  async handle(request: Request, env: any, context: any, data: any) {
+    // ...
+  }
+}
+```

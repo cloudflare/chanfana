@@ -1,6 +1,6 @@
 import { OpenAPIRouteSchema, RouteOptions, RouteValidated } from './types'
 import { extractQueryParameters } from './parameters'
-import { z, ZodObject } from 'zod'
+import { z, ZodObject, ZodType } from 'zod'
 import { isAnyZodType, legacyTypeIntoZod } from './zod/utils'
 import { RouteConfig } from '@asteasolutions/zod-to-openapi'
 import { jsonResp } from './utils'
@@ -77,23 +77,44 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
     }
 
     for (const [key, value] of Object.entries(schema.responses)) {
-      let responseSchema: object = (value.schema as object) || {}
+      if (value.content) {
+        for (const [contentType, contentObject] of Object.entries(
+          value.content
+        )) {
+          if (!isAnyZodType(contentObject.schema)) {
+            value.content[contentType].schema = legacyTypeIntoZod(
+              contentObject.schema
+            )
+          }
+        }
 
-      if (!isAnyZodType(responseSchema)) {
-        responseSchema = legacyTypeIntoZod(responseSchema)
-      }
+        if (value.schema) {
+          // If content is defined, response cannot have schema
+          delete value.schema
+        }
+      } else if (value.schema) {
+        let responseSchema: object = (value.schema as object) || {}
 
-      const contentType = value.contentType || 'application/json'
+        if (!isAnyZodType(responseSchema)) {
+          responseSchema = legacyTypeIntoZod(responseSchema)
+        }
 
-      // @ts-ignore
-      responses[key] = {
-        description: value.description,
-        content: {
+        const contentType = value.contentType || 'application/json'
+
+        value.content = {
           [contentType]: {
-            schema: responseSchema,
+            schema: responseSchema as ZodType,
           },
-        },
+        }
+
+        delete value.schema
       }
+
+      if (value.headers && !isAnyZodType(value.headers)) {
+        value.headers = legacyTypeIntoZod(value.headers) as ZodObject<any>
+      }
+
+      responses[key] = value
     }
 
     if (schema.parameters) {
