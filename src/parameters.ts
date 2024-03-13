@@ -300,7 +300,13 @@ export function extractQueryParameters(
 ): Record<string, any> | null {
   const { searchParams } = new URL(request.url)
 
-  if (searchParams.size === 0) {
+  // For older node versions, searchParams is just an object without the size property
+  if (
+    searchParams.size === 0 ||
+    (searchParams.size === undefined &&
+      typeof searchParams === 'object' &&
+      Object.keys(searchParams).length === 0)
+  ) {
     return null
   }
 
