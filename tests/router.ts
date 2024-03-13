@@ -18,7 +18,7 @@ import {
   Path,
   Header,
 } from '../src/parameters'
-import { OpenAPIRouteSchema, InferredData } from '../src'
+import { OpenAPIRouteSchema, DataOf } from '../src'
 import { z } from 'zod'
 
 export class ToDoList extends OpenAPIRoute {
@@ -145,81 +145,79 @@ export class ToDoCreate extends OpenAPIRoute {
   }
 }
 
-export namespace ToDoCreateTypedView {
-  const RequestBody = z.object({
-    title: z.string(),
-    description: z.string().optional(),
-    type: z.enum(['nextWeek', 'nextMoth']),
-  })
-  const Parameters = {
-    p_int: Query(Int),
-    p_num: Query(Num),
-    p_num2: Path(new Num()),
-    p_str: Query(Str),
-    p_arrstr: Query([Str]),
-    p_bool: Query(Bool),
-    p_enumeration: Query(Enumeration, {
-      values: {
-        json: 'ENUM_JSON',
-        csv: 'ENUM_CSV',
-      },
+export class ToDoCreateTyped extends OpenAPIRoute {
+  static schema = {
+    tags: ['ToDo'],
+    summary: 'List all ToDos',
+    parameters: {
+      p_int: Query(Int),
+      p_num: Query(Num),
+      p_num2: Path(new Num()),
+      p_str: Query(Str),
+      p_arrstr: Query([Str]),
+      p_bool: Query(Bool),
+      p_enumeration: Query(Enumeration, {
+        values: {
+          json: 'ENUM_JSON',
+          csv: 'ENUM_CSV',
+        },
+      }),
+      p_enumeration_insensitive: Query(Enumeration, {
+        values: {
+          json: 'json',
+          csv: 'csv',
+        },
+        enumCaseSensitive: false,
+      }),
+      p_datetime: Query(DateTime),
+      p_dateonly: Path(DateOnly),
+      p_regex: Query(Regex, {
+        pattern:
+          /^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$/,
+      }),
+      p_email: Query(Email),
+      p_uuid: Query(Uuid),
+      p_hostname: Header(Hostname),
+      p_ipv4: Query(Ipv4),
+      p_ipv6: Query(Ipv6),
+      p_optional: Query(Int, {
+        required: false,
+      }),
+    },
+    requestBody: z.object({
+      title: z.string(),
+      description: z.string().optional(),
+      type: z.enum(['nextWeek', 'nextMoth']),
     }),
-    p_enumeration_insensitive: Query(Enumeration, {
-      values: {
-        json: 'json',
-        csv: 'csv',
-      },
-      enumCaseSensitive: false,
-    }),
-    p_datetime: Query(DateTime),
-    p_dateonly: Path(DateOnly),
-    p_regex: Query(Regex, {
-      pattern: /^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$/,
-    }),
-    p_email: Query(Email),
-    p_uuid: Query(Uuid),
-    p_hostname: Header(Hostname),
-    p_ipv4: Query(Ipv4),
-    p_ipv6: Query(Ipv6),
-    p_optional: Query(Int, {
-      required: false,
-    }),
-  }
-
-  export class Route extends OpenAPIRoute {
-    static schema: OpenAPIRouteSchema = {
-      tags: ['ToDo'],
-      summary: 'List all ToDos',
-      parameters: Parameters,
-      requestBody: RequestBody,
-      responses: {
-        '200': {
-          description: 'example',
-          schema: {
-            params: {},
-            results: ['lorem'],
-          },
+    responses: {
+      '200': {
+        description: 'example',
+        schema: {
+          params: {},
+          results: ['lorem'],
         },
       },
-    }
+    },
+  }
 
-    async handle(
-      request: Request,
-      env: any,
-      context: any,
-      data: InferredData<typeof Parameters, typeof RequestBody>
-    ) {
-      data.query.p_num
-      data.query.p_arrstr
-      data.query.p_datetime
-      data.params.p_num2
-      data.params.p_dateonly
-      data.headers.p_hostname
-      data.body.title
-      return {
-        params: data,
-        results: ['lorem', 'ipsum'],
-      }
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: DataOf<typeof ToDoCreateTyped.schema>
+  ) {
+    data.query.p_num
+    data.query.p_arrstr
+    data.query.p_datetime
+    data.params.p_num2
+    data.params.p_dateonly
+    data.headers.p_hostname
+    data.body.title
+    data.body.type
+    data.body.description
+    return {
+      params: data,
+      results: ['lorem', 'ipsum'],
     }
   }
 }
@@ -228,7 +226,7 @@ export const todoRouter = OpenAPIRouter({ openapiVersion: '3' })
 todoRouter.get('/todos', ToDoList)
 todoRouter.get('/todos/:id', ToDoGet)
 todoRouter.post('/todos', ToDoCreate)
-todoRouter.post('/todos-typed', ToDoCreateTypedView.Route)
+todoRouter.post('/todos-typed', ToDoCreateTyped)
 
 // 404 for everything else
 todoRouter.all('*', () => new Response('Not Found.', { status: 404 }))

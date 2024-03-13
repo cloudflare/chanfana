@@ -167,31 +167,62 @@ export interface VerificationTokens {
   openai: string
 }
 
-export type TypedParameter<Z extends z.ZodType> = Z &
+export type LegacyParameter<Z extends z.ZodType> = Z &
   (new (params?: ParameterType) => Z)
 
-export type InferredQueryParameter<T> =
+export type TypeOfQueryParameter<T> =
   T extends QueryParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
-export type InferredPathParameter<T> =
+
+export type TypeOfPathParameter<T> =
   T extends PathParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
-export type InferredHeaderParameter<T> =
+
+export type TypeOfHeaderParameter<T> =
   T extends HeaderParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
 
-export type InferredData<P, B extends z.ZodType = z.ZodUndefined> = {
-  headers: {
-    [K in keyof P as P[K] extends HeaderParameter<infer Z extends z.ZodType>
-      ? K
-      : never]: InferredHeaderParameter<P[K]>
+export type TypedOpenAPIRouteSchema<
+  P extends Record<string, RouteParameter>,
+  B extends z.ZodType = z.ZodUndefined,
+> = Omit<
+  RouteConfig,
+  'method' | 'path' | 'requestBody' | 'parameters' | 'responses'
+> & {
+  parameters?: P
+  requestBody?: B
+  responses?: {
+    [statusCode: string]: RouteResponse
   }
-  params: {
-    [K in keyof P as P[K] extends PathParameter<infer Z extends z.ZodType>
-      ? K
-      : never]: InferredPathParameter<P[K]>
-  }
-  query: {
-    [K in keyof P as P[K] extends QueryParameter<infer Z extends z.ZodType>
-      ? K
-      : never]: InferredQueryParameter<P[K]>
-  }
-  body: z.infer<B>
 }
+
+export type DataOf<S> = (S extends TypedOpenAPIRouteSchema<
+  infer P extends Record<string, RouteParameter>,
+  infer B
+>
+  ? {
+      headers: {
+        [K in keyof P as P[K] extends HeaderParameter<infer Z extends z.ZodType>
+          ? K
+          : never]: TypeOfHeaderParameter<P[K]>
+      }
+      params: {
+        [K in keyof P as P[K] extends PathParameter<infer Z extends z.ZodType>
+          ? K
+          : never]: TypeOfPathParameter<P[K]>
+      }
+      query: {
+        [K in keyof P as P[K] extends QueryParameter<infer Z extends z.ZodType>
+          ? K
+          : never]: TypeOfQueryParameter<P[K]>
+      }
+    }
+  : {
+      headers: Record<string, any>
+      params: Record<string, any>
+      query: Record<string, any>
+    }) &
+  (S extends TypedOpenAPIRouteSchema<infer P, infer B extends z.ZodUndefined>
+    ? {}
+    : S extends TypedOpenAPIRouteSchema<infer P, infer B extends z.ZodType>
+      ? { body: z.infer<B> }
+      : {})
+
+export type inferData<S> = DataOf<S>

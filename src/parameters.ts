@@ -7,7 +7,7 @@ import {
   QueryParameter,
   PathParameter,
   StringParameterType,
-  TypedParameter,
+  LegacyParameter,
 } from './types'
 import { z } from 'zod'
 import { isSpecificZodType, legacyTypeIntoZod } from './zod/utils'
@@ -62,7 +62,7 @@ export class Obj {
   }
 }
 
-export const Num: TypedParameter<z.ZodNumber> = class Num {
+export const Num: LegacyParameter<z.ZodNumber> = class Num {
   static generator = true
 
   constructor(params?: ParameterType) {
@@ -73,9 +73,9 @@ export const Num: TypedParameter<z.ZodNumber> = class Num {
       type: 'number',
     })
   }
-} as unknown as TypedParameter<z.ZodNumber>
+} as unknown as LegacyParameter<z.ZodNumber>
 
-export const Int: TypedParameter<z.ZodNumber> = class Int {
+export const Int: LegacyParameter<z.ZodNumber> = class Int {
   static generator = true
 
   constructor(params?: ParameterType) {
@@ -86,17 +86,17 @@ export const Int: TypedParameter<z.ZodNumber> = class Int {
       type: 'integer',
     })
   }
-} as unknown as TypedParameter<z.ZodNumber>
+} as unknown as LegacyParameter<z.ZodNumber>
 
-export const Str: TypedParameter<z.ZodString> = class Str {
+export const Str: LegacyParameter<z.ZodString> = class Str {
   static generator = true
 
   constructor(params?: StringParameterType) {
     return convertParams(z.string(), params)
   }
-} as unknown as TypedParameter<z.ZodString>
+} as unknown as LegacyParameter<z.ZodString>
 
-export const DateTime: TypedParameter<z.ZodString> = class DateTime {
+export const DateTime: LegacyParameter<z.ZodString> = class DateTime {
   static generator = true
 
   constructor(params?: ParameterType) {
@@ -107,9 +107,9 @@ export const DateTime: TypedParameter<z.ZodString> = class DateTime {
       params
     )
   }
-} as unknown as TypedParameter<z.ZodString>
+} as unknown as LegacyParameter<z.ZodString>
 
-export const Regex: TypedParameter<z.ZodString> = class Regex {
+export const Regex: LegacyParameter<z.ZodString> = class Regex {
   static generator = true
 
   constructor(params: RegexParameterType) {
@@ -119,25 +119,25 @@ export const Regex: TypedParameter<z.ZodString> = class Regex {
       params
     )
   }
-} as unknown as TypedParameter<z.ZodString>
+} as unknown as LegacyParameter<z.ZodString>
 
-export const Email: TypedParameter<z.ZodString> = class Email {
+export const Email: LegacyParameter<z.ZodString> = class Email {
   static generator = true
 
   constructor(params?: ParameterType) {
     return convertParams(z.string().email(), params)
   }
-} as unknown as TypedParameter<z.ZodString>
+} as unknown as LegacyParameter<z.ZodString>
 
-export const Uuid: TypedParameter<z.ZodString> = class Uuid {
+export const Uuid: LegacyParameter<z.ZodString> = class Uuid {
   static generator = true
 
   constructor(params?: ParameterType) {
     return convertParams(z.string().uuid(), params)
   }
-} as unknown as TypedParameter<z.ZodString>
+} as unknown as LegacyParameter<z.ZodString>
 
-export const Hostname: TypedParameter<z.ZodString> = class Hostname {
+export const Hostname: LegacyParameter<z.ZodString> = class Hostname {
   static generator = true
 
   constructor(params?: ParameterType) {
@@ -150,33 +150,33 @@ export const Hostname: TypedParameter<z.ZodString> = class Hostname {
       params
     )
   }
-} as unknown as TypedParameter<z.ZodString>
+} as unknown as LegacyParameter<z.ZodString>
 
-export const Ipv4: TypedParameter<z.ZodString> = class Ipv4 {
+export const Ipv4: LegacyParameter<z.ZodString> = class Ipv4 {
   static generator = true
 
   constructor(params?: ParameterType) {
     return convertParams(z.coerce.string().ip({ version: 'v4' }), params)
   }
-} as unknown as TypedParameter<z.ZodString>
+} as unknown as LegacyParameter<z.ZodString>
 
-export const Ipv6: TypedParameter<z.ZodString> = class Ipv6 {
+export const Ipv6: LegacyParameter<z.ZodString> = class Ipv6 {
   static generator = true
 
   constructor(params?: ParameterType) {
     return convertParams(z.string().ip({ version: 'v6' }), params)
   }
-} as unknown as TypedParameter<z.ZodString>
+} as unknown as LegacyParameter<z.ZodString>
 
-export const DateOnly: TypedParameter<z.ZodString> = class DateOnly {
+export const DateOnly: LegacyParameter<z.ZodString> = class DateOnly {
   static generator = true
 
   constructor(params?: ParameterType) {
     return convertParams(z.coerce.date(), params)
   }
-} as unknown as TypedParameter<z.ZodString>
+} as unknown as LegacyParameter<z.ZodString>
 
-export const Bool: TypedParameter<z.ZodBoolean> = class Bool {
+export const Bool: LegacyParameter<z.ZodBoolean> = class Bool {
   static generator = true
 
   constructor(params?: ParameterType) {
@@ -190,7 +190,7 @@ export const Bool: TypedParameter<z.ZodBoolean> = class Bool {
       type: 'boolean',
     })
   }
-} as unknown as TypedParameter<z.ZodBoolean>
+} as unknown as LegacyParameter<z.ZodBoolean>
 
 export class Enumeration {
   static generator = true
