@@ -108,6 +108,27 @@ export class ToDoGet extends OpenAPIRoute {
   }
 }
 
+export class ContentTypeGet extends OpenAPIRoute {
+  static schema = {
+    responses: {
+      '200': {
+        description: 'Successful Response',
+        contentType: 'text/csv',
+        schema: new Str(),
+      },
+    },
+  }
+
+  async handle(request: Request, env: any, context: any, data: any) {
+    return {
+      todo: {
+        lorem: 'lorem',
+        ipsum: 'ipsum',
+      },
+    }
+  }
+}
+
 export class ToDoCreate extends OpenAPIRoute {
   static schema: OpenAPIRouteSchema = {
     tags: ['ToDo'],
@@ -147,6 +168,7 @@ export const todoRouter = OpenAPIRouter({ openapiVersion: '3' })
 todoRouter.get('/todos', ToDoList)
 todoRouter.get('/todos/:id', ToDoGet)
 todoRouter.post('/todos', ToDoCreate)
+todoRouter.get('/contenttype', ContentTypeGet)
 
 // 404 for everything else
 todoRouter.all('*', () => new Response('Not Found.', { status: 404 }))
