@@ -44,8 +44,8 @@ export function OpenAPIRouter<
   RequestType = IRequest,
   Args extends any[] = any[],
   RouteType = Equal<RequestType, IRequest> extends true
-  ? Route
-  : UniversalRoute<RequestType, Args>
+    ? Route
+    : UniversalRoute<RequestType, Args>
 >(options?: RouterOptions): OpenAPIRouterType<RouteType, Args> {
   const registry: OpenAPIRegistryMerger = new OpenAPIRegistryMerger()
 

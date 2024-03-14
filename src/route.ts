@@ -108,6 +108,9 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
         }
 
         delete value.schema
+        if (value.contentType) {
+          delete value.contentType
+        }
       }
 
       if (value.headers && !isAnyZodType(value.headers)) {
