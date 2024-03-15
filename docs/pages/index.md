@@ -175,7 +175,7 @@ export default {
 }
 ```
 
-Finally, run `wrangler dev` and head to `/docs` our `/redocs` with your browser.
+Finally, run `wrangler dev` and head to `/docs` or `/redocs` with your browser.
 
 You'll be greeted with a beautiful OpenAPI page that you can use to test and call your new endpoint.
 
