@@ -1,5 +1,5 @@
 import { RouteEntry } from 'itty-router'
-import { AnyZodObject, ZodType } from 'zod'
+import { z, AnyZodObject, ZodType } from 'zod'
 import {
   ResponseConfig,
   ZodMediaTypeObject,
@@ -27,10 +27,10 @@ export interface RouterOptions {
   baseRouter?: any
 }
 
-export declare type RouteParameter = {
+export declare type RouteParameter<Z extends z.ZodType = z.ZodType> = {
   name?: string
   location: string
-  type: ZodType
+  type: Z
 }
 
 export declare type MediaTypeObject = Omit<ZodMediaTypeObject, 'schema'> & {
@@ -40,6 +40,13 @@ export declare type MediaTypeObject = Omit<ZodMediaTypeObject, 'schema'> & {
 export declare type ContentObject = {
   [mediaType: string]: MediaTypeObject
 }
+
+export declare type QueryParameter<Z extends z.ZodType = z.ZodType> =
+  RouteParameter<Z> & { location: 'query' }
+export declare type PathParameter<Z extends z.ZodType = z.ZodType> =
+  RouteParameter<Z> & { location: 'params' }
+export declare type HeaderParameter<Z extends z.ZodType = z.ZodType> =
+  RouteParameter<Z> & { location: 'headers' }
 
 export declare type RouteResponse = Omit<
   ResponseConfig,
@@ -159,3 +166,63 @@ export interface Auth {
 export interface VerificationTokens {
   openai: string
 }
+
+export type LegacyParameter<Z extends z.ZodType> = Z &
+  (new (params?: ParameterType) => Z)
+
+export type TypeOfQueryParameter<T> =
+  T extends QueryParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
+
+export type TypeOfPathParameter<T> =
+  T extends PathParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
+
+export type TypeOfHeaderParameter<T> =
+  T extends HeaderParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
+
+export type TypedOpenAPIRouteSchema<
+  P extends Record<string, RouteParameter>,
+  B extends z.ZodType = z.ZodUndefined,
+> = Omit<
+  RouteConfig,
+  'method' | 'path' | 'requestBody' | 'parameters' | 'responses'
+> & {
+  parameters?: P
+  requestBody?: B
+  responses?: {
+    [statusCode: string]: RouteResponse
+  }
+}
+
+export type DataOf<S> = (S extends TypedOpenAPIRouteSchema<
+  infer P extends Record<string, RouteParameter>,
+  infer B
+>
+  ? {
+      headers: {
+        [K in keyof P as P[K] extends HeaderParameter<infer Z extends z.ZodType>
+          ? K
+          : never]: TypeOfHeaderParameter<P[K]>
+      }
+      params: {
+        [K in keyof P as P[K] extends PathParameter<infer Z extends z.ZodType>
+          ? K
+          : never]: TypeOfPathParameter<P[K]>
+      }
+      query: {
+        [K in keyof P as P[K] extends QueryParameter<infer Z extends z.ZodType>
+          ? K
+          : never]: TypeOfQueryParameter<P[K]>
+      }
+    }
+  : {
+      headers: Record<string, any>
+      params: Record<string, any>
+      query: Record<string, any>
+    }) &
+  (S extends TypedOpenAPIRouteSchema<infer P, infer B extends z.ZodUndefined>
+    ? {}
+    : S extends TypedOpenAPIRouteSchema<infer P, infer B extends z.ZodType>
+      ? { body: z.infer<B> }
+      : {})
+
+export type inferData<S> = DataOf<S>

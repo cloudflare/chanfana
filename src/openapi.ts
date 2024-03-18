@@ -21,7 +21,7 @@ import yaml from 'js-yaml'
 export type Route = <
   RequestType = IRequest,
   Args extends any[] = any[],
-  RT = OpenAPIRouterType
+  RT = OpenAPIRouterType,
 >(
   path: string,
   ...handlers: (RouteHandler<RequestType, Args> | OpenAPIRouterType | any)[] // TODO: fix this any to be instance of OpenAPIRoute
@@ -34,18 +34,17 @@ export type OpenAPIRouterType<R = Route, Args extends any[] = any[]> = {
 } & RouterType<R>
 
 // helper function to detect equality in types (used to detect custom Request on router)
-type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y
-  ? 1
-  : 2
-  ? true
-  : false
+type Equal<X, Y> =
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
+    ? true
+    : false
 
 export function OpenAPIRouter<
   RequestType = IRequest,
   Args extends any[] = any[],
   RouteType = Equal<RequestType, IRequest> extends true
     ? Route
-    : UniversalRoute<RequestType, Args>
+    : UniversalRoute<RequestType, Args>,
 >(options?: RouterOptions): OpenAPIRouterType<RouteType, Args> {
   const registry: OpenAPIRegistryMerger = new OpenAPIRegistryMerger()
 
@@ -86,7 +85,7 @@ export function OpenAPIRouter<
       return (
         route: string,
         ...handlers: RouteHandler<RequestType, Args>[] &
-          typeof OpenAPIRoute[] &
+          (typeof OpenAPIRoute)[] &
           OpenAPIRouterType<RouteType, Args>[]
       ) => {
         if (prop !== 'handle') {
