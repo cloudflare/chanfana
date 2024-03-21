@@ -24,6 +24,7 @@ endpoints while reusing code.
 The key features are:
 
 - OpenAPI 3 and 3.1 schema generator
+- Parameter type hint and type check in typescript
 - [Query](https://cloudflare.github.io/itty-router-openapi/user-guide/query-parameters/),
   [Path](https://cloudflare.github.io/itty-router-openapi/user-guide/path-parameters/),
   [Request Body](https://cloudflare.github.io/itty-router-openapi/user-guide/request-body/) and
@@ -109,6 +110,7 @@ import {
   Path,
   Str,
   DateOnly,
+  DataOf,
 } from '@cloudflare/itty-router-openapi'
 
 const Task = {
@@ -139,9 +141,14 @@ export class TaskFetch extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: any) {
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+    data: DataOf<typeof TaskFetch.schema>
+  ) {
     // Retrieve the validated slug
-    const { taskSlug } = data
+    const { taskSlug } = data.params
 
     // Actually fetch a task using the taskSlug
 

@@ -43,6 +43,7 @@ plugins:
 nav:
   - itty-router-openapi: index.md
   - types.md
+  - type-hint.md
   - User Guide:
       - user-guide/first-steps.md
       - user-guide/path-parameters.md
