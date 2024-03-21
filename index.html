@@ -333,11 +333,26 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="type-hint/" class="md-nav__link">
+        Type hint
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
     
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
       
       
       
@@ -366,13 +381,13 @@
         
       
       
-        <label class="md-nav__link" for="__nav_3">
+        <label class="md-nav__link" for="__nav_4">
           User Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="User Guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
+        <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
           User Guide
         </label>
@@ -549,7 +564,7 @@
     <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
       
       
       
@@ -574,13 +589,13 @@
         
       
       
-        <label class="md-nav__link" for="__nav_4">
+        <label class="md-nav__link" for="__nav_5">
           Advanced User Guide
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" aria-label="Advanced User Guide" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
+        <label class="md-nav__title" for="__nav_5">
           <span class="md-nav__icon md-icon"></span>
           Advanced User Guide
         </label>
@@ -827,6 +842,7 @@ endpoints while reusing code.</p>
 <p>The key features are:</p>
 <ul>
 <li>OpenAPI 3 and 3.1 schema generator</li>
+<li>Parameter type hint and type check in typescript</li>
 <li><a href="https://cloudflare.github.io/itty-router-openapi/user-guide/query-parameters/">Query</a>,
   <a href="https://cloudflare.github.io/itty-router-openapi/user-guide/path-parameters/">Path</a>,
   <a href="https://cloudflare.github.io/itty-router-openapi/user-guide/request-body/">Request Body</a> and
@@ -882,6 +898,7 @@ flags, descriptions, and other fields.</p>
 <span class="w">  </span><span class="nx">Path</span><span class="p">,</span>
 <span class="w">  </span><span class="nx">Str</span><span class="p">,</span>
 <span class="w">  </span><span class="nx">DateOnly</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">DataOf</span><span class="p">,</span>
 <span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
 
 <span class="kd">const</span><span class="w"> </span><span class="nx">Task</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
@@ -903,6 +920,7 @@ flags, descriptions, and other fields.</p>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="nx">responses</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="s1">&#39;200&#39;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Task fetched successfully&#39;</span><span class="p">,</span>
 <span class="w">        </span><span class="nx">schema</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">          </span><span class="nx">metaData</span><span class="o">:</span><span class="w"> </span><span class="p">{},</span>
 <span class="w">          </span><span class="nx">task</span><span class="o">:</span><span class="w"> </span><span class="kt">Task</span><span class="p">,</span>
@@ -911,9 +929,9 @@ flags, descriptions, and other fields.</p>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">  </span><span class="p">}</span>
 
-<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">DataOf</span><span class="o">&lt;</span><span class="ow">typeof</span><span class="w"> </span><span class="nx">TaskFetch</span><span class="p">.</span><span class="nx">schema</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="c1">// Retrieve the validated slug</span>
-<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">taskSlug</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">taskSlug</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">data</span><span class="p">.</span><span class="nx">params</span>
 
 <span class="w">    </span><span class="c1">// Actually fetch a task using the taskSlug</span>
 
@@ -944,7 +962,7 @@ flags, descriptions, and other fields.</p>
 <span class="w">  </span><span class="nx">fetch</span><span class="o">:</span><span class="w"> </span><span class="kt">router.handle</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Finally, run <code>wrangler dev</code> and head to <code>/docs</code> our <code>/redocs</code> with your browser.</p>
+<p>Finally, run <code>wrangler dev</code> and head to <code>/docs</code> or <code>/redocs</code> with your browser.</p>
 <p>You'll be greeted with a beautiful OpenAPI page that you can use to test and call your new endpoint.</p>
 <p><img alt="Tutorial Example Preview" src="https://raw.githubusercontent.com/cloudflare/itty-router-openapi/main/docs/images/tutorial-example.png" /></p>
 <p>Pretty easy, right?</p>

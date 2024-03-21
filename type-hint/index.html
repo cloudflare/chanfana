@@ -10,21 +10,21 @@
       
       
       
-        <link rel="canonical" href="https://cloudflare.github.io/itty-router-openapi/advanced-user-guide/hiding-routes-in-openapi-schema/">
+        <link rel="canonical" href="https://cloudflare.github.io/itty-router-openapi/type-hint/">
       
-      <link rel="icon" href="../../assets/logo.svg">
+      <link rel="icon" href="../assets/logo.svg">
       <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.4.1">
     
     
       
-        <title>Hiding routes in openapi schema - itty-router-openapi</title>
+        <title>Type hint - itty-router-openapi</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.69437709.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.69437709.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.cbb835fc.min.css">
         
       
       
@@ -40,9 +40,9 @@
       
     
     
-      <link rel="stylesheet" href="../../termynal.css">
+      <link rel="stylesheet" href="../termynal.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -69,11 +69,6 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
-        
-        <a href="#defining-redirects" class="md-skip">
-          Skip to content
-        </a>
-      
     </div>
     <div data-md-component="announce">
       
@@ -84,9 +79,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="itty-router-openapi" class="md-header__button md-logo" aria-label="itty-router-openapi" data-md-component="logo">
+    <a href=".." title="itty-router-openapi" class="md-header__button md-logo" aria-label="itty-router-openapi" data-md-component="logo">
       
-  <img src="../../assets/logo.svg" alt="logo">
+  <img src="../assets/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -102,7 +97,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Hiding routes in openapi schema
+              Type hint
             
           </span>
         </div>
@@ -205,9 +200,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="itty-router-openapi" class="md-nav__button md-logo" aria-label="itty-router-openapi" data-md-component="logo">
+    <a href=".." title="itty-router-openapi" class="md-nav__button md-logo" aria-label="itty-router-openapi" data-md-component="logo">
       
-  <img src="../../assets/logo.svg" alt="logo">
+  <img src="../assets/logo.svg" alt="logo">
 
     </a>
     itty-router-openapi
@@ -235,7 +230,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         itty-router-openapi
       </a>
     </li>
@@ -250,7 +245,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../types/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         Types
       </a>
     </li>
@@ -263,11 +258,19 @@
 
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../../type-hint/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         Type hint
       </a>
+      
     </li>
   
 
@@ -330,7 +333,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/first-steps/" class="md-nav__link">
+      <a href="../user-guide/first-steps/" class="md-nav__link">
         First steps
       </a>
     </li>
@@ -344,7 +347,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/path-parameters/" class="md-nav__link">
+      <a href="../user-guide/path-parameters/" class="md-nav__link">
         Path parameters
       </a>
     </li>
@@ -358,7 +361,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/query-parameters/" class="md-nav__link">
+      <a href="../user-guide/query-parameters/" class="md-nav__link">
         Query parameters
       </a>
     </li>
@@ -372,7 +375,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/request-body/" class="md-nav__link">
+      <a href="../user-guide/request-body/" class="md-nav__link">
         Request body
       </a>
     </li>
@@ -386,7 +389,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/response-format/" class="md-nav__link">
+      <a href="../user-guide/response-format/" class="md-nav__link">
         Response format
       </a>
     </li>
@@ -400,7 +403,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/router-options/" class="md-nav__link">
+      <a href="../user-guide/router-options/" class="md-nav__link">
         Router options
       </a>
     </li>
@@ -414,7 +417,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/nested-routers/" class="md-nav__link">
+      <a href="../user-guide/nested-routers/" class="md-nav__link">
         Nested routers
       </a>
     </li>
@@ -428,7 +431,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/security/" class="md-nav__link">
+      <a href="../user-guide/security/" class="md-nav__link">
         Security
       </a>
     </li>
@@ -442,7 +445,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/cors/" class="md-nav__link">
+      <a href="../user-guide/cors/" class="md-nav__link">
         Cors
       </a>
     </li>
@@ -456,7 +459,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/middleware/" class="md-nav__link">
+      <a href="../user-guide/middleware/" class="md-nav__link">
         Middleware
       </a>
     </li>
@@ -470,7 +473,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/migrating-from-itty-router/" class="md-nav__link">
+      <a href="../user-guide/migrating-from-itty-router/" class="md-nav__link">
         Migrating existing itty-router applications
       </a>
     </li>
@@ -490,14 +493,12 @@
 
   
   
-    
-  
   
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
       
       
       
@@ -540,7 +541,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../reusable-schemas/" class="md-nav__link">
+      <a href="../advanced-user-guide/reusable-schemas/" class="md-nav__link">
         Reusable Schemas
       </a>
     </li>
@@ -554,7 +555,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../custom-response-formats/" class="md-nav__link">
+      <a href="../advanced-user-guide/custom-response-formats/" class="md-nav__link">
         Custom response formats
       </a>
     </li>
@@ -568,7 +569,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../custom-response-headers/" class="md-nav__link">
+      <a href="../advanced-user-guide/custom-response-headers/" class="md-nav__link">
         Custom response headers
       </a>
     </li>
@@ -582,7 +583,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../openai-plugin/" class="md-nav__link">
+      <a href="../advanced-user-guide/openai-plugin/" class="md-nav__link">
         OpenAI plugin support
       </a>
     </li>
@@ -596,7 +597,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ci-cd-pipelines/" class="md-nav__link">
+      <a href="../advanced-user-guide/ci-cd-pipelines/" class="md-nav__link">
         CI/CD
       </a>
     </li>
@@ -610,7 +611,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../event-listener-worker/" class="md-nav__link">
+      <a href="../advanced-user-guide/event-listener-worker/" class="md-nav__link">
         Worker using addEventListener
       </a>
     </li>
@@ -622,48 +623,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Hiding routes in openapi schema
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../advanced-user-guide/hiding-routes-in-openapi-schema/" class="md-nav__link">
         Hiding routes in openapi schema
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#defining-redirects" class="md-nav__link">
-    Defining redirects
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -675,7 +639,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../openapi-schema-customizations/" class="md-nav__link">
+      <a href="../advanced-user-guide/openapi-schema-customizations/" class="md-nav__link">
         OpenAPI schema customizations
       </a>
     </li>
@@ -689,7 +653,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../streaming-responses/" class="md-nav__link">
+      <a href="../advanced-user-guide/streaming-responses/" class="md-nav__link">
         Streaming responses
       </a>
     </li>
@@ -711,7 +675,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../migrating-to-1.0/" class="md-nav__link">
+      <a href="../migrating-to-1.0/" class="md-nav__link">
         Migrating to 1.0
       </a>
     </li>
@@ -736,21 +700,6 @@
   
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#defining-redirects" class="md-nav__link">
-    Defining redirects
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -763,33 +712,40 @@
                 
 
 
-  <h1>Hiding routes in openapi schema</h1>
+  <h1>Type hint</h1>
 
-<p>Hiding routes can be archived by registering your endpoints in the original <code>itty-router</code>,as shown here:</p>
-<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
+<p>Starting on version 1.1.0, itty-router-openapi now gives full type hints and checks when writing your endpoint's code.</p>
+<p>The type hint works on <code>Query</code>, <code>Path</code>, <code>Header</code>, and <code>requestBody</code> out of the box. </p>
+<p>To enable this, simply change the data type of the <code>data</code> argumento into <code>DataOf&lt;typeof YourEndpointClass.schema&gt;</code>, like this:</p>
+<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">OpenAPIRoute</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">Path</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">Str</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">DataOf</span><span class="p">,</span>
+<span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
 
-<span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">()</span>
+<span class="k">export</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">TaskFetch</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">OpenAPIRoute</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="nx">schema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">parameters</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">taskSlug</span><span class="o">:</span><span class="w"> </span><span class="kt">Path</span><span class="p">(</span><span class="nx">Str</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Task slug&#39;</span><span class="p">,</span>
+<span class="w">      </span><span class="p">}),</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">  </span><span class="p">}</span>
 
-<span class="nx">router</span><span class="p">.</span><span class="nx">original</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span>
-<span class="w">  </span><span class="s1">&#39;/todos/:id&#39;</span><span class="p">,</span>
-<span class="w">  </span><span class="p">({</span><span class="w"> </span><span class="nx">params</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Response</span><span class="p">(</span><span class="sb">`Todo #</span><span class="si">${</span><span class="nx">params</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">)</span>
-<span class="p">)</span>
-</code></pre></div>
-<p>This endpoint will still be accessible, but will not be shown in the schema.</p>
-<h2 id="defining-redirects">Defining redirects<a class="headerlink" href="#defining-redirects" title="Permanent link">&para;</a></h2>
-<p>This is also useful to define redirects, like this:</p>
-<div class="highlight"><pre><span></span><code><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@cloudflare/itty-router-openapi&#39;</span>
-<span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">TaskFetch</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;./tasks&#39;</span>
+<span class="hll"><span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">handle</span><span class="p">(</span><span class="nx">request</span><span class="o">:</span><span class="w"> </span><span class="kt">Request</span><span class="p">,</span><span class="w"> </span><span class="nx">env</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">context</span><span class="o">:</span><span class="w"> </span><span class="kt">any</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="kt">DataOf</span><span class="o">&lt;</span><span class="ow">typeof</span><span class="w"> </span><span class="nx">TaskFetch</span><span class="p">.</span><span class="nx">schema</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span class="w">    </span><span class="c1">// you now get type hints, when accessing the data argument</span>
+<span class="w">    </span><span class="nx">data</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">taskSlug</span>
 
-<span class="kd">const</span><span class="w"> </span><span class="nx">router</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">OpenAPIRouter</span><span class="p">()</span>
-
-<span class="c1">// Redirect to docs page</span>
-<span class="nx">router</span><span class="p">.</span><span class="nx">original</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="nx">request</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">Response</span><span class="p">.</span><span class="nx">redirect</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">request</span><span class="p">.</span><span class="nx">url</span><span class="si">}</span><span class="sb">docs`</span><span class="p">,</span><span class="w"> </span><span class="mf">302</span><span class="p">))</span>
-
-<span class="k">export</span><span class="w"> </span><span class="k">default</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="nx">fetch</span><span class="o">:</span><span class="w"> </span><span class="kt">router.handle</span><span class="p">,</span>
+<span class="w">    </span><span class="c1">// ...</span>
+<span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Note that you need to pass your endpoint class name into the new <code>DataOf</code> type for it to work</p>
+</div>
+<p>The new type hint is 100% optional, so existing endpoints don't need to do anything to continue working.</p>
 
 
 
@@ -810,7 +766,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../event-listener-worker/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Worker using addEventListener" rel="prev">
+        <a href="../types/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Types" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -819,20 +775,20 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Worker using addEventListener
+              Types
             </div>
           </div>
         </a>
       
       
         
-        <a href="../openapi-schema-customizations/" class="md-footer__link md-footer__link--next" aria-label="Next: OpenAPI schema customizations" rel="next">
+        <a href="../user-guide/first-steps/" class="md-footer__link md-footer__link--next" aria-label="Next: First steps" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              OpenAPI schema customizations
+              First steps
             </div>
           </div>
           <div class="md-footer__button md-icon">
@@ -876,12 +832,12 @@
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["search.suggest", "search.highlight", "content.tabs.link", "navigation.indexes", "content.tooltips", "navigation.path", "content.code.annotate", "content.code.copy", "content.code.select"], "search": "../../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["search.suggest", "search.highlight", "content.tabs.link", "navigation.indexes", "content.tooltips", "navigation.path", "content.code.annotate", "content.code.copy", "content.code.select"], "search": "../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.9c69f0bc.min.js"></script>
+      <script src="../assets/javascripts/bundle.9c69f0bc.min.js"></script>
       
-        <script src="../../termynal.js"></script>
+        <script src="../termynal.js"></script>
       
     
   </body>
