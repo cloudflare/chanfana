@@ -71,7 +71,7 @@ export class ToDoCreate extends OpenAPIRoute {
     context: any,
     data: any
   ) {
-    const { limit } = data.query
+    const newToDo = data.body
     // ...
   }
 }
@@ -100,7 +100,7 @@ export class ToDoCreate extends OpenAPIRoute {
     context: any,
     data: any
   ) {
-    const { limit } = data.query
+    const newToDo = data.body
     // ...
   }
 }
