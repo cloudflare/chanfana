@@ -1,4 +1,4 @@
-import { OpenAPIRouter } from '../src/openapi'
+import { fromIttyRouter } from '../src/adapters/ittyRouter'
 import { OpenAPIRoute } from '../src/route'
 import {
   Bool,
@@ -6,20 +6,21 @@ import {
   DateTime,
   Email,
   Enumeration,
+  Header,
   Hostname,
   Int,
   Ipv4,
   Ipv6,
   Num,
+  Path,
   Query,
   Regex,
   Str,
   Uuid,
-  Path,
-  Header,
 } from '../src/parameters'
-import { OpenAPIRouteSchema, DataOf } from '../src'
+import { DataOf, OpenAPIRouteSchema } from '../src'
 import { z } from 'zod'
+import { AutoRouter } from 'itty-router'
 
 export class ToDoList extends OpenAPIRoute {
   static schema = {
@@ -243,7 +244,7 @@ export class ToDoCreateTyped extends OpenAPIRoute {
   }
 }
 
-export const todoRouter = OpenAPIRouter({ openapiVersion: '3' })
+export const todoRouter = fromIttyRouter(AutoRouter(), { openapiVersion: '3' })
 todoRouter.get('/todos', ToDoList)
 todoRouter.get('/todos/:id', ToDoGet)
 todoRouter.post('/todos', ToDoCreate)

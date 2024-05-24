@@ -1,4 +1,4 @@
-import { RouteEntry } from 'itty-router'
+import { IRequest, RouteEntry } from 'itty-router'
 import { z, AnyZodObject, ZodType } from 'zod'
 import {
   ResponseConfig,
@@ -11,20 +11,19 @@ import { OpenAPIObjectConfig } from '@asteasolutions/zod-to-openapi/dist/v3.0/op
 import { HeadersObject as HeadersObject30 } from 'openapi3-ts/dist/model/openapi30'
 // @ts-ignore
 import { HeadersObject as HeadersObject31 } from 'openapi3-ts/dist/model/openapi31'
+import { OpenAPIRoute } from './route'
+import { OpenAPIRouterType } from './openapi'
 
 export interface RouterOptions {
   base?: string
-  routes?: RouteEntry[]
   schema?: Partial<OpenAPIObjectConfigV31 | OpenAPIObjectConfig>
   docs_url?: string
   redoc_url?: string
   openapi_url?: string
-  aiPlugin?: AIPlugin
   raiseUnknownParameters?: boolean
   generateOperationIds?: boolean
   openapiVersion?: '3' | '3.1'
   skipValidation?: boolean
-  baseRouter?: any
 }
 
 export declare type RouteParameter<Z extends z.ZodType = z.ZodType> = {
@@ -74,6 +73,7 @@ export declare type OpenAPIRouteSchema = Omit<
 }
 
 export interface RouteOptions {
+  router: any
   raiseUnknownParameters: boolean
   skipValidation: boolean
 }
@@ -115,56 +115,6 @@ export interface ParameterLocation extends StringParameterType {
 export interface RouteValidated {
   data: any
   errors?: Record<string, any>
-}
-
-export enum SchemaVersion {
-  V1 = 'v1',
-}
-
-export enum AuthType {
-  NONE = 'none',
-  OAUTH = 'oauth',
-  SERVICE_HTTP = 'service_http',
-  USER_HTTP = 'user_http',
-}
-
-export enum APIType {
-  OPENAPI = 'openapi',
-}
-
-export interface AIPlugin {
-  schema_version?: SchemaVersion | string
-  name_for_model: string
-  name_for_human: string
-  description_for_model: string
-  description_for_human: string
-  auth?: Auth
-  api?: API
-  logo_url: string
-  contact_email: string
-  legal_info_url: string
-  is_dev?: boolean
-}
-
-export interface API {
-  type: APIType | string
-  url: string
-  has_user_authentication: boolean
-}
-
-export interface Auth {
-  type: AuthType | string
-  authorization_type?: string
-  authorization_url?: string
-  client_url?: string
-  scope?: string
-  authorization_content_type?: string
-  verification_tokens?: VerificationTokens
-  instructions?: string
-}
-
-export interface VerificationTokens {
-  openai: string
 }
 
 export type LegacyParameter<Z extends z.ZodType> = Z &

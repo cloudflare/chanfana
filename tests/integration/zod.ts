@@ -2,11 +2,12 @@ import 'isomorphic-fetch'
 
 import { OpenAPIRoute } from '../../src/route'
 import { Path } from '../../src/parameters'
-import { OpenAPIRouter } from '../../src/openapi'
+import { fromIttyRouter } from '../../src/openapi'
 import { buildRequest } from '../utils'
 import { z } from 'zod'
+import { AutoRouter } from 'itty-router'
 
-const zodRouter = OpenAPIRouter()
+const zodRouter = fromIttyRouter(AutoRouter())
 
 class ToDoGet extends OpenAPIRoute {
   static schema = {
@@ -50,7 +51,7 @@ zodRouter.put('/todo/:id', ToDoGet)
 
 describe('zod validations', () => {
   it('simpleSuccessfulCall', async () => {
-    const request = await zodRouter.handle(
+    const request = await zodRouter.fetch(
       buildRequest({ method: 'PUT', path: `/todo/1` })
     )
 

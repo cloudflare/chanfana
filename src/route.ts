@@ -182,7 +182,7 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
   }
 
   async execute(...args: any[]) {
-    const { data, errors } = await this.validateRequest(args[0])
+    const { data, errors } = await this.validateRequest(this.params.router.getRequest(args))
 
     if (errors) {
       return this.handleValidationError(errors)

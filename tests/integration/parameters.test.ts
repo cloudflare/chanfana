@@ -4,7 +4,7 @@ import { ToDoList, todoRouter } from '../router'
 
 describe('queryParametersValidation', () => {
   test('requiredFields', async () => {
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: '/todos' })
     )
     const resp = await request.json()
@@ -23,7 +23,7 @@ describe('queryParametersValidation', () => {
 
   test('checkNumberInvalid', async () => {
     const qs = '?p_number=asd'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -35,7 +35,7 @@ describe('queryParametersValidation', () => {
 
   test('checkNumberValidFloat', async () => {
     const qs = '?p_number=12.3'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -45,7 +45,7 @@ describe('queryParametersValidation', () => {
 
   test('checkNumberValidInteger', async () => {
     const qs = '?p_number=12'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -55,7 +55,7 @@ describe('queryParametersValidation', () => {
 
   test('checkStringValid', async () => {
     const qs = '?p_string=asd21_sa'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -65,7 +65,7 @@ describe('queryParametersValidation', () => {
 
   test('checkStringInvalidEmpty', async () => {
     const qs = '?p_string='
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -77,7 +77,7 @@ describe('queryParametersValidation', () => {
 
   test('checkBooleanInvalid', async () => {
     const qs = '?p_boolean=asd'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -89,7 +89,7 @@ describe('queryParametersValidation', () => {
 
   test('checkBooleanValid', async () => {
     const qs = '?p_boolean=false'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -99,7 +99,7 @@ describe('queryParametersValidation', () => {
 
   test('checkBooleanValidCaseInsensitive', async () => {
     const qs = '?p_boolean=TrUe'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -109,7 +109,7 @@ describe('queryParametersValidation', () => {
 
   test('checkEnumerationSensitiveInvalid', async () => {
     const qs = '?p_enumeration=sfDase'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -121,7 +121,7 @@ describe('queryParametersValidation', () => {
 
   test('checkEnumerationSensitiveInvalidCase', async () => {
     const qs = '?p_enumeration=Csv'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -133,7 +133,7 @@ describe('queryParametersValidation', () => {
 
   test('checkEnumerationSensitiveValid', async () => {
     const qs = '?p_enumeration=csv'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -143,7 +143,7 @@ describe('queryParametersValidation', () => {
 
   test('checkEnumerationInsensitiveInvalid', async () => {
     const qs = '?p_enumeration_insensitive=sfDase'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -155,7 +155,7 @@ describe('queryParametersValidation', () => {
 
   test('checkEnumerationInsensitiveValidCase', async () => {
     const qs = '?p_enumeration_insensitive=Csv'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -165,7 +165,7 @@ describe('queryParametersValidation', () => {
 
   test('checkEnumerationInsensitiveValid', async () => {
     const qs = '?p_enumeration_insensitive=csv'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -175,7 +175,7 @@ describe('queryParametersValidation', () => {
 
   test('checkDatetimeInvalid', async () => {
     const qs = '?p_datetime=2023-13-01'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -187,7 +187,7 @@ describe('queryParametersValidation', () => {
 
   test('checkDatetimeInvalid2', async () => {
     const qs = '?p_datetime=sdfg'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -199,7 +199,7 @@ describe('queryParametersValidation', () => {
 
   test('checkDatetimeInvalid3', async () => {
     const qs = '?p_datetime=2022-09-15T00:00:00+01Z'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -211,7 +211,7 @@ describe('queryParametersValidation', () => {
 
   test('checkDatetimeValid', async () => {
     const qs = '?p_datetime=2022-09-15T00:00:01Z'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -221,7 +221,7 @@ describe('queryParametersValidation', () => {
 
   test('checkDatetimeValid2', async () => {
     const qs = '?p_datetime=2022-09-15T00:00:00Z'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -231,7 +231,7 @@ describe('queryParametersValidation', () => {
 
   test('checkDateInvalid', async () => {
     const qs = '?p_dateonly=2022-13-15'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -241,7 +241,7 @@ describe('queryParametersValidation', () => {
 
   test('checkDateInvalid3', async () => {
     const qs = '?p_dateonly=2022-09-15T00:0f0:00.0Z'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -251,7 +251,7 @@ describe('queryParametersValidation', () => {
 
   test('checkDateValid', async () => {
     const qs = '?p_dateonly=2022-09-15'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -261,7 +261,7 @@ describe('queryParametersValidation', () => {
 
   test('checkRegexInvalid', async () => {
     const qs = '?p_regex=123765'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -271,7 +271,7 @@ describe('queryParametersValidation', () => {
 
   test('checkRegexValid', async () => {
     const qs = '?p_regex=%2B919367788755'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -281,7 +281,7 @@ describe('queryParametersValidation', () => {
 
   test('checkEmailInvalid', async () => {
     const qs = '?p_email=asfdgsdf'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -291,7 +291,7 @@ describe('queryParametersValidation', () => {
 
   test('checkEmailInvalid2', async () => {
     const qs = '?p_email=asfdgsdf@gmail'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -301,7 +301,7 @@ describe('queryParametersValidation', () => {
 
   test('checkEmailInvalid3', async () => {
     const qs = '?p_email=@gmail.com'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -311,7 +311,7 @@ describe('queryParametersValidation', () => {
 
   test('checkEmailValid', async () => {
     const qs = '?p_email=sdfg@gmail.com'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -321,7 +321,7 @@ describe('queryParametersValidation', () => {
 
   test('checkUuidInvalid', async () => {
     const qs = '?p_uuid=f31f890-044b-11ee-be56-0242ac120002'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -331,7 +331,7 @@ describe('queryParametersValidation', () => {
 
   test('checkUuidInvalid2', async () => {
     const qs = '?p_uuid=asdf-sdfg-dsfg-sfdg'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -341,7 +341,7 @@ describe('queryParametersValidation', () => {
 
   test('checkUuidValid', async () => {
     const qs = '?p_uuid=f31f8b90-044b-11ee-be56-0242ac120002'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -351,7 +351,7 @@ describe('queryParametersValidation', () => {
 
   test('checkUuidValid2', async () => {
     const qs = '?p_uuid=f5f26194-0b07-45a4-9a85-94d3db01e7a5'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -361,7 +361,7 @@ describe('queryParametersValidation', () => {
 
   test('checkHostnameInvalid', async () => {
     const qs = '?p_hostname=.com'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -371,7 +371,7 @@ describe('queryParametersValidation', () => {
 
   test('checkHostnameValid', async () => {
     const qs = '?p_hostname=cloudflare.com'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -381,7 +381,7 @@ describe('queryParametersValidation', () => {
 
   test('checkHostnameValid2', async () => {
     const qs = '?p_hostname=radar.cloudflare.com'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -391,7 +391,7 @@ describe('queryParametersValidation', () => {
 
   test('checkIpv4Invalid', async () => {
     const qs = '?p_ipv4=asdfrre.wer.com'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -401,7 +401,7 @@ describe('queryParametersValidation', () => {
 
   test('checkIpv4Invalid2', async () => {
     const qs = '?p_ipv4=2001:0db8:85a3:0000:0000:8a2e:0370:7334'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -411,7 +411,7 @@ describe('queryParametersValidation', () => {
 
   test('checkIpv4Valid', async () => {
     const qs = '?p_ipv4=1.1.1.1'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -421,7 +421,7 @@ describe('queryParametersValidation', () => {
 
   test('checkIpv6Invalid', async () => {
     const qs = '?p_ipv6=asdfrre.wer.com'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -431,7 +431,7 @@ describe('queryParametersValidation', () => {
 
   test('checkIpv6Invalid2', async () => {
     const qs = '?p_ipv6=1.1.1.1'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -441,7 +441,7 @@ describe('queryParametersValidation', () => {
 
   test('checkIpv6Valid', async () => {
     const qs = '?p_ipv6=2001:0db8:85a3:0000:0000:8a2e:0370:7336'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -451,7 +451,7 @@ describe('queryParametersValidation', () => {
 
   test('checkOptionalMissing', async () => {
     const qs = '?'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -461,7 +461,7 @@ describe('queryParametersValidation', () => {
 
   test('checkOptionalInvalid', async () => {
     const qs = '?p_optional=asfdasd'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -473,7 +473,7 @@ describe('queryParametersValidation', () => {
 
   test('checkOptionalValid', async () => {
     const qs = '?p_optional=32'
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({ method: 'GET', path: `/todos${qs}` })
     )
     const resp = await request.json()
@@ -484,7 +484,7 @@ describe('queryParametersValidation', () => {
 
 describe('bodyParametersValidation', () => {
   test('requiredFieldTitle', async () => {
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({
         method: 'POST',
         path: '/todos',
@@ -502,7 +502,7 @@ describe('bodyParametersValidation', () => {
   })
 
   test('requiredFieldTipe', async () => {
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({
         method: 'POST',
         path: '/todos',
@@ -522,7 +522,7 @@ describe('bodyParametersValidation', () => {
   })
 
   test('validRequest', async () => {
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({
         method: 'POST',
         path: '/todos',
@@ -546,7 +546,7 @@ describe('bodyParametersValidation', () => {
   })
 
   test('validRequestWithOptionalParameters', async () => {
-    const request = await todoRouter.handle(
+    const request = await todoRouter.fetch(
       buildRequest({
         method: 'POST',
         path: '/todos',

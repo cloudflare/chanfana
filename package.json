@@ -81,6 +81,7 @@
     "eslint-config-prettier": "^8.8.0",
     "husky": "^7.0.2",
     "isomorphic-fetch": "^3.0.0",
+    "itty-router": "^5.0.17",
     "jest": "^29.0.0",
     "jest-openapi": "^0.14.2",
     "pinst": "^2.1.6",
@@ -93,7 +94,6 @@
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^6.4.0",
-    "itty-router": "4.0.26",
     "js-yaml": "^4.1.0",
     "openapi3-ts": "^4.1.2",
     "zod": "^3.21.4"

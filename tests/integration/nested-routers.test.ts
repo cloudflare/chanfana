@@ -2,11 +2,15 @@ import 'isomorphic-fetch'
 
 import { OpenAPIRoute } from '../../src/route'
 import { Path } from '../../src/parameters'
-import { OpenAPIRouter } from '../../src/openapi'
+import { fromIttyRouter } from '../../src/adapters/ittyRouter'
 import { buildRequest } from '../utils'
 import { jsonResp } from '../../src/utils'
+import { AutoRouter } from 'itty-router'
 
-const innerRouter = OpenAPIRouter({ base: '/api/v1' })
+const innerRouter = fromIttyRouter(AutoRouter({ base: '/api/v1' }), {
+  base: '/api/v1',
+})
+
 class ToDoGet extends OpenAPIRoute {
   static schema = {
     tags: ['ToDo'],
@@ -40,7 +44,7 @@ class ToDoGet extends OpenAPIRoute {
 innerRouter.get('/todo/:id', ToDoGet)
 innerRouter.all('*', () => jsonResp({ message: 'Not Found' }, { status: 404 }))
 
-const router = OpenAPIRouter({
+const router = fromIttyRouter(AutoRouter(), {
   schema: {
     info: {
       title: 'Radar Worker API',
@@ -54,7 +58,7 @@ router.all('*', () => new Response('Not Found.', { status: 404 }))
 
 describe('innerRouter', () => {
   it('simpleSuccessfulCall', async () => {
-    const request = await router.handle(
+    const request = await router.fetch(
       buildRequest({ method: 'GET', path: `/api/v1/todo/1` })
     )
     const resp = await request.json()
@@ -69,7 +73,7 @@ describe('innerRouter', () => {
   })
 
   it('innerCatchAll', async () => {
-    const request = await router.handle(
+    const request = await router.fetch(
       buildRequest({ method: 'GET', path: `/api/v1/asd` })
     )
     const resp = await request.json()
@@ -79,7 +83,7 @@ describe('innerRouter', () => {
   })
 
   it('outerCatchAll', async () => {
-    const request = await router.handle(
+    const request = await router.fetch(
       buildRequest({ method: 'GET', path: `/asd` })
     )
     const resp = await request.text()
