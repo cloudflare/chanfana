@@ -1,38 +1,44 @@
-import { OpenAPIRouteSchema, RouteOptions, RouteValidated } from './types'
+import {
+  OpenAPIRouteSchema,
+  RouteOptions,
+  RouteValidated,
+  ValidatedData,
+} from './types'
 import { extractQueryParameters } from './parameters'
 import { z, ZodObject, ZodType } from 'zod'
 import { isAnyZodType, legacyTypeIntoZod } from './zod/utils'
 import { RouteConfig } from '@asteasolutions/zod-to-openapi'
 import { jsonResp } from './utils'
-import { IRequest } from 'itty-router'
+import { RouteParameter } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
 
-export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
-  handle(request: I, ...args: A): any {
+export class OpenAPIRoute {
+  handle(...args: any[]): any {
     throw new Error('Method not implemented.')
   }
 
   static isRoute = true
 
-  static schema: OpenAPIRouteSchema
+  // static schema: OpenAPIRouteSchema
   params: RouteOptions
 
   constructor(params: RouteOptions) {
     this.params = params
   }
 
-  static getSchema(): OpenAPIRouteSchema {
-    return this.schema
+  // static getSchema(): OpenAPIRouteSchema {
+  //   return this.schema
+  // }
+  //
+  schema: OpenAPIRouteSchema = {}
+
+  getValidatedData<S = this>(): ValidatedData<S> {
+    return undefined
   }
 
-  schema(): OpenAPIRouteSchema {
-    // @ts-ignore
-    return this.__proto__.constructor.schema
-  }
-
-  getSchema(): OpenAPIRouteSchema {
-    // @ts-ignore
-    return this.__proto__.constructor.getSchema()
-  }
+  // getSchema(): OpenAPIRouteSchema {
+  //   // @ts-ignore
+  //   return this.__proto__.constructor.getSchema()
+  // }
 
   getSchemaZod(): RouteConfig {
     // @ts-ignore
@@ -43,129 +49,22 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
     // Deep copy
     const schema = { ...this.getSchema() }
 
-    let parameters: any = {}
-    let requestBody: any = schema.requestBody as any
-    const responses: any = {}
-    const customProperties: any = {}
-
-    if (requestBody && requestBody.$customRequestBody) {
-      customProperties.requestBody = requestBody.content
-    } else if (requestBody) {
-      if (!isAnyZodType(requestBody)) {
-        requestBody = legacyTypeIntoZod(requestBody)
-      }
-
-      requestBody = {
-        content: {
-          'application/json': {
-            schema: requestBody,
-          },
-        },
-      }
-
-      parameters.body = requestBody
-    }
-
     if (!schema.responses) {
       // No response was provided in the schema, default to a blank one
       schema.responses = {
         '200': {
-          description: 'Successfull response',
-          schema: {},
+          description: 'Successful response',
+          content: {
+            'application/json': {
+              schema: {},
+            },
+          },
         },
       }
     }
 
-    for (const [key, value] of Object.entries(schema.responses)) {
-      if (value.content) {
-        for (const [contentType, contentObject] of Object.entries(
-          value.content
-        )) {
-          if (!isAnyZodType(contentObject.schema)) {
-            value.content[contentType].schema = legacyTypeIntoZod(
-              contentObject.schema
-            )
-          }
-        }
-
-        if (value.schema) {
-          // If content is defined, response cannot have schema
-          delete value.schema
-        }
-      } else if (value.schema) {
-        let responseSchema: object = (value.schema as object) || {}
-
-        if (!isAnyZodType(responseSchema)) {
-          responseSchema = legacyTypeIntoZod(responseSchema)
-        }
-
-        const contentType = value.contentType || 'application/json'
-
-        value.content = {
-          [contentType]: {
-            schema: responseSchema as ZodType,
-          },
-        }
-
-        delete value.schema
-        if (value.contentType) {
-          delete value.contentType
-        }
-      }
-
-      if (value.headers && !isAnyZodType(value.headers)) {
-        value.headers = legacyTypeIntoZod(value.headers) as ZodObject<any>
-      }
-
-      responses[key] = value
-    }
-
-    if (schema.parameters) {
-      let values = schema.parameters
-      const _params: any = {}
-
-      // Convert parameter array into object
-      if (Array.isArray(values)) {
-        values = values.reduce(
-          // @ts-ignore
-          (obj, item) => Object.assign(obj, { [item.name]: item }),
-          {}
-        )
-      }
-
-      for (const [key, value] of Object.entries(values as Record<any, any>)) {
-        if (!_params[value.location]) {
-          _params[value.location] = {}
-        }
-
-        _params[value.location][key] = value.type
-      }
-
-      for (const [key, value] of Object.entries(_params)) {
-        _params[key] = z.object(value as any)
-      }
-
-      parameters = {
-        ...parameters,
-        ..._params,
-      }
-    }
-
-    delete schema.requestBody
-    delete schema.parameters
     // @ts-ignore
-    delete schema.responses
-
-    // Deep copy
-    //@ts-ignore
-    return {
-      ...schema,
-      request: {
-        ...parameters,
-      },
-      responses: responses,
-      ...customProperties,
-    }
+    return schema
   }
 
   handleValidationError(errors: Record<string, any>): Response {
@@ -182,7 +81,12 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
   }
 
   async execute(...args: any[]) {
-    const { data, errors } = await this.validateRequest(this.params.router.getRequest(args))
+    const { data, errors } = await this.validateRequest(
+      this.params.router.getRequest(args)
+    )
+
+    console.log(data)
+    console.log(errors)
 
     if (errors) {
       return this.handleValidationError(errors)
@@ -202,7 +106,7 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
 
   extractQueryParameters(
     request: Request,
-    schema?: ZodObject<any>
+    schema?: RouteParameter
   ): Record<string, any> | null {
     return extractQueryParameters(request, schema)
   }

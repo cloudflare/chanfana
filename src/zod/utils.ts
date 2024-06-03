@@ -26,7 +26,7 @@ export function legacyTypeIntoZod(type: any, params?: any): z.ZodType {
   params = params || {}
 
   if (type === null) {
-    return new Str({ required: false, ...params })
+    return Str({ required: false, ...params })
   }
 
   if (isAnyZodType(type)) {
@@ -43,31 +43,31 @@ export function legacyTypeIntoZod(type: any, params?: any): z.ZodType {
   }
 
   if (type === String) {
-    return new Str(params)
+    return Str(params)
   }
 
   if (typeof type === 'string') {
-    return new Str({ example: type })
+    return Str({ example: type })
   }
 
   if (type === Number) {
-    return new Num(params)
+    return Num(params)
   }
 
   if (typeof type === 'number') {
-    return new Num({ example: type })
+    return Num({ example: type })
   }
 
   if (type === Boolean) {
-    return new Bool(params)
+    return Bool(params)
   }
 
   if (typeof type === 'boolean') {
-    return new Bool({ example: type })
+    return Bool({ example: type })
   }
 
   if (type === Date) {
-    return new DateTime(params)
+    return DateTime(params)
   }
 
   if (Array.isArray(type)) {
@@ -75,11 +75,11 @@ export function legacyTypeIntoZod(type: any, params?: any): z.ZodType {
       throw new Error('Arr must have a type')
     }
 
-    return new Arr(type[0], params) as z.ZodArray<any>
+    return Arr(type[0], params)
   }
 
   if (typeof type === 'object') {
-    return new Obj(type, params) as z.ZodObject<any>
+    return Obj(type, params)
   }
 
   throw new Error(`${type} not implemented`)

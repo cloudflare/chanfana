@@ -1,12 +1,11 @@
 import { RouterOptions } from '../types'
 import { OpenAPIHandler, OpenAPIRouterType } from '../openapi'
 
-export class IttyRouterOpenAPIHandler extends OpenAPIHandler {
-}
+export class IttyRouterOpenAPIHandler extends OpenAPIHandler {}
 
 export function fromIttyRouter<M>(
   router: M,
-  options?: RouterOptions,
+  options?: RouterOptions
 ): M & OpenAPIRouterType<M> & any {
   const openapiRouter = new IttyRouterOpenAPIHandler(router, options)
 

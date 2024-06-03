@@ -9,7 +9,7 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
 
 export function fromHono<M>(
   router: M,
-  options?: RouterOptions,
+  options?: RouterOptions
 ): M & OpenAPIRouterType<M> & any {
   const openapiRouter = new HonoOpenAPIHandler(router, options)
 

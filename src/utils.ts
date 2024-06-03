@@ -8,11 +8,3 @@ export function jsonResp(data: any, params?: object): Response {
     ...params,
   })
 }
-
-export class RequestBody {
-  public $customRequestBody = true
-  public content: any
-  constructor(content: any) {
-    this.content = content
-  }
-}
