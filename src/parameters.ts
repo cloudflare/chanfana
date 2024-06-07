@@ -1,17 +1,7 @@
-import {
-  EnumerationParameterType,
-  ParameterType,
-  RegexParameterType,
-} from './types'
+import { EnumerationParameterType, ParameterType, RegexParameterType } from './types'
 import { z } from 'zod'
 import { isSpecificZodType, legacyTypeIntoZod } from './zod/utils'
-import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
 import { RouteParameter } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
-
-if (z.string().openapi === undefined) {
-  // console.log('zod extension applied')
-  extendZodWithOpenApi(z)
-}
 
 export function convertParams<M = z.ZodType>(field: any, params: any): M {
   params = params || {}
@@ -51,8 +41,8 @@ export function Obj(fields: object, params?: ParameterType): z.ZodObject<any> {
 
 export function Num(params?: ParameterType): z.ZodNumber {
   return convertParams<z.ZodNumber>(
-    z.number().or(z.string()).pipe(z.coerce.number()),
-    params
+    z.number().or(z.string()).pipe(z.number()),
+    params,
   ).openapi({
     type: 'number',
   })
@@ -60,8 +50,8 @@ export function Num(params?: ParameterType): z.ZodNumber {
 
 export function Int(params?: ParameterType): z.ZodNumber {
   return convertParams<z.ZodNumber>(
-    z.number().int().or(z.string()).pipe(z.coerce.number()),
-    params
+    z.number().int().or(z.string()).pipe(z.number()),
+    params,
   ).openapi({
     type: 'integer',
   })
@@ -76,7 +66,7 @@ export function DateTime(params?: ParameterType): z.ZodString {
     z.string().datetime({
       message: 'Must be in the following format: YYYY-mm-ddTHH:MM:ssZ',
     }),
-    params
+    params,
   )
 }
 
@@ -84,7 +74,7 @@ export function Regex(params: RegexParameterType): z.ZodString {
   return convertParams<z.ZodString>(
     // @ts-ignore
     z.string().regex(params.pattern, params.patternError || 'Invalid'),
-    params
+    params,
   )
 }
 
@@ -101,16 +91,16 @@ export function Hostname(params?: ParameterType): z.ZodString {
     z
       .string()
       .regex(
-        /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/
+        /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/,
       ),
-    params
+    params,
   )
 }
 
 export function Ipv4(params?: ParameterType): z.ZodString {
   return convertParams<z.ZodString>(
-    z.coerce.string().ip({ version: 'v4' }),
-    params
+    z.string().ip({ version: 'v4' }),
+    params,
   )
 }
 
@@ -123,7 +113,7 @@ export function Ip(params?: ParameterType): z.ZodString {
 }
 
 export function DateOnly(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.coerce.date(), params)
+  return convertParams<z.ZodString>(z.date(), params)
 }
 
 export function Bool(params?: ParameterType): z.ZodBoolean {
@@ -132,7 +122,7 @@ export function Bool(params?: ParameterType): z.ZodBoolean {
       .string()
       .toLowerCase()
       .pipe(z.enum(['true', 'false']).transform((val) => val === 'true')),
-    params
+    params,
   ).openapi({
     type: 'boolean',
   })
@@ -183,47 +173,25 @@ export function Enumeration(params: EnumerationParameterType): z.ZodEnum<any> {
   return result
 }
 
-export function extractParameter(
-  request: Request,
-  query: Record<string, any>,
-  name: string,
-  location: string
-): any {
-  if (location === 'query') {
-    return query[name]
-  }
-  if (location === 'path') {
-    // @ts-ignore
-    return request.params[name]
-  }
-  if (location === 'header') {
-    // @ts-ignore
-    return request.headers.get(name)
-  }
-  if (location === 'cookie') {
-    throw new Error('Cookie parameters not implemented yet')
-  }
-}
-
-export function extractQueryParameters(
-  request: Request,
-  schema?: RouteParameter
+// This should only be used for query, params, headers and cookies
+export function coerceInputs(
+  data: Record<string, any>,
+  schema?: RouteParameter,
 ): Record<string, any> | null {
-  const { searchParams } = new URL(request.url)
 
   // For older node versions, searchParams is just an object without the size property
   if (
-    searchParams.size === 0 ||
-    (searchParams.size === undefined &&
-      typeof searchParams === 'object' &&
-      Object.keys(searchParams).length === 0)
+    data.size === 0 ||
+    (data.size === undefined &&
+      typeof data === 'object' &&
+      Object.keys(data).length === 0)
   ) {
     return null
   }
 
   const params: Record<string, any> = {}
-  for (let [key, value] of searchParams.entries()) {
-    // Query parameters can be empty strings, that should equal to null as nothing was provided
+  for (let [key, value] of data.entries()) {
+    // Query, path and headers can be empty strings, that should equal to null as nothing was provided
     if (value === '') {
       // @ts-ignore
       value = null
@@ -237,18 +205,32 @@ export function extractQueryParameters(
       params[key].push(value)
     }
 
+    let innerType
+    if (schema && (schema as z.AnyZodObject).shape && (schema as z.AnyZodObject).shape[key]) {
+      innerType = (schema as z.AnyZodObject).shape[key]
+    } else if (schema) {
+      // Fallback for Zod effects
+      innerType = schema
+    }
+
     // Soft transform query strings into arrays
-    if (schema && schema.shape[key]) {
+    if (innerType) {
       if (
-        isSpecificZodType(schema.shape[key], 'ZodArray') &&
+        isSpecificZodType(innerType, 'ZodArray') &&
         !Array.isArray(params[key])
       ) {
         params[key] = [params[key]]
-      } else if (isSpecificZodType(schema.shape[key], 'ZodBoolean')) {
-        // z.preprocess(
-        // (val) => String(val).toLowerCase(),
-        // z.enum(['true', 'false']).transform((val) => val === 'true')
-        // ),
+      } else if (isSpecificZodType(innerType, 'ZodBoolean')) {
+        const _val = (params[key] as string).toLowerCase().trim()
+        if (_val === 'true' || _val === 'false') {
+          params[key] = _val === 'true'
+        }
+      } else if (isSpecificZodType(innerType, 'ZodNumber')) {
+        params[key] = parseFloat(params[key])
+      } else if (isSpecificZodType(innerType, 'ZodBigInt')) {
+        params[key] = parseInt(params[key])
+      } else if (isSpecificZodType(innerType, 'ZodDate')) {
+        params[key] = new Date(params[key])
       }
     }
   }

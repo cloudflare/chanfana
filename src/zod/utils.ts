@@ -16,9 +16,11 @@ export function isAnyZodType(schema: object): schema is z.ZodType {
 
 export function isSpecificZodType(field: any, typeName: string): boolean {
   return (
-    field._def.typeName === 'ZodArray' ||
-    field._def.innerType?._def.typeName === 'ZodArray' ||
-    field._def.schema?._def.innerType?._def.typeName === 'ZodArray'
+    field._def.typeName === typeName ||
+    field._def.innerType?._def.typeName === typeName ||
+    field._def.schema?._def.innerType?._def.typeName === typeName ||
+    (field.unwrap && field.unwrap()._def.typeName) === typeName ||
+    (field.unwrap && field.unwrap().unwrap && field.unwrap().unwrap()._def.typeName) === typeName
   )
 }
 

@@ -1,5 +1,5 @@
 import { fromIttyRouter } from '../src/adapters/ittyRouter'
-import { OpenAPIRoute } from '../src/route'
+import { extendZodWithOpenApi, OpenAPIRoute } from '../src'
 import {
   Bool,
   DateOnly,
@@ -15,22 +15,21 @@ import {
   Str,
   Uuid,
 } from '../src/parameters'
-import { OpenAPIRouteSchema, RequestTypes } from '../src'
-import { AnyZodObject, z } from 'zod'
+import { z } from 'zod'
 import { AutoRouter } from 'itty-router'
 import { contentJson } from '../src/contentTypes'
-import { legacyTypeIntoZod } from '../src/zod/utils'
+
+extendZodWithOpenApi(z)
 
 export class ToDoList extends OpenAPIRoute {
-  static schema = {
+  schema = {
     tags: ['ToDo'],
     summary: 'List all ToDos',
     request: {
       query: z.object({
-
-        // p_number: Number,
-        // p_string: String,
-        // p_boolean: Boolean,
+        p_number: z.number(),
+        p_string: z.string(),
+        p_boolean: z.boolean(),
         p_int: Int(),
         p_num: Num(),
         p_str: Str(),
@@ -59,34 +58,30 @@ export class ToDoList extends OpenAPIRoute {
         p_hostname: Hostname(),
         p_ipv4: Ipv4(),
         p_ipv6: Ipv6(),
-        p_optional: Int({
-          required: false,
-        }),
+        p_optional: z.number().optional(),
       }),
     },
     responses: {
       '200': {
         description: 'example',
-        'application/json': {
-          schema: {
-            params: {},
-            results: ['lorem'],
-          },
-        },
+        ...contentJson({
+          params: {},
+          results: ['lorem'],
+        }),
       },
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: any) {
+  async handle(request: Request, env: any, context: any) {
     return {
-      params: data,
+      params: (await this.getValidatedData()),
       results: ['lorem', 'ipsum'],
     }
   }
 }
 
 export class ToDoGet extends OpenAPIRoute {
-  static schema = {
+  schema = {
     tags: ['ToDo'],
     summary: 'Get a single ToDo',
     request: {
@@ -96,18 +91,22 @@ export class ToDoGet extends OpenAPIRoute {
     },
     responses: {
       '200': {
-        description: 'example',
-        schema: {
-          todo: {
-            lorem: String,
-            ipsum: String,
+        description: 'Successful Response',
+        content: {
+          'application/json': {
+            schema: z.object({
+              todo: z.object({
+                lorem: z.string(),
+                ipsum: Str(),
+              }),
+            }),
           },
         },
       },
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: any) {
+  async handle(request: Request, env: any, context: any) {
     return {
       todo: {
         lorem: 'lorem',
@@ -118,16 +117,20 @@ export class ToDoGet extends OpenAPIRoute {
 }
 
 export class ContentTypeGet extends OpenAPIRoute {
-  static schema = {
+  schema = {
     responses: {
       '200': {
         description: 'Successful Response',
-        'text/csv': z.string(),
+        content: {
+          'text/csv': {
+            schema: z.string(),
+          },
+        },
       },
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: any) {
+  async handle(request: Request, env: any, context: any) {
     return {
       todo: {
         lorem: 'lorem',
@@ -138,7 +141,7 @@ export class ContentTypeGet extends OpenAPIRoute {
 }
 
 export class ToDoCreate extends OpenAPIRoute {
-  static schema: OpenAPIRouteSchema = {
+  schema = {
     tags: ['ToDo'],
     summary: 'Create a new ToDo',
     request: {
@@ -177,9 +180,9 @@ export class ToDoCreate extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any, data: any) {
+  async handle(request: Request, env: any, context: any) {
     return {
-      todo: data.body,
+      todo: (await this.getValidatedData()).body,
     }
   }
 }
@@ -205,8 +208,7 @@ const query = z.object({
   }),
   p_datetime: DateTime(),
   p_regex: Regex({
-    pattern:
-      /^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$/,
+    pattern: /^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$/,
   }),
   p_email: Email(),
   p_uuid: Uuid(),
@@ -250,177 +252,10 @@ export class ToDoCreateTyped extends OpenAPIRoute {
     },
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-  ) {
-    const data = this.getValidatedData<this>()
-    const asd = data.query.p_int
-    data.query.
-
+  async handle(request: Request, env: any, context: any) {
     return {}
   }
 }
-
-type SchematPart<R extends OpenAPIRouteSchema, Part extends string> = Part extends keyof R
-  ? R[Part]
-  : {}
-
-type RequestPart<R extends RequestTypes, Part extends string> = Part extends keyof R
-  ? R[Part]
-  : {}
-
-type getRequest<T extends OpenAPIRouteSchema, P extends keyof T> = Pick<T, P> extends { P: RequestTypes } ? T[P] : never
-type getInfer<T extends AnyZodObject | undefined> = undefined extends T ? undefined : z.infer<T>
-type getInfer<T extends AnyZodObject | undefined> = undefined extends T ? undefined : z.infer<T>
-
-declare type ModelName = GetModelName<ModelMappings>;
-declare type GetModelClass<M extends ModelName, T> = {
-  [K in keyof T]: T[K] extends {
-      models: readonly string[];
-      class: infer C;
-    }
-    ? M extends T[K]['models'][number]
-      ? C
-      : never
-    : never;
-}[keyof T];
-declare type ConstructorParametersForModel<M extends ModelName> =
-  ConstructorParameters<GetModelClass<M, ModelMappings>>[0];
-declare type GetModelClassType<M extends ModelName> = {
-  [K in keyof ModelMappings]: M extends ModelMappings[K]['models'][number]
-    ? ModelMappings[K]['class']
-    : never;
-}[keyof ModelMappings];
-declare type GetModelInstanceType<M extends ModelName> = InstanceType<
-  GetModelClassType<M>
->;
-declare type GetPostProcessedOutputsType<M extends ModelName> =
-  GetModelInstanceType<M>['postProcessedOutputs'];
-type IsPropertyUndefined<T, K extends keyof T> = undefined extends T[K] ? true : false;
-
-type GetRequest<T extends OpenAPIRouteSchema> = T['request'];
-type GetQuery<T extends RequestTypes> = T['query'];
-
-type GetInnerQuery<T extends OpenAPIRouteSchema> = GetRequest<T>
-  ? GetQuery<GetRequest<T>> : never
-export type DataOf2<S extends OpenAPIRouteSchema> =
-  S extends { request: RequestTypes }
-    ? S['request']
-    : false;
-
-// export type DataOf2<S> =
-//   S extends { schema: OpenAPIRouteSchema }
-//  ? Extract<S['schema'], 'request'> extends { request: infer T }
-//     ? Extract<T, 'query'> extends { query: infer Q extends ZodType<T['query'], any, any> }
-//       ? z.infer<Q>
-//   : never
-//   : never
-//   : never;
-
-// export type SetNonNullable<BaseType, Keys extends keyof BaseType = keyof BaseType> = {
-// 	[Key in keyof BaseType]: Key extends Keys
-// 		? NonNullable<BaseType[Key]>
-// 		: BaseType[Key];
-// };
-//
-// type RequestPart<R extends OpenAPIRouteSchema, Part extends string> = Part extends keyof R['request']
-//   ? R['request'][Part]
-//   : {}
-//
-//   const Vector3Schema = z.object({
-//     x: z.number(),
-//     y: z.number(),
-//     z: z.number(),
-//   });
-//   function parseVector3(data: Vector3): Vector3 {
-//     data.
-//     return {
-//       ...Vector3Schema.parse(data),
-//       normalize: function () { /*...*/ },
-//       distance: function(v: Vector3) { /*...*/}
-//     };
-//   }
-//
-//   interface Vector3 extends z.infer<NonNullable<NonNullable<typeof ToDoCreateTyped.schema.request>['query']>> {
-//     normalize: () => void;
-//     distance: (v: Vector3) => number;
-//   }
-
-
-// function test(asd: DataOf2<ToDoCreateTyped['schema']>) {
-//   asd
-//   if (asd) {
-//     asd
-//     const dfg = asd.query  as z.infer<T['query']>
-//   }
-// }
-
-
-// export type DataOf3<S> = PickDeep<S, 'request.query'>
-//
-
-//
-// type OptionalPropertyOf<T extends object> = Exclude<{
-//   [K in keyof T]: T extends Record<K, T[K]>
-//     ? never
-//     : K
-// }[keyof T], undefined>
-// type DataOf3<R extends OpenAPIRouteSchema> = InputTypeParam<R> &
-//     InputTypeQuery<R> &
-//     InputTypeHeader<R> &
-//     InputTypeCookie<R>
-
-// type PropType<TObj, TProp extends keyof TObj> = TObj[TProp];
-//
-// type GetModelClass<M extends ModelName, T> = {
-//   [K in keyof T]: T[K] extends { models: readonly string[]; class: infer C }
-//     ? M extends T[K]['models'][number]
-//       ? C
-//       : never
-//     : never;
-// }[keyof T];
-//
-// type Keys = keyof typeof ToDoCreateTyped.schema.request;
-// declare type GetModelClass<M extends ModelName, T> = {
-//   [K in keyof T]: T[K] extends {
-//     models: readonly string[];
-//     class: infer C;
-//   }
-//     ? M extends T[K]['models'][number]
-//       ? C
-//       : never
-//     : never;
-// }[keyof T];
-// declare type ConstructorParametersForModel<M extends ModelName> =
-//   ConstructorParameters<GetModelClass<M, ModelMappings>>[0];
-// declare type GetModelClassType<M extends ModelName> = {
-//   [K in keyof ModelMappings]: M extends ModelMappings[K]['models'][number]
-//     ? ModelMappings[K]['class']
-//     : never;
-// }[keyof ModelMappings];
-// declare type GetModelInstanceType<M extends ModelName> = InstanceType<
-//   GetModelClassType<M>
-// >;
-// declare type GetPostProcessedOutputsType<M extends ModelName> =
-//   GetModelInstanceType<M>['postProcessedOutputs'];
-
-// type GetRequest<T extends OpenAPIRouteSchema> = T['request'];
-// type GetInner<T extends OpenAPIRouteSchema> = {
-//   [K in keyof T['request']]: T['request'][K] extends any
-//     ? string
-//     : never;
-// }[keyof T['request']];
-
-
-// type DataOf2<T extends OpenAPIRouteSchema['request']> = {
-//   query?: z.ZodType<T['query']>,
-//   params?: z.infer<T.request.params>,
-//   headers?: z.infer<T.request.headers>,
-//   body?: z.infer<T.request.body>,
-// };
-
 
 export const todoRouter = fromIttyRouter(AutoRouter(), { openapiVersion: '3' })
 todoRouter.get('/todos', ToDoList)

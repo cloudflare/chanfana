@@ -25,13 +25,11 @@ export interface RouterOptions {
   raiseUnknownParameters?: boolean
   generateOperationIds?: boolean
   openapiVersion?: '3' | '3.1'
-  skipValidation?: boolean
 }
 
 export interface RouteOptions {
   router: any
   raiseUnknownParameters: boolean
-  skipValidation: boolean
 }
 
 export interface ParameterType {
@@ -56,11 +54,6 @@ export interface RegexParameterType extends StringParameterType {
   patternError?: string
 }
 
-export interface RouteValidated {
-  data: any
-  errors?: Record<string, any>
-}
-
 export type RequestTypes = {
   body?: ZodRequestBody
   params?: AnyZodObject
@@ -82,9 +75,20 @@ export type OpenAPIRouteSchema = Simplify<
 >
 
 export type ValidatedData<S extends OpenAPIRoute> = {
-  query: z.output<GetPart<GetRequest<S>, 'query'>>
-  params: z.output<GetPart<GetRequest<S>, 'params'>>
-  // headers: z.output<getPart<getRequest2<S>, 'headers'>>,
+  query: GetPart<GetRequest<S>, 'query'>
+  params: GetPart<GetRequest<S>, 'params'>
+  headers: GetPart<GetRequest<S>, 'headers'>
+  body: GetBody<GetPartBody<GetRequest<S>, 'body'>>
 }
+
 type GetRequest<T extends OpenAPIRoute> = NonNullable<T['schema']['request']>
-type GetPart<T extends RequestTypes, P extends keyof T> = NonNullable<T[P]>
+type GetPart<T extends RequestTypes, P extends keyof T> =
+  NonNullable<T[P]> extends AnyZodObject ? z.output<NonNullable<T[P]>> : never
+type GetPartBody<T extends RequestTypes, P extends keyof T> =
+  NonNullable<T[P]> extends AnyZodObject ? NonNullable<T[P]> : never
+
+type GetBody<T extends ZodRequestBody> = NonNullable<
+  T['content']['application/json']
+>['schema'] extends AnyZodObject
+  ? z.output<NonNullable<T['content']['application/json']>['schema']>
+  : never

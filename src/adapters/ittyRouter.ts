@@ -1,7 +1,15 @@
 import { RouterOptions } from '../types'
 import { OpenAPIHandler, OpenAPIRouterType } from '../openapi'
 
-export class IttyRouterOpenAPIHandler extends OpenAPIHandler {}
+export class IttyRouterOpenAPIHandler extends OpenAPIHandler {
+  getRequest(args: any[]) {
+    return args[0]
+  }
+
+  getUrlParams(args: any[]): Record<string, any> {
+    return args[0].params
+  }
+}
 
 export function fromIttyRouter<M>(
   router: M,

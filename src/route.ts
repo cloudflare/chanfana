@@ -1,51 +1,42 @@
-import {
-  OpenAPIRouteSchema,
-  RouteOptions,
-  RouteValidated,
-  ValidatedData,
-} from './types'
-import { extractQueryParameters } from './parameters'
-import { z, ZodObject, ZodType } from 'zod'
-import { isAnyZodType, legacyTypeIntoZod } from './zod/utils'
+import { OpenAPIRouteSchema, RouteOptions, ValidatedData } from './types'
+import { coerceInputs } from './parameters'
+import { AnyZodObject, z } from 'zod'
 import { RouteConfig } from '@asteasolutions/zod-to-openapi'
 import { jsonResp } from './utils'
-import { RouteParameter } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
 
 export class OpenAPIRoute {
-  handle(...args: any[]): any {
+  handle(...args: any[]): Response | Promise<Response> | object | Promise<object> {
     throw new Error('Method not implemented.')
   }
 
   static isRoute = true
 
-  // static schema: OpenAPIRouteSchema
+  private args: any[] = []  // Args the execute() was called with
+  private validatedData: any = undefined  // this acts as a cache, in case the users calls the validate method twice
   params: RouteOptions
+  schema: OpenAPIRouteSchema = {}
 
   constructor(params: RouteOptions) {
     this.params = params
   }
 
-  // static getSchema(): OpenAPIRouteSchema {
-  //   return this.schema
-  // }
-  //
-  schema: OpenAPIRouteSchema = {}
+  async getValidatedData<S extends OpenAPIRoute = any>(): Promise<ValidatedData<S>> {
+    const request = this.params.router.getRequest(this.args)
 
-  getValidatedData<S = this>(): ValidatedData<S> {
-    return undefined
+    if (this.validatedData !== undefined) return this.validatedData
+
+    const data = await this.validateRequest(request)
+
+    this.validatedData = data
+    return data
   }
 
-  // getSchema(): OpenAPIRouteSchema {
-  //   // @ts-ignore
-  //   return this.__proto__.constructor.getSchema()
-  // }
+  getSchema(): OpenAPIRouteSchema {
+    // Use this function to overwrite schema properties
+    return this.schema
+  }
 
   getSchemaZod(): RouteConfig {
-    // @ts-ignore
-    return this.__proto__.constructor.getSchemaZod()
-  }
-
-  static getSchemaZod(): RouteConfig {
     // Deep copy
     const schema = { ...this.getSchema() }
 
@@ -67,7 +58,7 @@ export class OpenAPIRoute {
     return schema
   }
 
-  handleValidationError(errors: Record<string, any>): Response {
+  handleValidationError(errors: z.ZodIssue[]): Response {
     return jsonResp(
       {
         errors: errors,
@@ -76,26 +67,24 @@ export class OpenAPIRoute {
       },
       {
         status: 400,
-      }
+      },
     )
   }
 
   async execute(...args: any[]) {
-    const { data, errors } = await this.validateRequest(
-      this.params.router.getRequest(args)
-    )
+    this.validatedData = undefined
+    this.args = args
 
-    console.log(data)
-    console.log(errors)
+    let resp
+    try {
+      resp = await this.handle(...args)
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        return this.handleValidationError(e.errors)
+      }
 
-    if (errors) {
-      return this.handleValidationError(errors)
+      throw e
     }
-
-    args.push(data)
-
-    // @ts-ignore
-    const resp = await this.handle(...args)
 
     if (!(resp instanceof Response) && typeof resp === 'object') {
       return jsonResp(resp)
@@ -104,23 +93,17 @@ export class OpenAPIRoute {
     return resp
   }
 
-  extractQueryParameters(
-    request: Request,
-    schema?: RouteParameter
-  ): Record<string, any> | null {
-    return extractQueryParameters(request, schema)
-  }
-
-  async validateRequest(request: Request): Promise<RouteValidated> {
-    // @ts-ignore
-    const schema: RouteConfig = this.__proto__.constructor.getSchemaZod()
+  async validateRequest(request: Request) {
+    const schema: RouteConfig = this.getSchemaZod()
     const unvalidatedData: any = {}
 
     const rawSchema: any = {}
     if (schema.request?.params) {
       rawSchema['params'] = schema.request?.params
-      // @ts-ignore
-      unvalidatedData['params'] = request.params
+      unvalidatedData['params'] = coerceInputs(
+        this.params.router.getUrlParams(this.args),
+        schema.request?.params,
+      )
     }
     if (schema.request?.query) {
       rawSchema['query'] = schema.request?.query
@@ -131,19 +114,25 @@ export class OpenAPIRoute {
       unvalidatedData['headers'] = {}
     }
 
-    const queryParams = this.extractQueryParameters(
-      request,
-      schema.request?.query
+    const { searchParams } = new URL(request.url)
+    const queryParams = coerceInputs(
+      searchParams,
+      schema.request?.query,
     )
-    if (queryParams) unvalidatedData['query'] = queryParams
+    if (queryParams !== null) unvalidatedData['query'] = queryParams
 
     if (schema.request?.headers) {
-      unvalidatedData['headers'] = {}
+      const tmpHeaders: Record<string, any> = {}
+
       // @ts-ignore
       for (const header of Object.keys(schema.request?.headers.shape)) {
-        // @ts-ignore
-        unvalidatedData.headers[header] = request.headers.get(header)
+        tmpHeaders[header] = request.headers.get(header)
       }
+
+      unvalidatedData['headers'] = coerceInputs(
+        tmpHeaders,
+        (schema.request?.headers as AnyZodObject),
+      )
     }
 
     if (
@@ -161,13 +150,6 @@ export class OpenAPIRoute {
       }
     }
 
-    if (this.params?.skipValidation === true) {
-      return {
-        data: unvalidatedData,
-        errors: undefined,
-      }
-    }
-
     let validationSchema: any = z.object(rawSchema)
 
     if (
@@ -177,11 +159,6 @@ export class OpenAPIRoute {
       validationSchema = validationSchema.strict()
     }
 
-    const validatedData = validationSchema.safeParse(unvalidatedData)
-
-    return {
-      data: validatedData.success ? validatedData.data : undefined,
-      errors: !validatedData.success ? validatedData.error.issues : undefined,
-    }
+    return await validationSchema.parseAsync(unvalidatedData)
   }
 }

@@ -1,4 +1,4 @@
-export * from './exceptions'
+export { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
 export * from './openapi'
 export * from './parameters'
 export * from './types'

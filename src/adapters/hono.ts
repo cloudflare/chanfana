@@ -5,6 +5,10 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
   getRequest(args: any[]) {
     return args[0].req.raw
   }
+
+  getUrlParams(args: any[]): Record<string, any> {
+    return args[0].req.param()
+  }
 }
 
 export function fromHono<M>(

@@ -2,16 +2,16 @@ import 'isomorphic-fetch'
 
 import { OpenAPIRoute } from '../../src/route'
 import { buildRequest } from '../utils'
-import { fromIttyRouter, OpenAPIRouteSchema } from '../../src'
+import { fromIttyRouter } from '../../src'
 import { AutoRouter } from 'itty-router'
 
 class EndpointWithoutOperationId extends OpenAPIRoute {
-  static schema = {
+  schema = {
     summary: 'Get a single ToDo',
     responses: {},
   }
 
-  async handle(request: Request, env: any, context: any, data: any) {
+  async handle(request: Request, env: any, context: any) {
     return {
       msg: 'EndpointWithoutOperationId',
     }
@@ -19,13 +19,13 @@ class EndpointWithoutOperationId extends OpenAPIRoute {
 }
 
 class EndpointWithOperationId extends OpenAPIRoute {
-  static schema: OpenAPIRouteSchema = {
+  schema = {
     responses: {},
     operationId: 'get_my_todo',
     summary: 'Get a single ToDo',
   }
 
-  async handle(request: Request, env: any, context: any, data: any) {
+  async handle(request: Request, env: any, context: any) {
     return {
       msg: 'EndpointWithOperationId',
     }

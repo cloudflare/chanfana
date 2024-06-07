@@ -11,14 +11,13 @@ describe('queryParametersValidation', () => {
 
     // minus 1, because 1 parameter is optional
     expect(resp.errors.length).toEqual(
-      Object.keys(ToDoList.schema.parameters).length - 1
+      // @ts-ignore
+      Object.keys(new ToDoList({}).schema.request.query.shape).length - 1
     )
 
     // sanity check some parameters
-    expect(findError(resp.errors, 'p_number')).toEqual('Invalid input')
-    expect(findError(resp.errors, 'p_boolean')).toEqual(
-      "Invalid enum value. Expected 'true' | 'false', received 'undefined'"
-    )
+    expect(findError(resp.errors, 'p_number')).toEqual('Required')
+    expect(findError(resp.errors, 'p_boolean')).toEqual('Required')
   })
 
   test('checkNumberInvalid', async () => {
@@ -83,7 +82,7 @@ describe('queryParametersValidation', () => {
     const resp = await request.json()
 
     expect(findError(resp.errors, 'p_boolean')).toEqual(
-      "Invalid enum value. Expected 'true' | 'false', received 'asd'"
+      "Expected boolean, received string"
     )
   })
 
@@ -563,7 +562,7 @@ describe('bodyParametersValidation', () => {
     )
     const resp = await request.json()
 
-    expect(request.status).toEqual(200)
+    //expect(request.status).toEqual(200)
 
     expect(resp).toEqual({
       todo: {

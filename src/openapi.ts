@@ -1,6 +1,7 @@
 import { getReDocUI, getSwaggerUI } from './ui'
 import { RouterOptions } from './types'
 import {
+  extendZodWithOpenApi,
   OpenApiGeneratorV3,
   OpenApiGeneratorV31,
   RouteConfig,
@@ -101,7 +102,7 @@ export class OpenAPIHandler {
 
     const generator = new openapiGenerator(this.registry.definitions)
 
-    return generator.generateDocument({
+    const asd =  generator.generateDocument({
       openapi: this.options?.openapiVersion === '3' ? '3.0.3' : '3.1.0',
       info: {
         version: this.options?.schema?.info?.version || '1.0.0',
@@ -110,6 +111,8 @@ export class OpenAPIHandler {
       },
       ...this.options?.schema,
     })
+
+    return asd
   }
 
   registerNestedRouter(params: {
@@ -141,8 +144,8 @@ export class OpenAPIHandler {
         operationId = `${params.method}_${handler.name}`
       }
 
-      if (handler.getSchemaZod) {
-        schema = handler.getSchemaZod()
+      if (handler.isRoute === true) {
+        schema = new handler({}).getSchemaZod()
         break
       }
     }
@@ -159,7 +162,7 @@ export class OpenAPIHandler {
         operationId: operationId,
         responses: {
           200: {
-            description: 'Object with user data.',
+            description: 'Successful response.',
           },
         },
       }
@@ -205,16 +208,13 @@ export class OpenAPIHandler {
 
     return params.handlers.map((handler: any) => {
       if (handler.isRoute) {
-        // console.log(handler)
         return (...params: any[]) =>
           new handler({
             router: this,
             // raiseUnknownParameters: openapiConfig.raiseUnknownParameters,  TODO
-            skipValidation: this.options?.skipValidation,
           }).execute(...params)
       }
 
-      // console.log(handler())
       return handler
     })
   }
@@ -240,6 +240,10 @@ export class OpenAPIHandler {
   }
 
   getRequest(args: any[]) {
-    return args[0]
+    throw new Error('getRequest not implemented')
+  }
+
+  getUrlParams(args: any[]): Record<string, any> {
+    throw new Error('getUrlParams not implemented')
   }
 }
