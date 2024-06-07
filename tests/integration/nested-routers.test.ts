@@ -65,7 +65,7 @@ router.all('*', () => new Response('Not Found.', { status: 404 }))
 describe('innerRouter', () => {
   it('simpleSuccessfulCall', async () => {
     const request = await router.fetch(
-      buildRequest({ method: 'GET', path: `/api/v1/todo/1` }),
+      buildRequest({ method: 'GET', path: `/api/v1/todo/1` })
     )
     const resp = await request.json()
 
@@ -80,7 +80,7 @@ describe('innerRouter', () => {
 
   it('innerCatchAll', async () => {
     const request = await router.fetch(
-      buildRequest({ method: 'GET', path: `/api/v1/asd` }),
+      buildRequest({ method: 'GET', path: `/api/v1/asd` })
     )
     const resp = await request.json()
 
@@ -90,7 +90,7 @@ describe('innerRouter', () => {
 
   it('outerCatchAll', async () => {
     const request = await router.fetch(
-      buildRequest({ method: 'GET', path: `/asd` }),
+      buildRequest({ method: 'GET', path: `/asd` })
     )
     const resp = await request.text()
 

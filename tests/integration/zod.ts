@@ -63,7 +63,7 @@ zodRouter.put('/todo/:id', ToDoGet)
 describe('zod validations', () => {
   it('simpleSuccessfulCall', async () => {
     const request = await zodRouter.fetch(
-      buildRequest({ method: 'PUT', path: `/todo/1` }),
+      buildRequest({ method: 'PUT', path: `/todo/1` })
     )
 
     const resp = await request.json()

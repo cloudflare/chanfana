@@ -74,7 +74,7 @@ export class ToDoList extends OpenAPIRoute {
 
   async handle(request: Request, env: any, context: any) {
     return {
-      params: (await this.getValidatedData()),
+      params: await this.getValidatedData(),
       results: ['lorem', 'ipsum'],
     }
   }

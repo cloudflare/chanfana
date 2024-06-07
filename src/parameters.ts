@@ -1,4 +1,8 @@
-import { EnumerationParameterType, ParameterType, RegexParameterType } from './types'
+import {
+  EnumerationParameterType,
+  ParameterType,
+  RegexParameterType,
+} from './types'
 import { z } from 'zod'
 import { isSpecificZodType, legacyTypeIntoZod } from './zod/utils'
 import { RouteParameter } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
@@ -42,7 +46,7 @@ export function Obj(fields: object, params?: ParameterType): z.ZodObject<any> {
 export function Num(params?: ParameterType): z.ZodNumber {
   return convertParams<z.ZodNumber>(
     z.number().or(z.string()).pipe(z.number()),
-    params,
+    params
   ).openapi({
     type: 'number',
   })
@@ -51,7 +55,7 @@ export function Num(params?: ParameterType): z.ZodNumber {
 export function Int(params?: ParameterType): z.ZodNumber {
   return convertParams<z.ZodNumber>(
     z.number().int().or(z.string()).pipe(z.number()),
-    params,
+    params
   ).openapi({
     type: 'integer',
   })
@@ -66,7 +70,7 @@ export function DateTime(params?: ParameterType): z.ZodString {
     z.string().datetime({
       message: 'Must be in the following format: YYYY-mm-ddTHH:MM:ssZ',
     }),
-    params,
+    params
   )
 }
 
@@ -74,7 +78,7 @@ export function Regex(params: RegexParameterType): z.ZodString {
   return convertParams<z.ZodString>(
     // @ts-ignore
     z.string().regex(params.pattern, params.patternError || 'Invalid'),
-    params,
+    params
   )
 }
 
@@ -91,17 +95,14 @@ export function Hostname(params?: ParameterType): z.ZodString {
     z
       .string()
       .regex(
-        /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/,
+        /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/
       ),
-    params,
+    params
   )
 }
 
 export function Ipv4(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(
-    z.string().ip({ version: 'v4' }),
-    params,
-  )
+  return convertParams<z.ZodString>(z.string().ip({ version: 'v4' }), params)
 }
 
 export function Ipv6(params?: ParameterType): z.ZodString {
@@ -122,7 +123,7 @@ export function Bool(params?: ParameterType): z.ZodBoolean {
       .string()
       .toLowerCase()
       .pipe(z.enum(['true', 'false']).transform((val) => val === 'true')),
-    params,
+    params
   ).openapi({
     type: 'boolean',
   })
@@ -176,9 +177,8 @@ export function Enumeration(params: EnumerationParameterType): z.ZodEnum<any> {
 // This should only be used for query, params, headers and cookies
 export function coerceInputs(
   data: Record<string, any>,
-  schema?: RouteParameter,
+  schema?: RouteParameter
 ): Record<string, any> | null {
-
   // For older node versions, searchParams is just an object without the size property
   if (
     data.size === 0 ||
@@ -206,7 +206,11 @@ export function coerceInputs(
     }
 
     let innerType
-    if (schema && (schema as z.AnyZodObject).shape && (schema as z.AnyZodObject).shape[key]) {
+    if (
+      schema &&
+      (schema as z.AnyZodObject).shape &&
+      (schema as z.AnyZodObject).shape[key]
+    ) {
       innerType = (schema as z.AnyZodObject).shape[key]
     } else if (schema) {
       // Fallback for Zod effects

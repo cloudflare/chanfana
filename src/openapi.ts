@@ -102,7 +102,7 @@ export class OpenAPIHandler {
 
     const generator = new openapiGenerator(this.registry.definitions)
 
-    const asd =  generator.generateDocument({
+    const asd = generator.generateDocument({
       openapi: this.options?.openapiVersion === '3' ? '3.0.3' : '3.1.0',
       info: {
         version: this.options?.schema?.info?.version || '1.0.0',

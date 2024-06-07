@@ -82,7 +82,7 @@ describe('queryParametersValidation', () => {
     const resp = await request.json()
 
     expect(findError(resp.errors, 'p_boolean')).toEqual(
-      "Expected boolean, received string"
+      'Expected boolean, received string'
     )
   })
 

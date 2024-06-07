@@ -20,7 +20,9 @@ export function isSpecificZodType(field: any, typeName: string): boolean {
     field._def.innerType?._def.typeName === typeName ||
     field._def.schema?._def.innerType?._def.typeName === typeName ||
     (field.unwrap && field.unwrap()._def.typeName) === typeName ||
-    (field.unwrap && field.unwrap().unwrap && field.unwrap().unwrap()._def.typeName) === typeName
+    (field.unwrap &&
+      field.unwrap().unwrap &&
+      field.unwrap().unwrap()._def.typeName) === typeName
   )
 }
 

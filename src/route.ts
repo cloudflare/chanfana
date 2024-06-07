@@ -5,14 +5,16 @@ import { RouteConfig } from '@asteasolutions/zod-to-openapi'
 import { jsonResp } from './utils'
 
 export class OpenAPIRoute {
-  handle(...args: any[]): Response | Promise<Response> | object | Promise<object> {
+  handle(
+    ...args: any[]
+  ): Response | Promise<Response> | object | Promise<object> {
     throw new Error('Method not implemented.')
   }
 
   static isRoute = true
 
-  private args: any[] = []  // Args the execute() was called with
-  private validatedData: any = undefined  // this acts as a cache, in case the users calls the validate method twice
+  private args: any[] = [] // Args the execute() was called with
+  private validatedData: any = undefined // this acts as a cache, in case the users calls the validate method twice
   params: RouteOptions
   schema: OpenAPIRouteSchema = {}
 
@@ -20,7 +22,9 @@ export class OpenAPIRoute {
     this.params = params
   }
 
-  async getValidatedData<S extends OpenAPIRoute = any>(): Promise<ValidatedData<S>> {
+  async getValidatedData<S extends OpenAPIRoute = any>(): Promise<
+    ValidatedData<S>
+  > {
     const request = this.params.router.getRequest(this.args)
 
     if (this.validatedData !== undefined) return this.validatedData
@@ -67,7 +71,7 @@ export class OpenAPIRoute {
       },
       {
         status: 400,
-      },
+      }
     )
   }
 
@@ -102,7 +106,7 @@ export class OpenAPIRoute {
       rawSchema['params'] = schema.request?.params
       unvalidatedData['params'] = coerceInputs(
         this.params.router.getUrlParams(this.args),
-        schema.request?.params,
+        schema.request?.params
       )
     }
     if (schema.request?.query) {
@@ -115,10 +119,7 @@ export class OpenAPIRoute {
     }
 
     const { searchParams } = new URL(request.url)
-    const queryParams = coerceInputs(
-      searchParams,
-      schema.request?.query,
-    )
+    const queryParams = coerceInputs(searchParams, schema.request?.query)
     if (queryParams !== null) unvalidatedData['query'] = queryParams
 
     if (schema.request?.headers) {
@@ -131,7 +132,7 @@ export class OpenAPIRoute {
 
       unvalidatedData['headers'] = coerceInputs(
         tmpHeaders,
-        (schema.request?.headers as AnyZodObject),
+        schema.request?.headers as AnyZodObject
       )
     }
 

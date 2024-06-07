@@ -10,12 +10,12 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Use Node.js 20.6
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20.6
           cache: 'npm' # cache ~/.npm in case 'npm ci' needs to run
@@ -38,7 +38,7 @@ jobs:
         run: npm pack
 
       - name: Upload packaged itty-router-openapi artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: npm-package-itty-router-openapi-${{ github.event.number }} # encode the PR number into the artifact name
           path: cloudflare-itty-router-openapi-*.tgz
