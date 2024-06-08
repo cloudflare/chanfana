@@ -118,13 +118,7 @@ export function DateOnly(params?: ParameterType): z.ZodString {
 }
 
 export function Bool(params?: ParameterType): z.ZodBoolean {
-  return convertParams<z.ZodBoolean>(
-    z.coerce
-      .string()
-      .toLowerCase()
-      .pipe(z.enum(['true', 'false']).transform((val) => val === 'true')),
-    params
-  ).openapi({
+  return convertParams<z.ZodBoolean>(z.boolean(), params).openapi({
     type: 'boolean',
   })
 }
