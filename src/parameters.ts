@@ -6,7 +6,9 @@ import {
 import { z } from 'zod'
 import { isSpecificZodType, legacyTypeIntoZod } from './zod/utils'
 import { RouteParameter } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
+import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
 
+extendZodWithOpenApi(z)
 export function convertParams<M = z.ZodType>(field: any, params: any): M {
   params = params || {}
   if (params.required === false)
@@ -44,19 +46,13 @@ export function Obj(fields: object, params?: ParameterType): z.ZodObject<any> {
 }
 
 export function Num(params?: ParameterType): z.ZodNumber {
-  return convertParams<z.ZodNumber>(
-    z.number().or(z.string()).pipe(z.number()),
-    params
-  ).openapi({
+  return convertParams<z.ZodNumber>(z.number(), params).openapi({
     type: 'number',
   })
 }
 
 export function Int(params?: ParameterType): z.ZodNumber {
-  return convertParams<z.ZodNumber>(
-    z.number().int().or(z.string()).pipe(z.number()),
-    params
-  ).openapi({
+  return convertParams<z.ZodNumber>(z.number().int(), params).openapi({
     type: 'integer',
   })
 }
@@ -184,7 +180,8 @@ export function coerceInputs(
   }
 
   const params: Record<string, any> = {}
-  for (let [key, value] of data.entries()) {
+  const entries = data.entries ? data.entries() : Object.entries(data)
+  for (let [key, value] of entries) {
     // Query, path and headers can be empty strings, that should equal to null as nothing was provided
     if (value === '') {
       // @ts-ignore
@@ -223,11 +220,20 @@ export function coerceInputs(
         if (_val === 'true' || _val === 'false') {
           params[key] = _val === 'true'
         }
-      } else if (isSpecificZodType(innerType, 'ZodNumber')) {
+      } else if (
+        isSpecificZodType(innerType, 'ZodNumber') ||
+        innerType instanceof z.ZodNumber
+      ) {
         params[key] = parseFloat(params[key])
-      } else if (isSpecificZodType(innerType, 'ZodBigInt')) {
+      } else if (
+        isSpecificZodType(innerType, 'ZodBigInt') ||
+        innerType instanceof z.ZodBigInt
+      ) {
         params[key] = parseInt(params[key])
-      } else if (isSpecificZodType(innerType, 'ZodDate')) {
+      } else if (
+        isSpecificZodType(innerType, 'ZodDate') ||
+        innerType instanceof z.ZodDate
+      ) {
         params[key] = new Date(params[key])
       }
     }

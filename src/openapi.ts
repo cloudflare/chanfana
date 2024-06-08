@@ -8,7 +8,6 @@ import {
 } from '@asteasolutions/zod-to-openapi'
 import { OpenAPIRegistryMerger } from './zod/registry'
 import { z } from 'zod'
-import { OpenAPIObject } from 'openapi3-ts/oas31'
 import yaml from 'js-yaml'
 
 export type OpenAPIRouterType<M> = {
@@ -95,7 +94,7 @@ export class OpenAPIHandler {
     }
   }
 
-  getGeneratedSchema(): OpenAPIObject {
+  getGeneratedSchema() {
     let openapiGenerator: any = OpenApiGeneratorV31
     if (this.options?.openapiVersion === '3')
       openapiGenerator = OpenApiGeneratorV3

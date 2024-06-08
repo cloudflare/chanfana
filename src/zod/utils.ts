@@ -22,7 +22,8 @@ export function isSpecificZodType(field: any, typeName: string): boolean {
     (field.unwrap && field.unwrap()._def.typeName) === typeName ||
     (field.unwrap &&
       field.unwrap().unwrap &&
-      field.unwrap().unwrap()._def.typeName) === typeName
+      field.unwrap().unwrap()._def.typeName) === typeName ||
+    field._def.innerType?._def?.innerType?._def?.typeName === typeName
   )
 }
 
@@ -39,11 +40,6 @@ export function legacyTypeIntoZod(type: any, params?: any): z.ZodType {
     }
 
     return type
-  }
-
-  // Legacy support
-  if (type.generator === true) {
-    return new type(params) as z.ZodType
   }
 
   if (type === String) {
@@ -86,5 +82,6 @@ export function legacyTypeIntoZod(type: any, params?: any): z.ZodType {
     return Obj(type, params)
   }
 
-  throw new Error(`${type} not implemented`)
+  // Legacy support
+  return type(params)
 }

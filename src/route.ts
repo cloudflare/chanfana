@@ -13,8 +13,8 @@ export class OpenAPIRoute {
 
   static isRoute = true
 
-  private args: any[] = [] // Args the execute() was called with
-  private validatedData: any = undefined // this acts as a cache, in case the users calls the validate method twice
+  args: any[] = [] // Args the execute() was called with
+  validatedData: any = undefined // this acts as a cache, in case the users calls the validate method twice
   params: RouteOptions
   schema: OpenAPIRouteSchema = {}
 
