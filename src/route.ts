@@ -22,9 +22,7 @@ export class OpenAPIRoute {
     this.params = params
   }
 
-  async getValidatedData<S extends OpenAPIRoute = any>(): Promise<
-    ValidatedData<S>
-  > {
+  async getValidatedData<S = any>(): Promise<ValidatedData<S>> {
     const request = this.params.router.getRequest(this.args)
 
     if (this.validatedData !== undefined) return this.validatedData

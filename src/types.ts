@@ -1,19 +1,11 @@
-import { IRequest, RouteEntry } from 'itty-router'
-import { z, AnyZodObject, ZodType } from 'zod'
+import { AnyZodObject, z, ZodType } from 'zod'
 import {
   ResponseConfig,
-  ZodMediaTypeObject,
   ZodRequestBody,
 } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
 import { RouteConfig } from '@asteasolutions/zod-to-openapi'
 import { OpenAPIObjectConfigV31 } from '@asteasolutions/zod-to-openapi/dist/v3.1/openapi-generator'
 import { OpenAPIObjectConfig } from '@asteasolutions/zod-to-openapi/dist/v3.0/openapi-generator'
-// @ts-ignore
-import { HeadersObject as HeadersObject30 } from 'openapi3-ts/dist/model/openapi30'
-// @ts-ignore
-import { HeadersObject as HeadersObject31 } from 'openapi3-ts/dist/model/openapi31'
-import { OpenAPIRoute } from './route'
-import { OpenAPIRouterType } from './openapi'
 import { Simplify } from 'type-fest'
 
 export interface RouterOptions {
@@ -74,21 +66,44 @@ export type OpenAPIRouteSchema = Simplify<
   }
 >
 
-export type ValidatedData<S extends OpenAPIRoute> = {
-  query: GetPart<GetRequest<S>, 'query'>
-  params: GetPart<GetRequest<S>, 'params'>
-  headers: GetPart<GetRequest<S>, 'headers'>
-  body: GetBody<GetPartBody<GetRequest<S>, 'body'>>
-}
+export type ValidatedData<S> = S extends OpenAPIRouteSchema
+  ? {
+      query: GetRequest<S> extends NonNullable<GetRequest<S>>
+        ? GetOutput<GetRequest<S>, 'query'>
+        : undefined
+      params: GetRequest<S> extends NonNullable<GetRequest<S>>
+        ? GetOutput<GetRequest<S>, 'params'>
+        : undefined
+      headers: GetRequest<S> extends NonNullable<GetRequest<S>>
+        ? GetOutput<GetRequest<S>, 'headers'>
+        : undefined
+      body: GetRequest<S> extends NonNullable<GetRequest<S>>
+        ? GetBody<GetPartBody<GetRequest<S>, 'body'>>
+        : undefined
+    }
+  : undefined
 
-type GetRequest<T extends OpenAPIRoute> = NonNullable<T['schema']['request']>
-type GetPart<T extends RequestTypes, P extends keyof T> =
-  NonNullable<T[P]> extends AnyZodObject ? z.output<NonNullable<T[P]>> : never
-type GetPartBody<T extends RequestTypes, P extends keyof T> =
-  NonNullable<T[P]> extends AnyZodObject ? NonNullable<T[P]> : never
+type GetRequest<T extends OpenAPIRouteSchema> = T['request']
 
-type GetBody<T extends ZodRequestBody> = NonNullable<
-  T['content']['application/json']
->['schema'] extends AnyZodObject
-  ? z.output<NonNullable<T['content']['application/json']>['schema']>
-  : never
+type GetOutput<T extends object | undefined, P extends keyof T> =
+  T extends NonNullable<T>
+    ? T[P] extends AnyZodObject
+      ? z.output<T[P]>
+      : undefined
+    : undefined
+
+type GetPartBody<
+  T extends RequestTypes,
+  P extends keyof T,
+> = T[P] extends ZodRequestBody ? T[P] : undefined
+
+type GetBody<T extends ZodRequestBody | undefined> =
+  T extends NonNullable<T>
+    ? T['content']['application/json'] extends NonNullable<
+        T['content']['application/json']
+      >
+      ? T['content']['application/json']['schema'] extends z.ZodTypeAny
+        ? z.output<T['content']['application/json']['schema']>
+        : undefined
+      : undefined
+    : undefined

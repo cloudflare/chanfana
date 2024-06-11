@@ -90,7 +90,8 @@
     "rollup-plugin-bundle-size": "^1.0.3",
     "rollup-plugin-copy": "^3.4.0",
     "ts-jest": "^29.1.0",
-    "typescript": "^5.1.3"
+    "typescript": "^5.1.3",
+    "wrangler": "^3.60.1"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.0.0",

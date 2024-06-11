@@ -73,8 +73,10 @@ export class ToDoList extends OpenAPIRoute {
   }
 
   async handle(request: Request, env: any, context: any) {
+    const data = await this.getValidatedData<typeof this.schema>()
+
     return {
-      params: await this.getValidatedData(),
+      params: data,
       results: ['lorem', 'ipsum'],
     }
   }
@@ -181,8 +183,10 @@ export class ToDoCreate extends OpenAPIRoute {
   }
 
   async handle(request: Request, env: any, context: any) {
+    const data = await this.getValidatedData<typeof this.schema>()
+
     return {
-      todo: (await this.getValidatedData()).body,
+      todo: data.body,
     }
   }
 }
