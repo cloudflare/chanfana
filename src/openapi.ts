@@ -21,6 +21,8 @@ export class OpenAPIHandler {
   options: RouterOptions
   registry: OpenAPIRegistryMerger
 
+  allowedMethods = ['get', 'head', 'post', 'put', 'delete', 'patch']
+
   constructor(router: any, options?: RouterOptions) {
     this.router = router
     this.options = options || {}

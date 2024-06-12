@@ -32,7 +32,7 @@ export function fromIttyRouter<M>(
               path: route,
               nestedRouter: handlers[0],
             })
-          } else if (prop !== 'all') {
+          } else if (openapiRouter.allowedMethods.includes(prop)) {
             handlers = openapiRouter.registerRoute({
               method: prop,
               path: route,
