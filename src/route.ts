@@ -1,79 +1,79 @@
-import { OpenAPIRouteSchema, RouteOptions, RouteValidated } from './types'
-import { extractQueryParameters } from './parameters'
-import { z, ZodObject, ZodType } from 'zod'
-import { isAnyZodType, legacyTypeIntoZod } from './zod/utils'
-import { RouteConfig } from '@asteasolutions/zod-to-openapi'
-import { jsonResp } from './utils'
-import { IRequest } from 'itty-router'
+import { OpenAPIRouteSchema, RouteOptions, RouteValidated } from "./types";
+import { extractQueryParameters } from "./parameters";
+import { z, ZodObject, ZodType } from "zod";
+import { isAnyZodType, legacyTypeIntoZod } from "./zod/utils";
+import { RouteConfig } from "@asteasolutions/zod-to-openapi";
+import { jsonResp } from "./utils";
+import { IRequest } from "itty-router";
 
 export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
   handle(request: I, ...args: A): any {
-    throw new Error('Method not implemented.')
+    throw new Error("Method not implemented.");
   }
 
-  static isRoute = true
+  static isRoute = true;
 
-  static schema: OpenAPIRouteSchema
-  params: RouteOptions
+  static schema: OpenAPIRouteSchema;
+  params: RouteOptions;
 
   constructor(params: RouteOptions) {
-    this.params = params
+    this.params = params;
   }
 
   static getSchema(): OpenAPIRouteSchema {
-    return this.schema
+    return this.schema;
   }
 
   schema(): OpenAPIRouteSchema {
     // @ts-ignore
-    return this.__proto__.constructor.schema
+    return this.__proto__.constructor.schema;
   }
 
   getSchema(): OpenAPIRouteSchema {
     // @ts-ignore
-    return this.__proto__.constructor.getSchema()
+    return this.__proto__.constructor.getSchema();
   }
 
   getSchemaZod(): RouteConfig {
     // @ts-ignore
-    return this.__proto__.constructor.getSchemaZod()
+    return this.__proto__.constructor.getSchemaZod();
   }
 
   static getSchemaZod(): RouteConfig {
     // Deep copy
-    const schema = { ...this.getSchema() }
+    const schema = { ...this.getSchema() };
 
-    let parameters: any = {}
-    let requestBody: any = schema.requestBody as any
-    const responses: any = {}
-    const customProperties: any = {}
+    let parameters: any = {};
+    let requestBody: any = schema.requestBody as any;
+    const responses: any = {};
+    const customProperties: any = {};
 
     if (requestBody && requestBody.$customRequestBody) {
-      customProperties.requestBody = requestBody.content
+      customProperties.requestBody = requestBody.content;
     } else if (requestBody) {
       if (!isAnyZodType(requestBody)) {
-        requestBody = legacyTypeIntoZod(requestBody)
+        requestBody = legacyTypeIntoZod(requestBody);
       }
 
       requestBody = {
         content: {
-          'application/json': {
+          "application/json": {
             schema: requestBody,
           },
         },
-      }
+      };
 
-      parameters.body = requestBody
+      parameters.body = requestBody;
     }
 
     if (!schema.responses) {
       // No response was provided in the schema, default to a blank one
       schema.responses = {
-        '200': {
-          description: 'Successfull response',
+        "200": {
+          description: "Successful response",
           schema: {},
         },
-      }
+      };
     }
 
     for (const [key, value] of Object.entries(schema.responses)) {
@@ -84,45 +84,45 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
           if (!isAnyZodType(contentObject.schema)) {
             value.content[contentType].schema = legacyTypeIntoZod(
               contentObject.schema
-            )
+            );
           }
         }
 
         if (value.schema) {
           // If content is defined, response cannot have schema
-          delete value.schema
+          delete value.schema;
         }
       } else if (value.schema) {
-        let responseSchema: object = (value.schema as object) || {}
+        let responseSchema: object = (value.schema as object) || {};
 
         if (!isAnyZodType(responseSchema)) {
-          responseSchema = legacyTypeIntoZod(responseSchema)
+          responseSchema = legacyTypeIntoZod(responseSchema);
         }
 
-        const contentType = value.contentType || 'application/json'
+        const contentType = value.contentType || "application/json";
 
         value.content = {
           [contentType]: {
             schema: responseSchema as ZodType,
           },
-        }
+        };
 
-        delete value.schema
+        delete value.schema;
         if (value.contentType) {
-          delete value.contentType
+          delete value.contentType;
         }
       }
 
       if (value.headers && !isAnyZodType(value.headers)) {
-        value.headers = legacyTypeIntoZod(value.headers) as ZodObject<any>
+        value.headers = legacyTypeIntoZod(value.headers) as ZodObject<any>;
       }
 
-      responses[key] = value
+      responses[key] = value;
     }
 
     if (schema.parameters) {
-      let values = schema.parameters
-      const _params: any = {}
+      let values = schema.parameters;
+      const _params: any = {};
 
       // Convert parameter array into object
       if (Array.isArray(values)) {
@@ -130,31 +130,31 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
           // @ts-ignore
           (obj, item) => Object.assign(obj, { [item.name]: item }),
           {}
-        )
+        );
       }
 
       for (const [key, value] of Object.entries(values as Record<any, any>)) {
         if (!_params[value.location]) {
-          _params[value.location] = {}
+          _params[value.location] = {};
         }
 
-        _params[value.location][key] = value.type
+        _params[value.location][key] = value.type;
       }
 
       for (const [key, value] of Object.entries(_params)) {
-        _params[key] = z.object(value as any)
+        _params[key] = z.object(value as any);
       }
 
       parameters = {
         ...parameters,
         ..._params,
-      }
+      };
     }
 
-    delete schema.requestBody
-    delete schema.parameters
+    delete schema.requestBody;
+    delete schema.parameters;
     // @ts-ignore
-    delete schema.responses
+    delete schema.responses;
 
     // Deep copy
     //@ts-ignore
@@ -165,7 +165,7 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
       },
       responses: responses,
       ...customProperties,
-    }
+    };
   }
 
   handleValidationError(errors: Record<string, any>): Response {
@@ -178,82 +178,83 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
       {
         status: 400,
       }
-    )
+    );
   }
 
   async execute(...args: any[]) {
-    const { data, errors } = await this.validateRequest(args[0])
+    const { data, errors } = await this.validateRequest(args[0]);
 
     if (errors) {
-      return this.handleValidationError(errors)
+      return this.handleValidationError(errors);
     }
 
-    args.push(data)
+    args.push(data);
 
     // @ts-ignore
-    const resp = await this.handle(...args)
+    const resp = await this.handle(...args);
 
-    if (!(resp instanceof Response) && typeof resp === 'object') {
-      return jsonResp(resp)
+    if (!(resp instanceof Response) && typeof resp === "object") {
+      return jsonResp(resp);
     }
 
-    return resp
+    return resp;
   }
 
   extractQueryParameters(
     request: Request,
     schema?: ZodObject<any>
   ): Record<string, any> | null {
-    return extractQueryParameters(request, schema)
+    return extractQueryParameters(request, schema);
   }
 
   async validateRequest(request: Request): Promise<RouteValidated> {
     // @ts-ignore
-    const schema: RouteConfig = this.__proto__.constructor.getSchemaZod()
-    const unvalidatedData: any = {}
+    const schema: RouteConfig = this.__proto__.constructor.getSchemaZod();
+    const unvalidatedData: any = {};
 
-    const rawSchema: any = {}
+    const rawSchema: any = {};
     if (schema.request?.params) {
-      rawSchema['params'] = schema.request?.params
+      rawSchema["params"] = schema.request?.params;
       // @ts-ignore
-      unvalidatedData['params'] = request.params
+      unvalidatedData["params"] = request.params;
     }
     if (schema.request?.query) {
-      rawSchema['query'] = schema.request?.query
-      unvalidatedData['query'] = {}
+      rawSchema["query"] = schema.request?.query;
+      unvalidatedData["query"] = {};
     }
     if (schema.request?.headers) {
-      rawSchema['headers'] = schema.request?.headers
-      unvalidatedData['headers'] = {}
+      rawSchema["headers"] = schema.request?.headers;
+      unvalidatedData["headers"] = {};
     }
 
     const queryParams = this.extractQueryParameters(
       request,
       schema.request?.query
-    )
-    if (queryParams) unvalidatedData['query'] = queryParams
+    );
+    if (queryParams) unvalidatedData["query"] = queryParams;
 
     if (schema.request?.headers) {
-      unvalidatedData['headers'] = {}
+      unvalidatedData["headers"] = {};
       // @ts-ignore
       for (const header of Object.keys(schema.request?.headers.shape)) {
         // @ts-ignore
-        unvalidatedData.headers[header] = request.headers.get(header)
+        unvalidatedData.headers[header] = request.headers.get(header);
       }
     }
 
     if (
-      request.method.toLowerCase() !== 'get' &&
+      request.method.toLowerCase() !== "get" &&
       schema.request?.body &&
-      schema.request?.body.content['application/json'] &&
-      schema.request?.body.content['application/json'].schema
+      schema.request?.body.content["application/json"] &&
+      schema.request?.body.content["application/json"].schema
     ) {
-      rawSchema['body'] = schema.request.body.content['application/json'].schema
+      rawSchema["body"] =
+        schema.request.body.content["application/json"].schema;
 
       try {
-        unvalidatedData['body'] = await request.json()
+        unvalidatedData["body"] = await request.json();
       } catch (e) {
-        unvalidatedData['body'] = {}
+        unvalidatedData["body"] = {};
       }
     }
 
@@ -261,23 +262,23 @@ export class OpenAPIRoute<I = IRequest, A extends any[] = any[]> {
       return {
         data: unvalidatedData,
         errors: undefined,
-      }
+      };
     }
 
-    let validationSchema: any = z.object(rawSchema)
+    let validationSchema: any = z.object(rawSchema);
 
     if (
       this.params?.raiseUnknownParameters === undefined ||
       this.params?.raiseUnknownParameters === true
     ) {
-      validationSchema = validationSchema.strict()
+      validationSchema = validationSchema.strict();
     }
 
-    const validatedData = validationSchema.safeParse(unvalidatedData)
+    const validatedData = validationSchema.safeParse(unvalidatedData);
 
     return {
       data: validatedData.success ? validatedData.data : undefined,
       errors: !validatedData.success ? validatedData.error.issues : undefined,
-    }
+    };
   }
 }
