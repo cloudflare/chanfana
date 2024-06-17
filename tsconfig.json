@@ -1,28 +1,23 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": "src",
-    "declaration": true,
-    "sourceMap": true,
+    /* Base Options: */
     "esModuleInterop": true,
-    "inlineSourceMap": false,
-    "lib": ["esnext", "dom", "dom.iterable"],
-    "listEmittedFiles": false,
-    "listFiles": false,
-    "moduleResolution": "nodeNext",
-    "noFallthroughCasesInSwitch": true,
-    "pretty": true,
-    "resolveJsonModule": true,
-    "rootDir": "./",
     "skipLibCheck": true,
+    "target": "es2022",
+    "verbatimModuleSyntax": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    /* Strictness */
     "strict": true,
-    "traceResolution": false,
-    "outDir": "",
-    "target": "esnext",
-    "module": "esnext",
+    "noUncheckedIndexedAccess": true,
+    /* If NOT transpiling with TypeScript: */
+    "moduleResolution": "Bundler",
+    "module": "ESNext",
+    "noEmit": true,
+    /* If your code runs in the DOM: */
+    "lib": ["es2022", "dom", "dom.iterable"],
     "types": ["@types/node", "@types/jest", "@types/service-worker-mock", "@cloudflare/workers-types"]
   },
-  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/example.ts"],
-  "include": ["src", "tests", "example"]
+  "include": ["src", "tests"]
 }

@@ -1,8 +1,16 @@
-import { OpenAPIRouteSchema, RouteOptions, ValidatedData } from './types'
+import {
+  type OpenAPIRouteSchema,
+  type RouteOptions,
+  type ValidatedData,
+} from './types'
 import { coerceInputs } from './parameters'
-import { AnyZodObject, z } from 'zod'
-import { RouteConfig } from '@asteasolutions/zod-to-openapi'
+import { type AnyZodObject, z } from 'zod'
+import {
+  extendZodWithOpenApi,
+  type RouteConfig,
+} from '@asteasolutions/zod-to-openapi'
 import { jsonResp } from './utils'
+extendZodWithOpenApi(z)
 
 export class OpenAPIRoute {
   handle(

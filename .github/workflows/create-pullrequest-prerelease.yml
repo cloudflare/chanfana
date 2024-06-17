@@ -9,30 +9,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          fetch-depth: 0
+          node-version: 20.x
+          cache: "npm"
 
-      - name: Use Node.js 20.6
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.6
-          cache: 'npm' # cache ~/.npm in case 'npm ci' needs to run
-
-      - name: Set RELEASE_VERSION
-        run: echo "RELEASE_VERSION=0.0.0-${GITHUB_SHA:0:7}" >> $GITHUB_ENV
-
-      - name: Apply new version
-        run: node config/preparePublish.mjs
-
-      - name: Install modules
-        run: npm install
-
-      - name: Build
-        run: npm run build
-        env:
-          NODE_ENV: 'production'
+      - run: npm install --frozen-lockfile
+      - run: npm run build
 
       - name: Create package
         run: npm pack

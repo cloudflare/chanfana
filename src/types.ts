@@ -1,12 +1,13 @@
-import { AnyZodObject, z, ZodType } from 'zod'
+import { type AnyZodObject, z, ZodType } from 'zod'
 import {
-  ResponseConfig,
-  ZodRequestBody,
+  type ResponseConfig,
+  type ZodRequestBody,
 } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
-import { RouteConfig } from '@asteasolutions/zod-to-openapi'
-import { OpenAPIObjectConfigV31 } from '@asteasolutions/zod-to-openapi/dist/v3.1/openapi-generator'
-import { OpenAPIObjectConfig } from '@asteasolutions/zod-to-openapi/dist/v3.0/openapi-generator'
-import { Simplify } from 'type-fest'
+import { type RouteConfig } from '@asteasolutions/zod-to-openapi'
+import { type OpenAPIObjectConfigV31 } from '@asteasolutions/zod-to-openapi/dist/v3.1/openapi-generator'
+import { type OpenAPIObjectConfig } from '@asteasolutions/zod-to-openapi/dist/v3.0/openapi-generator'
+
+export type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {}
 
 export interface RouterOptions {
   base?: string

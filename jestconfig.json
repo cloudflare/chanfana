@@ -1,6 +1,8 @@
 {
   "transform": {
-    "^.+\\.(t|j)sx?$": "ts-jest"
+    "^.+\\.(t|j)sx?$": ["ts-jest", {
+      "tsconfig": "./tests/tsconfig.json"
+    }]
   },
   "testRegex": "/tests/.*\\.test\\.ts$",
   "collectCoverageFrom": ["src/**/*.{ts,js}"],

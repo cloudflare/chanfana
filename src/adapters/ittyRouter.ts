@@ -1,5 +1,5 @@
-import { RouterOptions } from '../types'
-import { OpenAPIHandler, OpenAPIRouterType } from '../openapi'
+import { type RouterOptions } from '../types'
+import { OpenAPIHandler, type OpenAPIRouterType } from '../openapi'
 
 export class IttyRouterOpenAPIHandler extends OpenAPIHandler {
   getRequest(args: any[]) {

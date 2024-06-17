@@ -1,10 +1,9 @@
 import { getReDocUI, getSwaggerUI } from './ui'
-import { RouterOptions } from './types'
+import { type RouterOptions } from './types'
 import {
-  extendZodWithOpenApi,
   OpenApiGeneratorV3,
   OpenApiGeneratorV31,
-  RouteConfig,
+  type RouteConfig,
 } from '@asteasolutions/zod-to-openapi'
 import { OpenAPIRegistryMerger } from './zod/registry'
 import { z } from 'zod'

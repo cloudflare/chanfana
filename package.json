@@ -1,37 +1,23 @@
 {
-  "name": "@cloudflare/itty-router-openapi",
-  "version": "0.0.1",
-  "description": "OpenAPI schema generator and validator for Cloudflare Workers",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/src/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/src/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
-  },
+  "name": "chanfana",
+  "version": "2.0.0",
+  "description": "OpenAPI 3 and 3.1 schema generator and validator for Hono, itty-router and more!",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "LICENSE",
     "README.md"
   ],
   "scripts": {
-    "prepublishOnly": "pinst --disable",
-    "postpublish": "pinst --enable",
-    "build": "rollup -c",
-    "package": "npm run build && npm pack",
+    "build": "tsup src/index.ts --format cjs,esm --dts --config tsconfig.json",
     "test:cov": "jest --coverage --no-cache --runInBand",
-    "addscope": "node config/packagejson name @cloudflare/itty-router-openapi",
     "prettify": "prettier --check src tests README.md || (prettier -w src tests README.md; exit 1)",
     "lint": "npm run prettify",
     "prepare": "husky install",
     "test": "jest --no-cache --runInBand --config jestconfig.json --verbose",
     "coverage": "jest --no-cache --runInBand --config jestconfig.json --verbose --coverage"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "keywords": [
     "cloudflare",
@@ -57,21 +43,17 @@
   ],
   "author": "radar@cloudflare.com",
   "license": "MIT",
-  "homepage": "https://github.com/cloudflare/itty-router-openapi",
+  "homepage": "https://github.com/cloudflare/chanfana",
   "repository": {
     "type": "git",
-    "url": "git@github.com:cloudflare/itty-router-openapi.git"
+    "url": "git+ssh://git@github.com/cloudflare/chanfana.git"
   },
   "bugs": {
-    "url": "https://github.com/cloudflare/itty-router-openapi/issues"
+    "url": "https://github.com/cloudflare/chanfana/issues"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.5",
     "@cloudflare/workers-types": "^4.20230518.0",
-    "@commitlint/cli": "^13.1.0",
-    "@commitlint/config-conventional": "^13.1.0",
-    "@rollup/plugin-terser": "^0.2.1",
-    "@rollup/plugin-typescript": "^10.0.1",
     "@types/jest": "^29.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.3.1",
@@ -85,12 +67,9 @@
     "itty-router": "^5.0.17",
     "jest": "^29.0.0",
     "jest-openapi": "^0.14.2",
-    "pinst": "^2.1.6",
     "prettier": "^3.1.0",
-    "rollup": "^3.25.1",
-    "rollup-plugin-bundle-size": "^1.0.3",
-    "rollup-plugin-copy": "^3.4.0",
     "ts-jest": "^29.1.0",
+    "tsup": "^8.1.0",
     "typescript": "^5.1.3",
     "wrangler": "^3.60.1"
   },
@@ -98,7 +77,6 @@
     "@asteasolutions/zod-to-openapi": "^7.0.0",
     "js-yaml": "^4.1.0",
     "openapi3-ts": "^4.3.2",
-    "type-fest": "^4.18.3",
     "zod": "^3.23.8"
   }
 }
