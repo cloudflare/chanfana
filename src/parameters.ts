@@ -2,10 +2,10 @@ import {
   type RegexParameterType,
   type EnumerationParameterType,
   type ParameterType,
+  type RouteParameter,
 } from './types'
 import { z } from 'zod'
 import { isSpecificZodType, legacyTypeIntoZod } from './zod/utils'
-import { type RouteParameter } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
 
 extendZodWithOpenApi(z)

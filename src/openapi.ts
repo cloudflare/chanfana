@@ -1,5 +1,5 @@
 import { getReDocUI, getSwaggerUI } from './ui'
-import { type RouterOptions } from './types'
+import { type OpenAPIRouteSchema, type RouterOptions } from './types'
 import {
   OpenApiGeneratorV3,
   OpenApiGeneratorV31,
@@ -135,7 +135,7 @@ export class OpenAPIHandler {
     const parsedRoute = this.parseRoute(params.path)
 
     // @ts-ignore
-    let schema: RouteConfig = undefined
+    let schema: OpenAPIRouteSchema = undefined
     // @ts-ignore
     let operationId: string = undefined
 

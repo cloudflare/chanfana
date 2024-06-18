@@ -1,6 +1,6 @@
 {
   "name": "chanfana",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "OpenAPI 3 and 3.1 schema generator and validator for Hono, itty-router and more!",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -74,7 +74,7 @@
     "wrangler": "^3.60.1"
   },
   "dependencies": {
-    "@asteasolutions/zod-to-openapi": "^7.0.0",
+    "@asteasolutions/zod-to-openapi": "^7.1.1",
     "js-yaml": "^4.1.0",
     "openapi3-ts": "^4.3.2",
     "zod": "^3.23.8"

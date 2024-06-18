@@ -1,9 +1,8 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi'
-import { type OpenAPIDefinitions } from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
 
 // @ts-ignore
 export class OpenAPIRegistryMerger extends OpenAPIRegistry {
-  public _definitions: OpenAPIDefinitions[] = []
+  public _definitions: object[] = []
 
   merge(registry: OpenAPIRegistryMerger): void {
     if (!registry || !registry._definitions) return

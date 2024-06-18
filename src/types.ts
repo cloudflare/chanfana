@@ -1,13 +1,55 @@
-import { type AnyZodObject, z, ZodType } from 'zod'
+import { type AnyZodObject, z, type ZodEffects, ZodType } from 'zod'
 import {
-  type ResponseConfig,
-  type ZodRequestBody,
-} from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
-import { type RouteConfig } from '@asteasolutions/zod-to-openapi'
-import { type OpenAPIObjectConfigV31 } from '@asteasolutions/zod-to-openapi/dist/v3.1/openapi-generator'
-import { type OpenAPIObjectConfig } from '@asteasolutions/zod-to-openapi/dist/v3.0/openapi-generator'
+  type RouteConfig,
+  type ZodMediaTypeObject,
+} from '@asteasolutions/zod-to-openapi'
+import {
+  type HeadersObject as HeadersObject30,
+  type LinksObject as LinksObject30,
+  type OpenAPIObject,
+} from 'openapi3-ts/oas30'
+import {
+  type HeadersObject as HeadersObject31,
+  type LinksObject as LinksObject31,
+} from 'openapi3-ts/oas31'
 
 export type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {}
+
+// The following types are copied from @asteasolutions/zod-to-openapi as they are not exported
+export type OpenAPIObjectConfig = Omit<
+  OpenAPIObject,
+  'paths' | 'components' | 'webhooks'
+>
+export type OpenAPIObjectConfigV31 = Omit<
+  OpenAPIObject,
+  'paths' | 'components' | 'webhooks'
+>
+
+type HeadersObject = HeadersObject30 | HeadersObject31
+type LinksObject = LinksObject30 | LinksObject31
+
+export type ZodMediaType =
+  | 'application/json'
+  | 'text/html'
+  | 'text/plain'
+  | 'application/xml'
+  | (string & {})
+export type ZodContentObject = Partial<Record<ZodMediaType, ZodMediaTypeObject>>
+export interface ZodRequestBody {
+  description?: string
+  content: ZodContentObject
+  required?: boolean
+}
+export interface ResponseConfig {
+  description: string
+  headers?: AnyZodObject | HeadersObject
+  links?: LinksObject
+  content?: ZodContentObject
+}
+export type RouteParameter =
+  | AnyZodObject
+  | ZodEffects<AnyZodObject, unknown, unknown>
+  | undefined
 
 export interface RouterOptions {
   base?: string

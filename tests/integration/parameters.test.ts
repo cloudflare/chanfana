@@ -448,6 +448,36 @@ describe('queryParametersValidation', () => {
     expect(findError(resp.errors, 'p_ipv6')).toBeUndefined()
   })
 
+  test('checkDateArrayInvalid', async () => {
+    const qs = '?p_array_dates=asadasd'
+    const request = await todoRouter.fetch(
+      buildRequest({ method: 'GET', path: `/todos${qs}` })
+    )
+    const resp = await request.json()
+
+    expect(findError(resp.errors, 'p_array_dates')).toEqual('Invalid date')
+  })
+
+  test('checkDateArrayValid', async () => {
+    const qs = '?p_array_dates=2023-01-01'
+    const request = await todoRouter.fetch(
+      buildRequest({ method: 'GET', path: `/todos${qs}` })
+    )
+    const resp = await request.json()
+
+    expect(findError(resp.errors, 'p_array_dates')).toBeUndefined()
+  })
+
+  test('checkDateArrayValid2', async () => {
+    const qs = '?p_array_dates=2023-01-01&p_array_dates=2023-01-02'
+    const request = await todoRouter.fetch(
+      buildRequest({ method: 'GET', path: `/todos${qs}` })
+    )
+    const resp = await request.json()
+
+    expect(findError(resp.errors, 'p_array_dates')).toBeUndefined()
+  })
+
   test('checkOptionalMissing', async () => {
     const qs = '?'
     const request = await todoRouter.fetch(

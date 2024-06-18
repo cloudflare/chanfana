@@ -5,10 +5,7 @@ import {
 } from './types'
 import { coerceInputs } from './parameters'
 import { type AnyZodObject, z } from 'zod'
-import {
-  extendZodWithOpenApi,
-  type RouteConfig,
-} from '@asteasolutions/zod-to-openapi'
+import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi'
 import { jsonResp } from './utils'
 extendZodWithOpenApi(z)
 
@@ -46,7 +43,7 @@ export class OpenAPIRoute {
     return this.schema
   }
 
-  getSchemaZod(): RouteConfig {
+  getSchemaZod(): OpenAPIRouteSchema {
     // Deep copy
     const schema = { ...this.getSchema() }
 
@@ -104,7 +101,7 @@ export class OpenAPIRoute {
   }
 
   async validateRequest(request: Request) {
-    const schema: RouteConfig = this.getSchemaZod()
+    const schema: OpenAPIRouteSchema = this.getSchemaZod()
     const unvalidatedData: any = {}
 
     const rawSchema: any = {}
