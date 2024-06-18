@@ -1,91 +1,42 @@
-First, create a new directory, and use [wrangler](https://github.com/cloudflare/wrangler2), our command line tool for
-building Cloudflare Workers, which we assume
-you have [installed](https://github.com/cloudflare/wrangler2#installation) already, to initialize the project:
+Get started with a template with this command:
 
-<!-- termynal -->
 ```bash
-mkdir openapi-example && cd openapi-example
-wrangler init
-
----> 100%
+npm create cloudflare@latest -- --type openapi
 ```
 
-And install itty-router-openapi
+## Basic concepts
 
-<!-- termynal -->
-```bash
-npm i @cloudflare/itty-router-openapi --save
+Notice that this library is router agnostic, so different routers can have different implementation details.
+This library tries to standarize what it can, but some things are out of scope.
 
----> 100%
-```
+One example of this is, route arguments.
 
-Then in the `src/index.ts` place this, the smallest router you can have in itty-router-openapi.
+Itty-router just passes along any arguments received in the `.fetch` function to the inner routes ([docs here](https://itty.dev/itty-router/concepts#we-have-simpler-handlers)).
+
+But Hono, combines all arguments into one `c` ([docs here](https://hono.dev/docs/getting-started/basic#hello-world)).
+
+And because chanfana is not a router! and just adds functionalities on top of other routers, we just pass along the same
+arguments we receive from the router.
+You will notice this in the example trough out our documentation, as every example is currently itty-router based
+Example: 
 
 ```ts
-import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
-
-const router = OpenAPIRouter()
-
-export default {
-  fetch: router.handle,
-}
-```
-
-Now when running `wrangler dev` you see server logs
-
-<!-- termynal -->
-```bash
-$ wrangler dev
-
- ⛅️ wrangler 3.4.0
-------------------
-wrangler dev now uses local mode by default, powered by 🔥 Miniflare and 👷 workerd.
-To run an edge preview session for your Worker, use wrangler dev --remote
-⎔ Starting local server...
-⎔ Reloading local server...
-[mf:inf] Ready on http://127.0.0.1:8787/
-[mf:inf] Updated and ready on http://127.0.0.1:8787/
-```
-
-You can now open `http://127.0.0.1:8787/docs` in your browser to see the Swagger UI, that will hold
-your future endpoints.
-
-// TODO screenshot /docs
-
-You can also open the `http://127.0.0.1:8787/redocs` to see an alternative version with the same endpoints.
-
-// TODO screenshot /redocs
-
-## Creating your first endpoint
-
-This is the simplest endpoint you can create, that don't receive any parameters, neither have a response format
-defined.
-
-```ts
-import { OpenAPIRoute } from '@cloudflare/itty-router-openapi'
-
-export class ListEndpoint extends OpenAPIRoute {
-  async handle(request: Request, env: any, context: any, data: any) {
-    return ["cloudflare", "workers"]
+// Itty-router example
+export class ToDoFetch extends OpenAPIRoute {
+  async handle(request: Request, env: any, context: any) {
+    // ...
   }
 }
 ```
 
-After this you must register the endpoint in the initial router, so your `src/index.ts` should look something
-like this:
+But a Hono example would look like this:
+
+
 ```ts
-import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
-
-const router = OpenAPIRouter()
-router.get('/list/', ListEndpoint)
-
-export default {
-  fetch: router.handle,
+// Hono example
+export class ToDoFetch extends OpenAPIRoute {
+  async handle(c) {
+    // ...
+  }
 }
 ```
-
-Now when opening the `/docs` you will see your new endpoint and be able to test it right away.
-
-
-// TODO screenshot /docs with endpoint
-

@@ -1,6 +1,6 @@
-site_name: itty-router-openapi
-site_description: OpenAPI 3 schema generator and validator for Cloudflare Workers
-site_url: https://cloudflare.github.io/itty-router-openapi/
+site_name: chanfana
+site_description: OpenAPI 3 and 3.1 schema generator and validator for Hono, itty-router and more!
+site_url: https://chanfana.pages.dev/
 docs_dir: pages
 theme:
   logo: assets/logo.svg
@@ -32,8 +32,8 @@ theme:
   icon:
     repo: fontawesome/brands/github
   language: en
-repo_name: cloudflare/itty-router-openapi
-repo_url: https://github.com/cloudflare/itty-router-openapi
+repo_name: cloudflare/chanfana
+repo_url: https://github.com/cloudflare/chanfana
 edit_uri: ''
 plugins:
   - search
@@ -41,7 +41,7 @@ plugins:
   - markdownextradata:
       data: data
 nav:
-  - itty-router-openapi: index.md
+  - chanfana: index.md
   - types.md
   - type-hint.md
   - User Guide:
@@ -55,18 +55,16 @@ nav:
       - user-guide/security.md
       - user-guide/cors.md
       - user-guide/middleware.md
-      - user-guide/migrating-from-itty-router.md
+      - user-guide/migrating-from-itty-router-openapi.md
   - Advanced User Guide:
       - advanced-user-guide/reusable-schemas.md
       - advanced-user-guide/custom-response-formats.md
       - advanced-user-guide/custom-response-headers.md
-      - advanced-user-guide/openai-plugin.md
       - advanced-user-guide/ci-cd-pipelines.md
       - advanced-user-guide/event-listener-worker.md
       - advanced-user-guide/hiding-routes-in-openapi-schema.md
       - advanced-user-guide/openapi-schema-customizations.md
       - advanced-user-guide/streaming-responses.md
-  - migrating-to-1.0.md
 markdown_extensions:
   - toc:
       permalink: true
@@ -86,4 +84,4 @@ markdown_extensions:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/cloudflare/itty-router-openapi
+      link: https://github.com/cloudflare/chanfana

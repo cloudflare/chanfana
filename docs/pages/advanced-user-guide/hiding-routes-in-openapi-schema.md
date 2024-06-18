@@ -1,32 +1,16 @@
-Hiding routes can be archived by registering your endpoints in the original `itty-router`,as shown here:
+If you don't want a route to be displayed in the openapi schema, just register it in the base router
 
 ```ts
-import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
+import { fromIttyRouter } from 'chanfana'
+import { Router } from 'itty-router'
 
-const router = OpenAPIRouter()
+const router = Router()
+const openAPI = fromIttyRouter(router)
 
-router.original.get(
+router.get(
   '/todos/:id',
   ({ params }) => new Response(`Todo #${params.id}`)
 )
 ```
 
 This endpoint will still be accessible, but will not be shown in the schema.
-
-## Defining redirects
-
-This is also useful to define redirects, like this:
-
-```ts
-import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
-import { TaskFetch } from './tasks'
-
-const router = OpenAPIRouter()
-
-// Redirect to docs page
-router.original.get('/', (request) => Response.redirect(`${request.url}docs`, 302))
-
-export default {
-  fetch: router.handle,
-}
-```

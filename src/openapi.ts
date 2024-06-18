@@ -102,7 +102,7 @@ export class OpenAPIHandler {
 
     const generator = new openapiGenerator(this.registry.definitions)
 
-    const asd = generator.generateDocument({
+    return generator.generateDocument({
       openapi: this.options?.openapiVersion === '3' ? '3.0.3' : '3.1.0',
       info: {
         version: this.options?.schema?.info?.version || '1.0.0',
@@ -111,8 +111,6 @@ export class OpenAPIHandler {
       },
       ...this.options?.schema,
     })
-
-    return asd
   }
 
   registerNestedRouter(params: {
@@ -226,6 +224,9 @@ export class OpenAPIHandler {
       return []
     }
 
+    if (prop === 'isChanfana') {
+      return true
+    }
     if (prop === 'original') {
       return this.router
     }

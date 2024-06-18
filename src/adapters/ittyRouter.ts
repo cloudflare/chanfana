@@ -26,7 +26,7 @@ export function fromIttyRouter<M>(
 
       return (route: string, ...handlers: any[]) => {
         if (prop !== 'fetch') {
-          if (handlers.length === 1 && handlers[0].registry) {
+          if (handlers.length === 1 && handlers[0].isChanfana === true) {
             handlers = openapiRouter.registerNestedRouter({
               method: prop,
               path: route,

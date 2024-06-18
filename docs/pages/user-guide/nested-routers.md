@@ -4,19 +4,29 @@ In this example we split some routes to a different router
 
 ```ts
 // api/attacks/router.ts
-import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
+import { fromIttyRouter } from 'chanfana'
+import { Router } from 'itty-router'
 
-export const attacksRouter = OpenAPIRouter({ base: '/api/v1/attacks' })
+const attacksRouter = fromIttyRouter(
+  Router({
+    base: '/api/v1/attacks',
+  }),
+  {
+    base: '/api/v1/attacks',
+  },
+)
 
 attacksRouter.get('/layer3/timeseries', AttacksLayer3Timeseries)
 ```
 
 ```ts
 // router.ts
-import { OpenAPIRouter } from '@cloudflare/itty-router-openapi'
+import { fromIttyRouter } from 'chanfana'
+import { Router } from 'itty-router'
 import { attacksRouter } from 'api/attacks/router'
 
-export const router = OpenAPIRouter({
+const router = Router()
+const attacksRouter = fromIttyRouter(router, {
   schema: {
     info: {
       title: 'Radar Worker API',
@@ -29,6 +39,8 @@ router.all('/api/v1/attacks/*', attacksRouter)
 
 // Other routes
 router.get('/api/v1/bgp/timeseries', BgpTimeseries)
+
+export default router
 ```
 
 Now run `wrangler dev` and go to `/docs` with your browser, here you can verify that all nested routers appear correctly
