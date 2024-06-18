@@ -1,81 +1,70 @@
-import { RouteEntry } from 'itty-router'
-import { z, AnyZodObject, ZodType } from 'zod'
+import { type AnyZodObject, z, type ZodEffects, ZodType } from 'zod'
 import {
-  ResponseConfig,
-  ZodMediaTypeObject,
-} from '@asteasolutions/zod-to-openapi/dist/openapi-registry'
-import { RouteConfig } from '@asteasolutions/zod-to-openapi'
-import { OpenAPIObjectConfigV31 } from '@asteasolutions/zod-to-openapi/dist/v3.1/openapi-generator'
-import { OpenAPIObjectConfig } from '@asteasolutions/zod-to-openapi/dist/v3.0/openapi-generator'
-// @ts-ignore
-import { HeadersObject as HeadersObject30 } from 'openapi3-ts/dist/model/openapi30'
-// @ts-ignore
-import { HeadersObject as HeadersObject31 } from 'openapi3-ts/dist/model/openapi31'
+  type RouteConfig,
+  type ZodMediaTypeObject,
+} from '@asteasolutions/zod-to-openapi'
+import {
+  type HeadersObject as HeadersObject30,
+  type LinksObject as LinksObject30,
+  type OpenAPIObject,
+} from 'openapi3-ts/oas30'
+import {
+  type HeadersObject as HeadersObject31,
+  type LinksObject as LinksObject31,
+} from 'openapi3-ts/oas31'
+
+export type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {}
+
+// The following types are copied from @asteasolutions/zod-to-openapi as they are not exported
+export type OpenAPIObjectConfig = Omit<
+  OpenAPIObject,
+  'paths' | 'components' | 'webhooks'
+>
+export type OpenAPIObjectConfigV31 = Omit<
+  OpenAPIObject,
+  'paths' | 'components' | 'webhooks'
+>
+
+type HeadersObject = HeadersObject30 | HeadersObject31
+type LinksObject = LinksObject30 | LinksObject31
+
+export type ZodMediaType =
+  | 'application/json'
+  | 'text/html'
+  | 'text/plain'
+  | 'application/xml'
+  | (string & {})
+export type ZodContentObject = Partial<Record<ZodMediaType, ZodMediaTypeObject>>
+export interface ZodRequestBody {
+  description?: string
+  content: ZodContentObject
+  required?: boolean
+}
+export interface ResponseConfig {
+  description: string
+  headers?: AnyZodObject | HeadersObject
+  links?: LinksObject
+  content?: ZodContentObject
+}
+export type RouteParameter =
+  | AnyZodObject
+  | ZodEffects<AnyZodObject, unknown, unknown>
+  | undefined
 
 export interface RouterOptions {
   base?: string
-  routes?: RouteEntry[]
   schema?: Partial<OpenAPIObjectConfigV31 | OpenAPIObjectConfig>
   docs_url?: string
   redoc_url?: string
   openapi_url?: string
-  aiPlugin?: AIPlugin
   raiseUnknownParameters?: boolean
   generateOperationIds?: boolean
   openapiVersion?: '3' | '3.1'
-  skipValidation?: boolean
-  baseRouter?: any
-}
-
-export declare type RouteParameter<Z extends z.ZodType = z.ZodType> = {
-  name?: string
-  location: string
-  type: Z
-}
-
-export declare type MediaTypeObject = Omit<ZodMediaTypeObject, 'schema'> & {
-  schema: any // TODO enable type hint when legacy types drop the 'new'
-}
-
-export declare type ContentObject = {
-  [mediaType: string]: MediaTypeObject
-}
-
-export declare type QueryParameter<Z extends z.ZodType = z.ZodType> =
-  RouteParameter<Z> & { location: 'query' }
-export declare type PathParameter<Z extends z.ZodType = z.ZodType> =
-  RouteParameter<Z> & { location: 'params' }
-export declare type HeaderParameter<Z extends z.ZodType = z.ZodType> =
-  RouteParameter<Z> & { location: 'headers' }
-
-export declare type RouteResponse = Omit<
-  ResponseConfig,
-  'headers' | 'content'
-> & {
-  headers?:
-    | AnyZodObject
-    | HeadersObject30
-    | HeadersObject31
-    | Record<string, any>
-  schema?: Record<any, any>
-  contentType?: string
-  content?: ContentObject
-}
-
-export declare type OpenAPIRouteSchema = Omit<
-  RouteConfig,
-  'method' | 'path' | 'requestBody' | 'parameters' | 'responses'
-> & {
-  requestBody?: Record<string, any>
-  parameters?: Record<string, RouteParameter> | RouteParameter[]
-  responses?: {
-    [statusCode: string]: RouteResponse
-  }
 }
 
 export interface RouteOptions {
+  router: any
   raiseUnknownParameters: boolean
-  skipValidation: boolean
 }
 
 export interface ParameterType {
@@ -100,129 +89,64 @@ export interface RegexParameterType extends StringParameterType {
   patternError?: string
 }
 
-export interface ParameterLocation extends StringParameterType {
-  name?: string
-  required?: boolean
-  contentType?: string
-
-  // Because this is a generic initializer, it must include all available options
-  values?: Record<string, any>
-  enumCaseSensitive?: boolean
-  pattern?: string | RegExp
-  patternError?: string
+export type RequestTypes = {
+  body?: ZodRequestBody
+  params?: AnyZodObject
+  query?: AnyZodObject
+  cookies?: AnyZodObject
+  headers?: AnyZodObject | ZodType<unknown>[]
 }
 
-export interface RouteValidated {
-  data: any
-  errors?: Record<string, any>
-}
-
-export enum SchemaVersion {
-  V1 = 'v1',
-}
-
-export enum AuthType {
-  NONE = 'none',
-  OAUTH = 'oauth',
-  SERVICE_HTTP = 'service_http',
-  USER_HTTP = 'user_http',
-}
-
-export enum APIType {
-  OPENAPI = 'openapi',
-}
-
-export interface AIPlugin {
-  schema_version?: SchemaVersion | string
-  name_for_model: string
-  name_for_human: string
-  description_for_model: string
-  description_for_human: string
-  auth?: Auth
-  api?: API
-  logo_url: string
-  contact_email: string
-  legal_info_url: string
-  is_dev?: boolean
-}
-
-export interface API {
-  type: APIType | string
-  url: string
-  has_user_authentication: boolean
-}
-
-export interface Auth {
-  type: AuthType | string
-  authorization_type?: string
-  authorization_url?: string
-  client_url?: string
-  scope?: string
-  authorization_content_type?: string
-  verification_tokens?: VerificationTokens
-  instructions?: string
-}
-
-export interface VerificationTokens {
-  openai: string
-}
-
-export type LegacyParameter<Z extends z.ZodType> = Z &
-  (new (params?: ParameterType) => Z)
-
-export type TypeOfQueryParameter<T> =
-  T extends QueryParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
-
-export type TypeOfPathParameter<T> =
-  T extends PathParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
-
-export type TypeOfHeaderParameter<T> =
-  T extends HeaderParameter<infer Z extends z.ZodType> ? z.infer<Z> : never
-
-export type TypedOpenAPIRouteSchema<
-  P extends Record<string, RouteParameter>,
-  B extends z.ZodType = z.ZodUndefined,
-> = Omit<
-  RouteConfig,
-  'method' | 'path' | 'requestBody' | 'parameters' | 'responses'
-> & {
-  parameters?: P
-  requestBody?: B
-  responses?: {
-    [statusCode: string]: RouteResponse
-  }
-}
-
-export type DataOf<S> = (S extends TypedOpenAPIRouteSchema<
-  infer P extends Record<string, RouteParameter>,
-  infer B
->
-  ? {
-      headers: {
-        [K in keyof P as P[K] extends HeaderParameter<infer Z extends z.ZodType>
-          ? K
-          : never]: TypeOfHeaderParameter<P[K]>
-      }
-      params: {
-        [K in keyof P as P[K] extends PathParameter<infer Z extends z.ZodType>
-          ? K
-          : never]: TypeOfPathParameter<P[K]>
-      }
-      query: {
-        [K in keyof P as P[K] extends QueryParameter<infer Z extends z.ZodType>
-          ? K
-          : never]: TypeOfQueryParameter<P[K]>
-      }
+// Changes over the original RouteConfig:
+// - Make responses optional (a default one is generated)
+// - Removes method and path (its inject on boot)
+export type OpenAPIRouteSchema = Simplify<
+  Omit<RouteConfig, 'responses' | 'method' | 'path' | 'request'> & {
+    request?: RequestTypes
+    responses?: {
+      [statusCode: string]: ResponseConfig
     }
-  : {
-      headers: Record<string, any>
-      params: Record<string, any>
-      query: Record<string, any>
-    }) &
-  (S extends TypedOpenAPIRouteSchema<infer P, infer B extends z.ZodUndefined>
-    ? {}
-    : S extends TypedOpenAPIRouteSchema<infer P, infer B extends z.ZodType>
-      ? { body: z.infer<B> }
-      : {})
+  }
+>
 
-export type inferData<S> = DataOf<S>
+export type ValidatedData<S> = S extends OpenAPIRouteSchema
+  ? {
+      query: GetRequest<S> extends NonNullable<GetRequest<S>>
+        ? GetOutput<GetRequest<S>, 'query'>
+        : undefined
+      params: GetRequest<S> extends NonNullable<GetRequest<S>>
+        ? GetOutput<GetRequest<S>, 'params'>
+        : undefined
+      headers: GetRequest<S> extends NonNullable<GetRequest<S>>
+        ? GetOutput<GetRequest<S>, 'headers'>
+        : undefined
+      body: GetRequest<S> extends NonNullable<GetRequest<S>>
+        ? GetBody<GetPartBody<GetRequest<S>, 'body'>>
+        : undefined
+    }
+  : undefined
+
+type GetRequest<T extends OpenAPIRouteSchema> = T['request']
+
+type GetOutput<T extends object | undefined, P extends keyof T> =
+  T extends NonNullable<T>
+    ? T[P] extends AnyZodObject
+      ? z.output<T[P]>
+      : undefined
+    : undefined
+
+type GetPartBody<
+  T extends RequestTypes,
+  P extends keyof T,
+> = T[P] extends ZodRequestBody ? T[P] : undefined
+
+type GetBody<T extends ZodRequestBody | undefined> =
+  T extends NonNullable<T>
+    ? T['content']['application/json'] extends NonNullable<
+        T['content']['application/json']
+      >
+      ? T['content']['application/json']['schema'] extends z.ZodTypeAny
+        ? z.output<T['content']['application/json']['schema']>
+        : undefined
+      : undefined
+    : undefined

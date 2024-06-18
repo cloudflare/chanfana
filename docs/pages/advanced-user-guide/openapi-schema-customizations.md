@@ -8,14 +8,16 @@ available.
 
 `paths` can only be added by registering routes like:
 ```ts
-const router = OpenAPIRouter()
-router.post('/scan/metadata/', ScanMetadataCreate)
+const router = Router()
+const openAPI = fromIttyRouter(router)
+openAPI.post('/scan/metadata/', ScanMetadataCreate)
 ```
 
 `components` can only be added by registering them in the main router like:
 ```ts
-const router = OpenAPIRouter()
-const bearerAuth = router.registry.registerComponent(
+const router = Router()
+const openAPI = fromIttyRouter(router)
+const bearerAuth = openAPI.registry.registerComponent(
   'securitySchemes',
   'bearerAuth',
   {
@@ -29,7 +31,8 @@ const bearerAuth = router.registry.registerComponent(
 Every other property must be defined in your main/root router as such:
 
 ```ts
-const router = OpenAPIRouter({
+const router = Router()
+const openAPI = fromIttyRouter(router, {
   schema: {
     info: {
       title: 'Radar Worker API',

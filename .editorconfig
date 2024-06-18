@@ -12,8 +12,5 @@ trim_trailing_whitespace = true
 indent_style = tab
 indent_size = 4
 
-[*.sln]
-indent_style = tab
-
 [*.{md,mdx}]
 trim_trailing_whitespace = false

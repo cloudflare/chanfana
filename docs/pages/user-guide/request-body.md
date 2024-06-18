@@ -1,32 +1,123 @@
 **Please make sure to read the [Types](../types.md) page before continuing.**
 
 
-You can declare Body Requests in the `requestBody` property of your endpoint schema.
+You can declare Body Requests in the `request.body` property of your endpoint schema.
 
-The validated data is available under `data.body.<name>`, where name is the key used inside the `requestBody` property.
+The validated data can be access by calling the `this.getValidatedData()` function.
 
 For nested objects the validated data will be under the same position as defined, for example `data.body.task.name`.
- 
-## Basic parameter
 
-For basic parameters you are fine using the Native types, this should cover almost everything you need to build a big
-project.
-
-Defining a schema using native types is as simple as defining a without any special parameters.
-
-In this example we are defining a object with an optional `description` and an array of strings `steps`.
+In this example, the description can be either a string or an array of strings.
 
 ```ts hl_lines="7-11"
-import { OpenAPIRoute, Query, Str } from '@cloudflare/itty-router-openapi'
+import { OpenAPIRoute, Str, Enumeration } from 'chanfana'
+import { z } from 'zod'
 
 export class ToDoCreate extends OpenAPIRoute {
-  static schema = {
+  schema = {
     tags: ['ToDo'],
     summary: 'Create a ToDo',
-    requestBody: {
-      name: String,
-      description: new Str({required: false}),
-      steps: [new Str({example: 'open the door'})]
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: z.object({
+              title: Str(),
+              description: z.string().or(z.string().array()),
+              type: Enumeration({
+                values: {
+                  nextWeek: 'nextWeek',
+                  nextMonth: 'nextMonth',
+                },
+              }),
+            }),
+          },
+        },
+      },
+    },
+  }
+
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+  ) {
+    const data = await this.getValidatedData<typeof this.schema>()
+    
+    const newToDo = data.body
+    // ...
+  }
+}
+```
+
+This can get a lot verbose, depending on your endpoint schema, so 2 tools are bundled with chanfana to make this easier.
+
+### legacyTypeIntoZod
+
+`legacyTypeIntoZod` allows you to send any javascript structure inside it, containing or not native types or Zod types.
+It will then loop through the structure to convert everything into Zod types so that the response is well displayed.
+
+You can even send javascript variables like strings and numbers and it will be able to parse them as well.
+
+Notice that when using `legacyTypeIntoZod` typescript inference is not available!
+
+Here's an example of a response schema using variables
+
+```ts
+import { OpenAPIRoute, legacyTypeIntoZod } from 'chanfana'
+import { z } from 'zod'
+
+export class ToDoCreate extends OpenAPIRoute {
+  schema = {
+    tags: ['ToDo'],
+    summary: 'Create a ToDo',
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: legacyTypeIntoZod({
+              title: string,
+              description: "example description"
+            }),
+          },
+        },
+      },
+    },
+  }
+
+  async handle(
+    request: Request,
+    env: any,
+    context: any,
+  ) {
+    const data = await this.getValidatedData<typeof this.schema>()
+    
+    const newToDo = data.body
+    // ...
+  }
+}
+```
+
+### contentJson
+
+If you want even less verbose definitions you can use `contentJson`, this function will also call `legacyTypeIntoZod`
+under the hood, for you to have even more flexibility.
+
+Notice that when using `contentJson` typescript inference is not available!
+
+```ts
+import { contentJson, OpenAPIRoute } from 'chanfana'
+import { z } from 'zod'
+
+export class ToDoCreate extends OpenAPIRoute {
+  schema = {
+    tags: ['ToDo'],
+    summary: 'Create a ToDo',
+    request: {
+      body: contentJson({
+        title: string,
+        description: 'example description',
+      }),
     }
   }
 
@@ -34,72 +125,9 @@ export class ToDoCreate extends OpenAPIRoute {
     request: Request,
     env: any,
     context: any,
-    data: any
   ) {
-    const newToDo = data.body
-    // ...
-  }
-}
-```
-
-## Advanced parameters
-
-If you need a more advanced control over the validation, you should use [Zod](https://zod.dev/).
-
-Zod types can be used inside itty-router-openapi native types!
-
-While the previous example will work well, you might want more control, like make the description a string or an array of strings.
-
-```ts hl_lines="8-12"
-import { OpenAPIRoute, Query } from '@cloudflare/itty-router-openapi'
-import {z} from 'zod'
-
-export class ToDoCreate extends OpenAPIRoute {
-  static schema = {
-    tags: ['ToDo'],
-    summary: 'Create a ToDo',
-    requestBody: {
-      name: String,
-      description: z.string().or(z.string().array()),
-      steps: [new Str({example: 'open the door'})]
-    }
-  }
-
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-    data: any
-  ) {
-    const newToDo = data.body
-    // ...
-  }
-}
-```
-
-Or you can define the exact same request body as above all in Zod
-
-```ts hl_lines="8-12"
-import { OpenAPIRoute, Query } from '@cloudflare/itty-router-openapi'
-import {z} from 'zod'
-
-export class ToDoCreate extends OpenAPIRoute {
-  static schema = {
-    tags: ['ToDo'],
-    summary: 'Create a ToDo',
-    requestBody: z.object({
-      name: z.string(),
-      description: z.string().or(z.string().array()),
-      steps: z.string().array()
-    })
-  }
-
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-    data: any
-  ) {
+    const data = await this.getValidatedData<typeof this.schema>()
+    
     const newToDo = data.body
     // ...
   }

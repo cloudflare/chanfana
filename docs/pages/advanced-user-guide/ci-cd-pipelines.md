@@ -9,10 +9,10 @@ be picked from a CI/CD pipeline.
 
 ```ts
 import fs from 'fs'
-import { router } from '../src/router'
+import { openAPI } from '../src/router'
 
-// Get the Schema from itty-router-openapi
-const schema = router.schema
+// Get the Schema from chanfana
+const schema = openAPI.schema
 
 // Optionaly: update the schema with some costumizations for publishing
 

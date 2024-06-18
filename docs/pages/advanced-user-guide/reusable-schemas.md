@@ -7,13 +7,13 @@ defined. This includes `parameters`, `requestBody`, `responses` even `Enum`.
 
 !!! note
 
-    This is only available when using [itty-router-openapi types](../types.md#itty-router-openapi-types) or 
+    This is only available when using [chanfana types](../types.md#chanfana-types) or 
     [zod types](../types.md#zod-types)
 
 
 ```ts
 export class PutMetadata extends OpenAPIRoute {
-  static schema: OpenAPIRouteSchema = {
+  schema = {
     operationId: 'post-bucket-put-object-metadata',
     tags: ['Buckets'],
     summary: 'Update object metadata',
@@ -32,7 +32,7 @@ export class PutMetadata extends OpenAPIRoute {
 
 Then when running the server, it would get rendered like this:
 
-![Reusable Parameters](https://raw.githubusercontent.com/cloudflare/itty-router-openapi/main/docs/images/reusable-parameters.png)
+![Reusable Parameters](https://raw.githubusercontent.com/cloudflare/chanfana/main/docs/images/reusable-parameters.png)
 
 The OpenAPI spec will also reflect this, by moving the schemas out of the endpoint and into the `components`:
 

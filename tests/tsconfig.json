@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "src",
+    "declaration": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "inlineSourceMap": false,
+    "lib": ["esnext", "dom", "dom.iterable"],
+    "listEmittedFiles": false,
+    "listFiles": false,
+    "moduleResolution": "nodeNext",
+    "noFallthroughCasesInSwitch": true,
+    "pretty": true,
+    "resolveJsonModule": true,
+    "rootDir": "./",
+    "skipLibCheck": true,
+    "strict": true,
+    "traceResolution": false,
+    "outDir": "",
+    "target": "esnext",
+    "module": "esnext",
+    "types": [
+      "@types/node",
+      "@types/jest",
+      "@types/service-worker-mock",
+      "@cloudflare/workers-types"
+    ]
+  },
+  "exclude": ["node_modules", "dist", "**/*.spec.ts", "**/example.ts"],
+  "include": ["src", "tests", "example"]
+}

@@ -1,17 +1,21 @@
 ## Describing response headers:
 
 ```ts
-import { OpenAPIRoute, Str } from '@cloudflare/itty-router-openapi'
+import { OpenAPIRoute, Str } from 'chanfana'
 
 export class ToDoList extends OpenAPIRoute {
-  static schema: OpenAPIRouteSchema = {
+  schema = {
     responses: {
       200: {
         description: 'Object with user data.',
-        schema: {
-          series: {
-            timestamps: ['2023-01-01 00:00:00'],
-            values: [0.56],
+        content: {
+          'application/json': {
+            schema: z.object({
+              series: z.object({
+                timestamps: z.string().date().array(),
+                values: z.number().array(),
+              })
+            }),
           },
         },
         headers: {
@@ -32,17 +36,21 @@ export class ToDoList extends OpenAPIRoute {
 ## Describing response headers with zod:
 
 ```ts
-import { OpenAPIRoute, Str } from '@cloudflare/itty-router-openapi'
+import { OpenAPIRoute, Str } from 'chanfana'
 
 export class ToDoList extends OpenAPIRoute {
-  static schema: OpenAPIRouteSchema = {
+  schema = {
     responses: {
       200: {
         description: 'Object with user data.',
-        schema: {
-          series: {
-            timestamps: ['2023-01-01 00:00:00'],
-            values: [0.56],
+        content: {
+          'application/json': {
+            schema: z.object({
+              series: z.object({
+                timestamps: z.string().date().array(),
+                values: z.number().array(),
+              })
+            }),
           },
         },
         headers: z.object({

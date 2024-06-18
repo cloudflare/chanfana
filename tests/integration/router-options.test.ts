@@ -1,17 +1,17 @@
 import 'isomorphic-fetch'
 
 import { OpenAPIRoute } from '../../src/route'
-import { OpenAPIRouter } from '../../src/openapi'
 import { buildRequest } from '../utils'
-import { OpenAPIRouteSchema } from '../../src'
+import { fromIttyRouter } from '../../src'
+import { AutoRouter } from 'itty-router'
 
 class EndpointWithoutOperationId extends OpenAPIRoute {
-  static schema = {
+  schema = {
     summary: 'Get a single ToDo',
     responses: {},
   }
 
-  async handle(request: Request, env: any, context: any, data: any) {
+  async handle(request: Request, env: any, context: any) {
     return {
       msg: 'EndpointWithoutOperationId',
     }
@@ -19,13 +19,13 @@ class EndpointWithoutOperationId extends OpenAPIRoute {
 }
 
 class EndpointWithOperationId extends OpenAPIRoute {
-  static schema: OpenAPIRouteSchema = {
+  schema = {
     responses: {},
     operationId: 'get_my_todo',
     summary: 'Get a single ToDo',
   }
 
-  async handle(request: Request, env: any, context: any, data: any) {
+  async handle(request: Request, env: any, context: any) {
     return {
       msg: 'EndpointWithOperationId',
     }
@@ -35,7 +35,7 @@ class EndpointWithOperationId extends OpenAPIRoute {
 describe('routerOptions', () => {
   it('generate operation ids false', async () => {
     const t = () => {
-      const router = OpenAPIRouter({
+      const router = fromIttyRouter(AutoRouter(), {
         generateOperationIds: false,
       })
       router.get('/todo', EndpointWithoutOperationId)
@@ -45,7 +45,7 @@ describe('routerOptions', () => {
   })
 
   it('generate operation ids true and unset', async () => {
-    const routerTrue = OpenAPIRouter({
+    const routerTrue = fromIttyRouter(AutoRouter(), {
       generateOperationIds: true,
     })
     routerTrue.get('/todo', EndpointWithoutOperationId)
@@ -62,7 +62,7 @@ describe('routerOptions', () => {
       throw new Error('/todo not found in schema')
     }
 
-    const routerUnset = OpenAPIRouter()
+    const routerUnset = fromIttyRouter(AutoRouter())
     routerUnset.get('/todo', EndpointWithoutOperationId)
 
     if (
@@ -79,7 +79,7 @@ describe('routerOptions', () => {
   })
 
   it('generate operation ids true on endpoint with operation id', async () => {
-    const router = OpenAPIRouter({
+    const router = fromIttyRouter(AutoRouter(), {
       generateOperationIds: true,
     })
     router.get('/todo', EndpointWithOperationId)
@@ -98,10 +98,10 @@ describe('routerOptions', () => {
   })
 
   it('with base empty', async () => {
-    const router = OpenAPIRouter()
+    const router = fromIttyRouter(AutoRouter())
     router.get('/todo', EndpointWithOperationId)
 
-    const request = await router.handle(
+    const request = await router.fetch(
       buildRequest({ method: 'GET', path: '/todo' })
     )
     const resp = await request.json()
@@ -110,10 +110,12 @@ describe('routerOptions', () => {
   })
 
   it('with base defined', async () => {
-    const router = OpenAPIRouter({ base: '/api' })
+    const router = fromIttyRouter(AutoRouter({ base: '/api' }), {
+      base: '/api',
+    })
     router.get('/todo', EndpointWithOperationId)
 
-    const request = await router.handle(
+    const request = await router.fetch(
       buildRequest({ method: 'GET', path: '/api/todo' })
     )
     const resp = await request.json()
