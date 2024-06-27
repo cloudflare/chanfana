@@ -44,6 +44,9 @@ nav:
   - chanfana: index.md
   - types.md
   - type-hint.md
+  - Routers:
+      - routers/hono.md
+      - routers/itty-router.md
   - User Guide:
       - user-guide/first-steps.md
       - user-guide/path-parameters.md
