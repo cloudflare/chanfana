@@ -63,8 +63,8 @@ nav:
       - advanced-user-guide/reusable-schemas.md
       - advanced-user-guide/custom-response-formats.md
       - advanced-user-guide/custom-response-headers.md
+      - advanced-user-guide/custom-error-handling.md
       - advanced-user-guide/ci-cd-pipelines.md
-      - advanced-user-guide/event-listener-worker.md
       - advanced-user-guide/hiding-routes-in-openapi-schema.md
       - advanced-user-guide/openapi-schema-customizations.md
       - advanced-user-guide/streaming-responses.md
