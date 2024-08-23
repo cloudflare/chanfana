@@ -1,7 +1,7 @@
 Minimal itty-router example
 
 ```ts
-import { fromIttyRouter, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
+import { fromIttyRouter, OpenAPIRoute } from 'chanfana'
 import { Router } from "itty-router";
 import { z } from 'zod'
 

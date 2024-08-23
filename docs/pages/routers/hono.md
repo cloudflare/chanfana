@@ -1,7 +1,7 @@
 Minimal Hono example
 
 ```ts
-import { fromHono, OpenAPIRoute } from '@cloudflare/itty-router-openapi'
+import { fromHono, OpenAPIRoute } from 'chanfana'
 import { Hono } from 'hono'
 import { z } from 'zod'
 
