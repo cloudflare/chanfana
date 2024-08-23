@@ -54,9 +54,9 @@ export type RouteParameter =
 export interface RouterOptions {
   base?: string
   schema?: Partial<OpenAPIObjectConfigV31 | OpenAPIObjectConfig>
-  docs_url?: string
-  redoc_url?: string
-  openapi_url?: string
+  docs_url?: string | null
+  redoc_url?: string | null
+  openapi_url?: string | null
   raiseUnknownParameters?: boolean
   generateOperationIds?: boolean
   openapiVersion?: '3' | '3.1'
