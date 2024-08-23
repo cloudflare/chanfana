@@ -17,7 +17,8 @@
     "lint": "npm run prettify",
     "prepare": "husky install",
     "test": "jest --no-cache --runInBand --config jestconfig.json --verbose",
-    "coverage": "jest --no-cache --runInBand --config jestconfig.json --verbose --coverage"
+    "coverage": "jest --no-cache --runInBand --config jestconfig.json --verbose --coverage",
+    "deploy-docs": "cd docs && mkdocs build && wrangler pages deploy site --project-name chanfana --branch main"
   },
   "keywords": [
     "cloudflare",
