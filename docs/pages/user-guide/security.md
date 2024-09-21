@@ -18,8 +18,8 @@ openapi.registry.registerComponent(
   'securitySchemes',
   'BearerAuth',
   {
-    type: http,
-    scheme: bearer,
+    type: 'http',
+    scheme: 'bearer',
   },
 )
 ```
@@ -44,12 +44,12 @@ const openapi = fromHono(app, {
   },
 })
 
-router.registry.registerComponent(
+openapi.registry.registerComponent(
   'securitySchemes',
   'BearerAuth',
   {
-    type: http,
-    scheme: bearer,
+    type: 'http',
+    scheme: 'bearer',
   },
 )
 ```
@@ -91,8 +91,8 @@ openapi.registry.registerComponent(
   'securitySchemes',
   'BearerAuth',
   {
-    type: http,
-    scheme: bearer,
+    type: 'http',
+    scheme: 'bearer',
   },
 )
 
