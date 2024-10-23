@@ -29,7 +29,7 @@ export class GetPageNumber extends OpenAPIRoute {
 
 
 const router = Router();
-const openapi = fromIttyRouter(app)
+const openapi = fromIttyRouter(router)
 
 openapi.get('/entry/:id', GetPageNumber)
 export default openapi;

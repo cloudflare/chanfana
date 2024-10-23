@@ -17,16 +17,17 @@ const attacksRouter = fromIttyRouter(
 )
 
 attacksRouter.get('/layer3/timeseries', AttacksLayer3Timeseries)
+
+export default attacksRouter
 ```
 
 ```ts
 // router.ts
 import { fromIttyRouter } from 'chanfana'
 import { Router } from 'itty-router'
-import { attacksRouter } from 'api/attacks/router'
+import attacksRouter from 'api/attacks/router'
 
-const router = Router()
-const attacksRouter = fromIttyRouter(router, {
+const router = fromIttyRouter(Router(), {
   schema: {
     info: {
       title: 'Radar Worker API',
@@ -43,5 +44,5 @@ router.get('/api/v1/bgp/timeseries', BgpTimeseries)
 export default router
 ```
 
-Now run `wrangler dev` and go to `/docs` with your browser, here you can verify that all nested routers appear correctly
+Now run `wrangler dev` and go to `/docs` with your browser, here you can verify that all nested routers appear correctly,
 and you are able to call every endpoint.
