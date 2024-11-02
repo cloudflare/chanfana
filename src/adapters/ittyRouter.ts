@@ -14,7 +14,7 @@ export class IttyRouterOpenAPIHandler extends OpenAPIHandler {
 export function fromIttyRouter<M>(
   router: M,
   options?: RouterOptions
-): M & OpenAPIRouterType<M> & any {
+): M & OpenAPIRouterType<M> {
   const openapiRouter = new IttyRouterOpenAPIHandler(router, options)
 
   return new Proxy(router, {

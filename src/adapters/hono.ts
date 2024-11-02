@@ -14,7 +14,7 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
 export function fromHono<M>(
   router: M,
   options?: RouterOptions
-): M & OpenAPIRouterType<M> & any {
+): M & OpenAPIRouterType<M> {
   const openapiRouter = new HonoOpenAPIHandler(router, options)
 
   return new Proxy(router, {

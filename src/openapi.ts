@@ -3,16 +3,24 @@ import { type OpenAPIRouteSchema, type RouterOptions } from './types'
 import {
   OpenApiGeneratorV3,
   OpenApiGeneratorV31,
-  type RouteConfig,
 } from '@asteasolutions/zod-to-openapi'
 import { OpenAPIRegistryMerger } from './zod/registry'
 import { z } from 'zod'
 import yaml from 'js-yaml'
+import { OpenAPIRoute } from './route'
 
 export type OpenAPIRouterType<M> = {
   original: M
   options: RouterOptions
   registry: OpenAPIRegistryMerger
+
+  delete(path: string, endpoint: typeof OpenAPIRoute): M
+  get(path: string, endpoint: typeof OpenAPIRoute): M
+  head(path: string, endpoint: typeof OpenAPIRoute): M
+  patch(path: string, endpoint: typeof OpenAPIRoute): M
+  post(path: string, endpoint: typeof OpenAPIRoute): M
+  put(path: string, endpoint: typeof OpenAPIRoute): M
+  all(path: string, router: M): M
 }
 
 export class OpenAPIHandler {
