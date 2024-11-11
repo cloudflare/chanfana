@@ -1,11 +1,11 @@
-import "isomorphic-fetch";
 import { AutoRouter } from "itty-router";
+import { describe, expect, it } from "vitest";
 import { fromIttyRouter } from "../../src";
 import { ToDoGet, ToDoList, todoRouter } from "../router";
 import { buildRequest, findError } from "../utils";
 
 describe("openapi schema", () => {
-	test("custom content type", async () => {
+	it("custom content type", async () => {
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: "/openapi.json" }),
 		);

@@ -19,10 +19,9 @@
 		"lib": ["es2022", "dom", "dom.iterable"],
 		"types": [
 			"@types/node",
-			"@types/jest",
 			"@types/service-worker-mock",
-			"@cloudflare/workers-types"
+			"@cloudflare/workers-types/experimental"
 		]
 	},
-	"include": ["src", "tests"]
+	"include": ["src"]
 }

@@ -1,9 +1,9 @@
-import "isomorphic-fetch";
+import { describe, expect, it } from "vitest";
 import { ToDoList, todoRouter } from "../router";
 import { buildRequest, findError } from "../utils";
 
 describe("queryParametersValidation", () => {
-	test("requiredFields", async () => {
+	it("requiredFields", async () => {
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: "/todos" }),
 		);
@@ -20,7 +20,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_boolean")).toEqual("Required");
 	});
 
-	test("checkNumberInvalid", async () => {
+	it("checkNumberInvalid", async () => {
 		const qs = "?p_number=asd";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -32,7 +32,7 @@ describe("queryParametersValidation", () => {
 		);
 	});
 
-	test("checkNumberValidFloat", async () => {
+	it("checkNumberValidFloat", async () => {
 		const qs = "?p_number=12.3";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -42,7 +42,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_number")).toBeUndefined();
 	});
 
-	test("checkNumberValidInteger", async () => {
+	it("checkNumberValidInteger", async () => {
 		const qs = "?p_number=12";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -52,7 +52,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_number")).toBeUndefined();
 	});
 
-	test("checkStringValid", async () => {
+	it("checkStringValid", async () => {
 		const qs = "?p_string=asd21_sa";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -62,7 +62,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_string")).toBeUndefined();
 	});
 
-	test("checkStringInvalidEmpty", async () => {
+	it("checkStringInvalidEmpty", async () => {
 		const qs = "?p_string=";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -74,7 +74,7 @@ describe("queryParametersValidation", () => {
 		);
 	});
 
-	test("checkBooleanInvalid", async () => {
+	it("checkBooleanInvalid", async () => {
 		const qs = "?p_boolean=asd";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -86,7 +86,7 @@ describe("queryParametersValidation", () => {
 		);
 	});
 
-	test("checkBooleanValid", async () => {
+	it("checkBooleanValid", async () => {
 		const qs = "?p_boolean=false";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -96,7 +96,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_boolean")).toBeUndefined();
 	});
 
-	test("checkBooleanValidCaseInsensitive", async () => {
+	it("checkBooleanValidCaseInsensitive", async () => {
 		const qs = "?p_boolean=TrUe";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -106,7 +106,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_boolean")).toBeUndefined();
 	});
 
-	test("checkEnumerationSensitiveInvalid", async () => {
+	it("checkEnumerationSensitiveInvalid", async () => {
 		const qs = "?p_enumeration=sfDase";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -118,7 +118,7 @@ describe("queryParametersValidation", () => {
 		);
 	});
 
-	test("checkEnumerationSensitiveInvalidCase", async () => {
+	it("checkEnumerationSensitiveInvalidCase", async () => {
 		const qs = "?p_enumeration=Csv";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -130,7 +130,7 @@ describe("queryParametersValidation", () => {
 		);
 	});
 
-	test("checkEnumerationSensitiveValid", async () => {
+	it("checkEnumerationSensitiveValid", async () => {
 		const qs = "?p_enumeration=csv";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -140,7 +140,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_enumeration")).toBeUndefined();
 	});
 
-	test("checkEnumerationInsensitiveInvalid", async () => {
+	it("checkEnumerationInsensitiveInvalid", async () => {
 		const qs = "?p_enumeration_insensitive=sfDase";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -152,7 +152,7 @@ describe("queryParametersValidation", () => {
 		);
 	});
 
-	test("checkEnumerationInsensitiveValidCase", async () => {
+	it("checkEnumerationInsensitiveValidCase", async () => {
 		const qs = "?p_enumeration_insensitive=Csv";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -162,7 +162,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_enumeration_insensitive")).toBeUndefined();
 	});
 
-	test("checkEnumerationInsensitiveValid", async () => {
+	it("checkEnumerationInsensitiveValid", async () => {
 		const qs = "?p_enumeration_insensitive=csv";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -172,7 +172,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_enumeration_insensitive")).toBeUndefined();
 	});
 
-	test("checkDatetimeInvalid", async () => {
+	it("checkDatetimeInvalid", async () => {
 		const qs = "?p_datetime=2023-13-01";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -184,7 +184,7 @@ describe("queryParametersValidation", () => {
 		);
 	});
 
-	test("checkDatetimeInvalid2", async () => {
+	it("checkDatetimeInvalid2", async () => {
 		const qs = "?p_datetime=sdfg";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -196,7 +196,7 @@ describe("queryParametersValidation", () => {
 		);
 	});
 
-	test("checkDatetimeInvalid3", async () => {
+	it("checkDatetimeInvalid3", async () => {
 		const qs = "?p_datetime=2022-09-15T00:00:00+01Z";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -208,7 +208,7 @@ describe("queryParametersValidation", () => {
 		);
 	});
 
-	test("checkDatetimeValid", async () => {
+	it("checkDatetimeValid", async () => {
 		const qs = "?p_datetime=2022-09-15T00:00:01Z";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -218,7 +218,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_datetime")).toBeUndefined();
 	});
 
-	test("checkDatetimeValid2", async () => {
+	it("checkDatetimeValid2", async () => {
 		const qs = "?p_datetime=2022-09-15T00:00:00Z";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -228,7 +228,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_datetime")).toBeUndefined();
 	});
 
-	test("checkDateInvalid", async () => {
+	it("checkDateInvalid", async () => {
 		const qs = "?p_dateonly=2022-13-15";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -238,7 +238,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_dateonly")).toEqual("Invalid date");
 	});
 
-	test("checkDateInvalid3", async () => {
+	it("checkDateInvalid3", async () => {
 		const qs = "?p_dateonly=2022-09-15T00:0f0:00.0Z";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -248,7 +248,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_dateonly")).toEqual("Invalid date");
 	});
 
-	test("checkDateValid", async () => {
+	it("checkDateValid", async () => {
 		const qs = "?p_dateonly=2022-09-15";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -258,7 +258,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_dateonly")).toBeUndefined();
 	});
 
-	test("checkRegexInvalid", async () => {
+	it("checkRegexInvalid", async () => {
 		const qs = "?p_regex=123765";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -268,7 +268,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_regex")).toBeTruthy();
 	});
 
-	test("checkRegexValid", async () => {
+	it("checkRegexValid", async () => {
 		const qs = "?p_regex=%2B919367788755";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -278,7 +278,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_regex")).toBeUndefined();
 	});
 
-	test("checkEmailInvalid", async () => {
+	it("checkEmailInvalid", async () => {
 		const qs = "?p_email=asfdgsdf";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -288,7 +288,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_email")).toEqual("Invalid email");
 	});
 
-	test("checkEmailInvalid2", async () => {
+	it("checkEmailInvalid2", async () => {
 		const qs = "?p_email=asfdgsdf@gmail";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -298,7 +298,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_email")).toEqual("Invalid email");
 	});
 
-	test("checkEmailInvalid3", async () => {
+	it("checkEmailInvalid3", async () => {
 		const qs = "?p_email=@gmail.com";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -308,7 +308,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_email")).toEqual("Invalid email");
 	});
 
-	test("checkEmailValid", async () => {
+	it("checkEmailValid", async () => {
 		const qs = "?p_email=sdfg@gmail.com";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -318,7 +318,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_email")).toBeUndefined();
 	});
 
-	test("checkUuidInvalid", async () => {
+	it("checkUuidInvalid", async () => {
 		const qs = "?p_uuid=f31f890-044b-11ee-be56-0242ac120002";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -328,7 +328,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_uuid")).toEqual("Invalid uuid");
 	});
 
-	test("checkUuidInvalid2", async () => {
+	it("checkUuidInvalid2", async () => {
 		const qs = "?p_uuid=asdf-sdfg-dsfg-sfdg";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -338,7 +338,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_uuid")).toEqual("Invalid uuid");
 	});
 
-	test("checkUuidValid", async () => {
+	it("checkUuidValid", async () => {
 		const qs = "?p_uuid=f31f8b90-044b-11ee-be56-0242ac120002";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -348,7 +348,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_uuid")).toBeUndefined();
 	});
 
-	test("checkUuidValid2", async () => {
+	it("checkUuidValid2", async () => {
 		const qs = "?p_uuid=f5f26194-0b07-45a4-9a85-94d3db01e7a5";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -358,7 +358,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_uuid")).toBeUndefined();
 	});
 
-	test("checkHostnameInvalid", async () => {
+	it("checkHostnameInvalid", async () => {
 		const qs = "?p_hostname=.com";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -368,7 +368,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_hostname")).toEqual("Invalid");
 	});
 
-	test("checkHostnameValid", async () => {
+	it("checkHostnameValid", async () => {
 		const qs = "?p_hostname=cloudflare.com";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -378,7 +378,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_hostname")).toBeUndefined();
 	});
 
-	test("checkHostnameValid2", async () => {
+	it("checkHostnameValid2", async () => {
 		const qs = "?p_hostname=radar.cloudflare.com";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -388,7 +388,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_hostname")).toBeUndefined();
 	});
 
-	test("checkIpv4Invalid", async () => {
+	it("checkIpv4Invalid", async () => {
 		const qs = "?p_ipv4=asdfrre.wer.com";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -398,7 +398,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_ipv4")).toEqual("Invalid ip");
 	});
 
-	test("checkIpv4Invalid2", async () => {
+	it("checkIpv4Invalid2", async () => {
 		const qs = "?p_ipv4=2001:0db8:85a3:0000:0000:8a2e:0370:7334";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -408,7 +408,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_ipv4")).toEqual("Invalid ip");
 	});
 
-	test("checkIpv4Valid", async () => {
+	it("checkIpv4Valid", async () => {
 		const qs = "?p_ipv4=1.1.1.1";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -418,7 +418,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_ipv4")).toBeUndefined();
 	});
 
-	test("checkIpv6Invalid", async () => {
+	it("checkIpv6Invalid", async () => {
 		const qs = "?p_ipv6=asdfrre.wer.com";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -428,7 +428,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_ipv6")).toEqual("Invalid ip");
 	});
 
-	test("checkIpv6Invalid2", async () => {
+	it("checkIpv6Invalid2", async () => {
 		const qs = "?p_ipv6=1.1.1.1";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -438,7 +438,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_ipv6")).toEqual("Invalid ip");
 	});
 
-	test("checkIpv6Valid", async () => {
+	it("checkIpv6Valid", async () => {
 		const qs = "?p_ipv6=2001:0db8:85a3:0000:0000:8a2e:0370:7336";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -448,7 +448,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_ipv6")).toBeUndefined();
 	});
 
-	test("checkDateArrayInvalid", async () => {
+	it("checkDateArrayInvalid", async () => {
 		const qs = "?p_array_dates=asadasd";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -458,7 +458,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_array_dates")).toEqual("Invalid date");
 	});
 
-	test("checkDateArrayValid", async () => {
+	it("checkDateArrayValid", async () => {
 		const qs = "?p_array_dates=2023-01-01";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -468,7 +468,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_array_dates")).toBeUndefined();
 	});
 
-	test("checkDateArrayValid2", async () => {
+	it("checkDateArrayValid2", async () => {
 		const qs = "?p_array_dates=2023-01-01&p_array_dates=2023-01-02";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -478,7 +478,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_array_dates")).toBeUndefined();
 	});
 
-	test("checkOptionalMissing", async () => {
+	it("checkOptionalMissing", async () => {
 		const qs = "?";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -488,7 +488,7 @@ describe("queryParametersValidation", () => {
 		expect(findError(resp.errors, "p_optional")).toBeUndefined();
 	});
 
-	test("checkOptionalInvalid", async () => {
+	it("checkOptionalInvalid", async () => {
 		const qs = "?p_optional=asfdasd";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -500,7 +500,7 @@ describe("queryParametersValidation", () => {
 		);
 	});
 
-	test("checkOptionalValid", async () => {
+	it("checkOptionalValid", async () => {
 		const qs = "?p_optional=32";
 		const request = await todoRouter.fetch(
 			buildRequest({ method: "GET", path: `/todos${qs}` }),
@@ -512,7 +512,7 @@ describe("queryParametersValidation", () => {
 });
 
 describe("bodyParametersValidation", () => {
-	test("requiredFieldTitle", async () => {
+	it("requiredFieldTitle", async () => {
 		const request = await todoRouter.fetch(
 			buildRequest({
 				method: "POST",
@@ -530,7 +530,7 @@ describe("bodyParametersValidation", () => {
 		expect(findError(resp.errors, "title")).toEqual("Required");
 	});
 
-	test("requiredFieldTipe", async () => {
+	it("requiredFieldTipe", async () => {
 		const request = await todoRouter.fetch(
 			buildRequest({
 				method: "POST",
@@ -550,7 +550,7 @@ describe("bodyParametersValidation", () => {
 		expect(findError(resp.errors, "type")).toEqual("Required");
 	});
 
-	test("validRequest", async () => {
+	it("validRequest", async () => {
 		const request = await todoRouter.fetch(
 			buildRequest({
 				method: "POST",
@@ -574,7 +574,7 @@ describe("bodyParametersValidation", () => {
 		});
 	});
 
-	test("validRequestWithOptionalParameters", async () => {
+	it("validRequestWithOptionalParameters", async () => {
 		const request = await todoRouter.fetch(
 			buildRequest({
 				method: "POST",
