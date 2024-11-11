@@ -1,6 +1,5 @@
-import "isomorphic-fetch";
-
 import { AutoRouter } from "itty-router";
+import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { fromIttyRouter } from "../../src/adapters/ittyRouter";
 import { OpenAPIRoute } from "../../src/route";
