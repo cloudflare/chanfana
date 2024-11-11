@@ -124,7 +124,12 @@ export type ValidatedData<S> = S extends OpenAPIRouteSchema
         ? GetBody<GetPartBody<GetRequest<S>, 'body'>>
         : undefined
     }
-  : undefined
+  : {
+      query: undefined
+      params: undefined
+      headers: undefined
+      body: undefined
+    }
 
 type GetRequest<T extends OpenAPIRouteSchema> = T['request']
 
