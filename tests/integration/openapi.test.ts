@@ -1,9 +1,9 @@
-import 'isomorphic-fetch'
-import { todoRouter } from '../router'
-import jestOpenAPI from 'jest-openapi'
+import "isomorphic-fetch";
+import jestOpenAPI from "jest-openapi";
+import { todoRouter } from "../router";
 
-describe('openapiValidation', () => {
-  it('loadSpec', async () => {
-    jestOpenAPI(todoRouter.schema)
-  })
-})
+describe("openapiValidation", () => {
+	it("loadSpec", async () => {
+		jestOpenAPI(todoRouter.schema);
+	});
+});

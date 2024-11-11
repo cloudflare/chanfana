@@ -1,23 +1,28 @@
 {
-  "compilerOptions": {
-    /* Base Options: */
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "target": "es2022",
-    "verbatimModuleSyntax": true,
-    "allowJs": true,
-    "resolveJsonModule": true,
-    "moduleDetection": "force",
-    /* Strictness */
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    /* If NOT transpiling with TypeScript: */
-    "moduleResolution": "Bundler",
-    "module": "ESNext",
-    "noEmit": true,
-    /* If your code runs in the DOM: */
-    "lib": ["es2022", "dom", "dom.iterable"],
-    "types": ["@types/node", "@types/jest", "@types/service-worker-mock", "@cloudflare/workers-types"]
-  },
-  "include": ["src", "tests"]
+	"compilerOptions": {
+		/* Base Options: */
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"target": "es2022",
+		"verbatimModuleSyntax": true,
+		"allowJs": true,
+		"resolveJsonModule": true,
+		"moduleDetection": "force",
+		/* Strictness */
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		/* If NOT transpiling with TypeScript: */
+		"moduleResolution": "Bundler",
+		"module": "ESNext",
+		"noEmit": true,
+		/* If your code runs in the DOM: */
+		"lib": ["es2022", "dom", "dom.iterable"],
+		"types": [
+			"@types/node",
+			"@types/jest",
+			"@types/service-worker-mock",
+			"@cloudflare/workers-types"
+		]
+	},
+	"include": ["src", "tests"]
 }

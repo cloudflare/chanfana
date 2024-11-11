@@ -1,17 +1,20 @@
 {
-  "transform": {
-    "^.+\\.(t|j)sx?$": ["ts-jest", {
-      "tsconfig": "./tests/tsconfig.json"
-    }]
-  },
-  "testRegex": "/tests/.*\\.test\\.ts$",
-  "collectCoverageFrom": ["src/**/*.{ts,js}"],
-  "coverageThreshold": {
-    "global": {
-      "branches": 45,
-      "functions": 70,
-      "lines": 70,
-      "statements": 70
-    }
-  }
+	"transform": {
+		"^.+\\.(t|j)sx?$": [
+			"ts-jest",
+			{
+				"tsconfig": "./tests/tsconfig.json"
+			}
+		]
+	},
+	"testRegex": "/tests/.*\\.test\\.ts$",
+	"collectCoverageFrom": ["src/**/*.{ts,js}"],
+	"coverageThreshold": {
+		"global": {
+			"branches": 45,
+			"functions": 70,
+			"lines": 70,
+			"statements": 70
+		}
+	}
 }
