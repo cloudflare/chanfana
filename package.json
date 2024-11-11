@@ -52,7 +52,7 @@
 		"@cloudflare/workers-types": "^4.20230518.0",
 		"@types/jest": "^29.0.0",
 		"@types/js-yaml": "^4.0.9",
-		"@types/node": "^20.3.1",
+		"@types/node": "^22.9.0",
 		"@types/service-worker-mock": "^2.0.1",
 		"hono": "^4.4.6",
 		"husky": "^7.0.2",
