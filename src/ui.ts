@@ -1,6 +1,6 @@
 export function getSwaggerUI(schemaUrl: string): string {
-  schemaUrl = schemaUrl.replace(/\/+(\/|$)/g, '$1') // strip double & trailing splash
-  return `<!DOCTYPE html>
+	schemaUrl = schemaUrl.replace(/\/+(\/|$)/g, "$1"); // strip double & trailing splash
+	return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -27,12 +27,12 @@ export function getSwaggerUI(schemaUrl: string): string {
     };
 </script>
 </body>
-</html>`
+</html>`;
 }
 
 export function getReDocUI(schemaUrl: string): string {
-  schemaUrl = schemaUrl.replace(/\/+(\/|$)/g, '$1') // strip double & trailing splash
-  return `<!DOCTYPE html>
+	schemaUrl = schemaUrl.replace(/\/+(\/|$)/g, "$1"); // strip double & trailing splash
+	return `<!DOCTYPE html>
     <html>
     <head>
     <title>ReDocUI</title>
@@ -57,5 +57,5 @@ export function getReDocUI(schemaUrl: string): string {
     <redoc spec-url="${schemaUrl}"></redoc>
     <script src="https://cdn.jsdelivr.net/npm/redoc@2.1.5/bundles/redoc.standalone.js" integrity="sha256-vlwzMMjDW4/OsppbdVKtRb/8L9lJT+LhqC+pQXnrX48=" crossorigin="anonymous"></script>
     </body>
-    </html>`
+    </html>`;
 }
