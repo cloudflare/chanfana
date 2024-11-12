@@ -140,6 +140,14 @@ export class OpenAPIHandler {
 	registerRoute(params: { method: string; path: string; handlers: any[] }) {
 		const parsedRoute = this.parseRoute(params.path);
 
+		const parsedParams = ((this.options.base || "") + params.path).match(
+			/:(\w+)/g,
+		);
+		let urlParams: string[] = [];
+		if (parsedParams) {
+			urlParams = parsedParams.map((obj) => obj.replace(":", ""));
+		}
+
 		// @ts-ignore
 		let schema: OpenAPIRouteSchema = undefined;
 		// @ts-ignore
@@ -151,7 +159,10 @@ export class OpenAPIHandler {
 			}
 
 			if (handler.isRoute === true) {
-				schema = new handler({}).getSchemaZod();
+				schema = new handler({
+					route: parsedRoute,
+					urlParams: urlParams,
+				}).getSchemaZod();
 				break;
 			}
 		}
@@ -173,18 +184,13 @@ export class OpenAPIHandler {
 				},
 			};
 
-			const parsedParams = ((this.options.base || "") + params.path).match(
-				/:(\w+)/g,
-			);
-			if (parsedParams) {
+			if (urlParams.length > 0) {
 				schema.request = {
-					// TODO: make sure this works
 					params: z.object(
-						parsedParams.reduce(
-							// matched parameters start with ':' so replace the first occurrence with nothing
+						urlParams.reduce(
 							(obj, item) =>
 								Object.assign(obj, {
-									[item.replace(":", "")]: z.string(),
+									[item]: z.string(),
 								}),
 							{},
 						),
@@ -217,6 +223,8 @@ export class OpenAPIHandler {
 				return (...params: any[]) =>
 					new handler({
 						router: this,
+						route: parsedRoute,
+						urlParams: urlParams,
 						// raiseUnknownParameters: openapiConfig.raiseUnknownParameters,  TODO
 					}).execute(...params);
 			}

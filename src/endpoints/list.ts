@@ -7,7 +7,6 @@ import type { FilterCondition, ListFilters } from "./types";
 class ListEndpoint extends OpenAPIRoute {
 	model = z.object({});
 	primaryKey?: Array<string>;
-	pathParameters?: Array<string>;
 	filterFields?: Array<string>;
 	searchFields?: Array<string>;
 	searchFieldName = "search";
@@ -20,10 +19,13 @@ class ListEndpoint extends OpenAPIRoute {
 				(this.filterFields || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
 			)
 			.omit(
-				(this.pathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+				(this.params.urlParams || []).reduce(
+					(a, v) => ({ ...a, [v]: true }),
+					{},
+				),
 			).shape;
 		const pathParameters = this.model.pick(
-			(this.pathParameters || this.primaryKey || []).reduce(
+			(this.params.urlParams || this.primaryKey || []).reduce(
 				(a, v) => ({ ...a, [v]: true }),
 				{},
 			),

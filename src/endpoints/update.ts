@@ -7,15 +7,14 @@ import type { FilterCondition, UpdateFilters } from "./types";
 export class UpdateEndpoint extends OpenAPIRoute {
 	model = z.object({});
 	primaryKey?: Array<string>;
-	pathParameters?: Array<string>;
 	serializer = (obj: object) => obj;
 
 	getSchema() {
 		const bodyParameters = this.model.omit(
-			(this.pathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+			(this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
 		);
 		const pathParameters = this.model.pick(
-			(this.pathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+			(this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
 		);
 
 		return {

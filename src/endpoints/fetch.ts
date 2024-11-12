@@ -11,6 +11,12 @@ class FetchEndpoint extends OpenAPIRoute {
 	serializer = (obj: object) => obj;
 
 	getSchema() {
+		if (this.primaryKey !== this.params.urlParams) {
+			throw Error(
+				`Model primaryKeys differ from urlParameters on: ${this.params.route}`,
+			);
+		}
+
 		//const queryParameters = this.model.omit((this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}));
 		const pathParameters = this.model.pick(
 			(this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}),

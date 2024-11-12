@@ -67,6 +67,8 @@ export interface RouterOptions {
 export interface RouteOptions {
 	router: any;
 	raiseUnknownParameters: boolean;
+	route: string;
+	urlParams: Array<string>;
 }
 
 export interface ParameterType {

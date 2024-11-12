@@ -7,19 +7,24 @@ import type { FilterCondition, Filters } from "./types";
 class DeleteEndpoint extends OpenAPIRoute {
 	model = z.object({});
 	primaryKey?: Array<string>;
-	pathParameters?: Array<string>;
 	serializer = (obj: object) => obj;
 
 	getSchema() {
 		const bodyParameters = this.model
 			.pick((this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}))
 			.omit(
-				(this.pathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+				(this.params.urlParams || []).reduce(
+					(a, v) => ({ ...a, [v]: true }),
+					{},
+				),
 			);
 		const pathParameters = this.model
 			.pick((this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}))
 			.pick(
-				(this.pathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+				(this.params.urlParams || []).reduce(
+					(a, v) => ({ ...a, [v]: true }),
+					{},
+				),
 			);
 
 		return {
