@@ -33,9 +33,15 @@ But a Hono example would look like this:
 
 
 ```ts
+export type Env = {
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
+
 // Hono example
 export class ToDoFetch extends OpenAPIRoute {
-  async handle(c) {
+  async handle(c: AppContext) {
     // ...
   }
 }

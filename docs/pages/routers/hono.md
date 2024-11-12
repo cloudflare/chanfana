@@ -5,6 +5,12 @@ import { fromHono, OpenAPIRoute } from 'chanfana'
 import { Hono } from 'hono'
 import { z } from 'zod'
 
+export type Env = {
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
+
 export class GetPageNumber extends OpenAPIRoute {
   schema = {
     request: {
@@ -17,7 +23,7 @@ export class GetPageNumber extends OpenAPIRoute {
     },
   }
 
-  async handle(c) {
+  async handle(c: AppContext) {
     const data = await this.getValidatedData<typeof this.schema>()
 
     return c.json({
