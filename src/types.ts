@@ -62,6 +62,7 @@ export interface RouterOptions {
 	raiseUnknownParameters?: boolean;
 	generateOperationIds?: boolean;
 	openapiVersion?: "3" | "3.1";
+	docsPageTitle?: string | null;
 }
 
 export interface RouteOptions {

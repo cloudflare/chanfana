@@ -45,6 +45,7 @@ export class OpenAPIHandler {
 					getSwaggerUI(
 						(this.options?.base || "") +
 							(this.options?.openapi_url || "/openapi.json"),
+						this.options?.docsPageTitle ?? 'SwaggerUI'
 					),
 					{
 						headers: {
@@ -65,6 +66,7 @@ export class OpenAPIHandler {
 					getReDocUI(
 						(this.options?.base || "") +
 							(this.options?.openapi_url || "/openapi.json"),
+						this.options?.docsPageTitle || "ReDocUI"
 					),
 					{
 						headers: {
