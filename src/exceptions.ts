@@ -8,22 +8,24 @@ export class ApiException extends Error {
 	code = 7000;
 	includesPath = false;
 
-	constructor(message?: string) {
+	constructor(message = "") {
 		super(message);
-		this.message = message || this.default_message;
+		this.message = message;
 	}
 
 	buildResponse() {
 		return [
 			{
 				code: this.code,
-				message: this.isVisible ? this.message : "Internal Error",
+				message: this.isVisible
+					? this.message || this.default_message
+					: "Internal Error",
 			},
 		];
 	}
 
 	static schema() {
-		const inst = new ApiException();
+		const inst = new this();
 		const innerError = {
 			code: inst.code,
 			message: inst.default_message,

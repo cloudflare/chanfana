@@ -16,28 +16,28 @@
 	"organizeImports": {
 		"enabled": true
 	},
-	"linter": {
-		"enabled": true,
-		"rules": {
-			"recommended": true
-		}
-	},
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
 		}
 	},
 	"linter": {
+		"enabled": true,
 		"rules": {
-			"suspicious": {
-				"noExplicitAny": "warn",
-				"noImplicitAnyLet": "warn"
+			"recommended": true,
+      "complexity": {
+        "noBannedTypes": "off",
+        "noThisInStatic": "off"
+      },
+      "suspicious": {
+				"noExplicitAny": "off",
+				"noImplicitAnyLet": "off"
 			},
 			"performance": {
 				"noAccumulatingSpread": "off"
 			},
       "style": {
-        "noParameterAssign": "warn"
+        "noParameterAssign": "off"
       }
     }
 	}

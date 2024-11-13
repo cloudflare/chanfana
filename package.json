@@ -12,7 +12,7 @@
 	],
 	"scripts": {
 		"prepare": "husky install",
-		"build": "tsup src/index.ts --format cjs,esm --dts --config tsconfig.json",
+		"build": "rm -rf dist/ && tsup src/index.ts --format cjs,esm --dts --config tsconfig.json",
 		"lint": "npx @biomejs/biome check src/ tests/ || (npx @biomejs/biome check --write src/ tests/; exit 1)",
 		"test": "vitest run --root tests",
 		"deploy-docs": "cd docs && mkdocs build && wrangler pages deploy site --project-name chanfana --branch main"

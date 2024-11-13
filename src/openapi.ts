@@ -14,12 +14,19 @@ export type OpenAPIRouterType<M> = {
 	options: RouterOptions;
 	registry: OpenAPIRegistryMerger;
 
-	delete(path: string, endpoint: typeof OpenAPIRoute): M;
-	get(path: string, endpoint: typeof OpenAPIRoute): M;
-	head(path: string, endpoint: typeof OpenAPIRoute): M;
-	patch(path: string, endpoint: typeof OpenAPIRoute): M;
-	post(path: string, endpoint: typeof OpenAPIRoute): M;
-	put(path: string, endpoint: typeof OpenAPIRoute): M;
+	delete(path: string, endpoint: typeof OpenAPIRoute<any>): M;
+	delete(path: string, router: M): M;
+	get(path: string, endpoint: typeof OpenAPIRoute<any>): M;
+	get(path: string, router: M): M;
+	head(path: string, endpoint: typeof OpenAPIRoute<any>): M;
+	head(path: string, router: M): M;
+	patch(path: string, endpoint: typeof OpenAPIRoute<any>): M;
+	patch(path: string, router: M): M;
+	post(path: string, endpoint: typeof OpenAPIRoute<any>): M;
+	post(path: string, router: M): M;
+	put(path: string, endpoint: typeof OpenAPIRoute<any>): M;
+	put(path: string, router: M): M;
+	all(path: string, endpoint: typeof OpenAPIRoute<any>): M;
 	all(path: string, router: M): M;
 };
 
