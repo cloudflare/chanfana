@@ -32,7 +32,7 @@ endpoints.
 For this add the `security` component to your main `router` schema customization field
 
 Notice that the key used in security must be the same used to register the component
-```ts hl_lines="5 13"
+```ts hl_lines="6 14"
 const app = new Hono()
 const openapi = fromHono(app, {
   schema: {
@@ -60,7 +60,7 @@ openapi.registry.registerComponent(
 For this add the `security` component to your main `endpoint` schema customization field
 
 Notice that the key used in security must be the same used to register the component
-```ts hl_lines="14 26"
+```ts hl_lines="16 29"
 export class ScanMetadataCreate extends OpenAPIRoute {
   schema = {
     tags: ['Scans'],

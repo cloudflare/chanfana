@@ -9,9 +9,10 @@ For nested objects the validated data will be under the same position as defined
 
 In this example, the description can be either a string or an array of strings.
 
-```ts hl_lines="7-11"
+```ts hl_lines="10-25"
 import { OpenAPIRoute, Str, Enumeration } from 'chanfana'
 import { z } from 'zod'
+import { Context } from 'hono'
 
 export class ToDoCreate extends OpenAPIRoute {
   schema = {
@@ -37,11 +38,7 @@ export class ToDoCreate extends OpenAPIRoute {
     },
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-  ) {
+  async handle(c: Context) {
     const data = await this.getValidatedData<typeof this.schema>()
     
     const newToDo = data.body
@@ -63,9 +60,10 @@ Notice that when using `legacyTypeIntoZod` typescript inference is not available
 
 Here's an example of a response schema using variables
 
-```ts
+```ts hl_lines="10-19"
 import { OpenAPIRoute, legacyTypeIntoZod } from 'chanfana'
 import { z } from 'zod'
+import { Context } from 'hono'
 
 export class ToDoCreate extends OpenAPIRoute {
   schema = {
@@ -85,11 +83,7 @@ export class ToDoCreate extends OpenAPIRoute {
     },
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-  ) {
+  async handle(c: Context) {
     const data = await this.getValidatedData<typeof this.schema>()
     
     const newToDo = data.body
@@ -105,9 +99,10 @@ under the hood, for you to have even more flexibility.
 
 Notice that when using `contentJson` typescript inference is not available!
 
-```ts
+```ts hl_lines="10-13"
 import { contentJson, OpenAPIRoute } from 'chanfana'
 import { z } from 'zod'
+import { Context } from 'hono'
 
 export class ToDoCreate extends OpenAPIRoute {
   schema = {
@@ -121,11 +116,7 @@ export class ToDoCreate extends OpenAPIRoute {
     }
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-  ) {
+  async handle(c: Context) {
     const data = await this.getValidatedData<typeof this.schema>()
     
     const newToDo = data.body

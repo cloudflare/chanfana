@@ -58,6 +58,7 @@ To enable this, simply pass your endpoint schema to the generic type when retrie
 
 ```ts hl_lines="17"
 import { OpenAPIRoute, Str } from 'chanfana'
+import { Context } from 'hono'
 
 export class TaskFetch extends OpenAPIRoute {
   schema = {
@@ -68,7 +69,7 @@ export class TaskFetch extends OpenAPIRoute {
     },
   }
 
-  async handle(request: Request, env: any, context: any) {
+  async handle(c: Context) {
     const data = await this.getValidatedData<typeof this.schema>()
     
     // you now get type hints, when accessing the data argument

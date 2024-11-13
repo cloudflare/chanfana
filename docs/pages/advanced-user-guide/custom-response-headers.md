@@ -2,6 +2,7 @@
 
 ```ts
 import { OpenAPIRoute, Str } from 'chanfana'
+import { Context } from 'hono'
 
 export class ToDoList extends OpenAPIRoute {
   schema = {
@@ -27,7 +28,7 @@ export class ToDoList extends OpenAPIRoute {
   }
 
 
-  async handle(request: Request, env: any, context: any, data: any) {
+  async handle(c: Context) {
     // ...
   }
 }
@@ -37,6 +38,7 @@ export class ToDoList extends OpenAPIRoute {
 
 ```ts
 import { OpenAPIRoute, Str } from 'chanfana'
+import { Context } from 'hono'
 
 export class ToDoList extends OpenAPIRoute {
   schema = {
@@ -61,7 +63,7 @@ export class ToDoList extends OpenAPIRoute {
   }
 
 
-  async handle(request: Request, env: any, context: any, data: any) {
+  async handle(c: Context) {
     // ...
   }
 }

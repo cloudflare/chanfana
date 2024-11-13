@@ -95,12 +95,7 @@ Workers and define a pattern to allow everyone to
 have an OpenAPI-compliant schema without worrying about implementation details or reinventing the wheel.
 
 chanfana is considered stable and production ready and is being used with
-the [Radar 2.0 public API](https://developers.cloudflare.com/radar/).
-
-Currently this package is maintained by the [Cloudflare Radar Team](https://radar.cloudflare.com/) and features are
-prioritized based on the Radar roadmap.
-
-Nonetheless you can still open pull requests or issues in this repository and they will get reviewed.
+the [Radar 2.0 public API](https://developers.cloudflare.com/radar/) and many other Cloudflare products.
 
 You can also talk to us in the [Cloudflare Community](https://community.cloudflare.com/) or
 the [Radar Discord Channel](https://discord.com/channels/595317990191398933/1035553707116478495)

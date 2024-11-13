@@ -36,6 +36,7 @@ Then use it in a endpoint like this:
 
 ```ts
 import { OpenAPIRoute } from 'chanfana'
+import { Context } from 'hono'
 
 export class Example extends OpenAPIRoute {
   schema = {
@@ -46,8 +47,9 @@ export class Example extends OpenAPIRoute {
     }
   }
 
-  async handle(request: Request, env: any, context: any) {
-    // TODO data
+  async handle(c: Context) {
+    const data = await this.getValidatedData<typeof this.schema>()
+    
     return {
       validatedLimit: data.query.limit
     }
@@ -95,6 +97,7 @@ in every place you could use a Zod types, like this:
 
 ```ts
 import { Str, Int, OpenAPIRoute } from 'chanfana'
+import { Context } from 'hono'
 
 const queryDescription = Str({description: 'a valid email address'})
 
@@ -107,8 +110,9 @@ export class Example extends OpenAPIRoute {
     }
   }
 
-  async handle(request: Request, env: any, context: any) {
-    // todo data
+  async handle(c: Context) {
+    const data = await this.getValidatedData<typeof this.schema>()
+    
     return {
       validatedDescription: data.query.description
     }

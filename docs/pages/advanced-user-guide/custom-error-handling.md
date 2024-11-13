@@ -2,6 +2,7 @@ In order to customize the zod error formats, just overwrite the `handleValidatio
 
 ```ts
 import { OpenAPIRoute } from 'chanfana'
+import { Context } from 'hono'
 
 export class ToDoList extends OpenAPIRoute {
   schema = {
@@ -18,7 +19,7 @@ export class ToDoList extends OpenAPIRoute {
     })
   }
 
-  async handle(request: Request, env: any, context: any) {
+  async handle(c: Context) {
     // ...
   }
 }
@@ -48,13 +49,14 @@ Then, in your endpoint extend from the new class
 
 ```ts
 import { MyProjectRoute } from './route'
+import { Context } from 'hono'
 
 export class ToDoList extends MyProjectRoute {
   schema = {
     // ...
   }
 
-  async handle(request: Request, env: any, context: any, data: any) {
+  async handle(c: Context) {
     // ...
   }
 }

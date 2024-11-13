@@ -5,9 +5,10 @@ You can declare `params` parameters in the `request` property of your endpoint s
 
 The validated data is available under `data.params.<name>`.
  
-```ts hl_lines="9-11"
+```ts hl_lines="10-12"
 import { OpenAPIRoute } from 'chanfana'
-import {z} from 'zod'
+import { z } from 'zod'
+import { Context } from 'hono'
 
 export class ToDoFetch extends OpenAPIRoute {
   schema = {
@@ -20,11 +21,7 @@ export class ToDoFetch extends OpenAPIRoute {
     }
   }
 
-  async handle(
-    request: Request,
-    env: any,
-    context: any,
-  ) {
+  async handle(c: Context) {
     const data = await this.getValidatedData<typeof this.schema>()
     
     // You get full type inference when accessing the data variable
