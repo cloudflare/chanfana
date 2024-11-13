@@ -4,7 +4,7 @@ import { Enumeration, Str } from "../parameters";
 import { OpenAPIRoute } from "../route";
 import type { FilterCondition, ListFilters } from "./types";
 
-class ListEndpoint extends OpenAPIRoute {
+export class ListEndpoint extends OpenAPIRoute {
 	model = z.object({});
 	primaryKey?: Array<string>;
 	filterFields?: Array<string>;

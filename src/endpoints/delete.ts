@@ -4,7 +4,7 @@ import { NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
 import type { FilterCondition, Filters } from "./types";
 
-class DeleteEndpoint extends OpenAPIRoute {
+export class DeleteEndpoint extends OpenAPIRoute {
 	model = z.object({});
 	primaryKey?: Array<string>;
 	serializer = (obj: object) => obj;

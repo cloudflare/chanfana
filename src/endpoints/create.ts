@@ -3,7 +3,7 @@ import { contentJson } from "../contentTypes";
 import { InputValidationException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
 
-class CreateEndpoint extends OpenAPIRoute {
+export class CreateEndpoint extends OpenAPIRoute {
 	model = z.object({});
 	defaultValues?: Record<string, () => any>;
 	serializer = (obj: object) => obj;

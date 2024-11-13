@@ -5,7 +5,7 @@ import { OpenAPIRoute } from "../route";
 import type { ListFilters } from "./types";
 import type { FilterCondition } from "./types";
 
-class FetchEndpoint extends OpenAPIRoute {
+export class FetchEndpoint extends OpenAPIRoute {
 	model = z.object({});
 	primaryKey?: Array<string>;
 	serializer = (obj: object) => obj;
