@@ -98,8 +98,8 @@ export class DeleteEndpoint<
 	async delete(
 		oldObj: O<typeof this.meta>,
 		filters: Filters,
-	): Promise<O<typeof this.meta>> {
-		return oldObj;
+	): Promise<O<typeof this.meta> | null> {
+		return null;
 	}
 
 	async getObject(filters: Filters): Promise<O<typeof this.meta> | null> {
@@ -118,6 +118,10 @@ export class DeleteEndpoint<
 		filters = await this.before(oldObj, filters);
 
 		let obj = await this.delete(oldObj, filters);
+
+		if (obj === null) {
+			throw new NotFoundException();
+		}
 
 		obj = await this.after(obj);
 
