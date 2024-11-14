@@ -68,6 +68,7 @@ nav:
       - advanced-user-guide/hiding-routes-in-openapi-schema.md
       - advanced-user-guide/openapi-schema-customizations.md
       - advanced-user-guide/streaming-responses.md
+      - advanced-user-guide/utilities.md
 markdown_extensions:
   - toc:
       permalink: true

@@ -68,17 +68,29 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 	}
 
 	handleValidationError(errors: z.ZodIssue[]): Response {
-		// Errors caught here are always validation errors
-		const updatedError: Array<object> = errors.map((err) => {
-			// @ts-ignore
-			if ((err as ApiException).buildResponse) {
-				// Error is already an internal exception
-				return err;
-			}
-			return new InputValidationException(err.message, err.path);
-		});
+		return jsonResp(
+			{
+				errors: errors,
+				success: false,
+				result: {},
+			},
+			{
+				status: 400,
+			},
+		);
 
-		throw new MultiException(updatedError as Array<ApiException>);
+		// In the future, errors will be handled as exceptions
+		// Errors caught here are always validation errors
+		// const updatedError: Array<object> = errors.map((err) => {
+		// 	// @ts-ignore
+		// 	if ((err as ApiException).buildResponse) {
+		// 		// Error is already an internal exception
+		// 		return err;
+		// 	}
+		// 	return new InputValidationException(err.message, err.path);
+		// });
+		//
+		// throw new MultiException(updatedError as Array<ApiException>);
 	}
 
 	async execute(...args: HandleArgs) {
