@@ -1,21 +1,21 @@
-import { z } from "zod";
 import { contentJson } from "../contentTypes";
-import { NotFoundException } from "../exceptions";
+import { InputValidationException, NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
-import type { FilterCondition, UpdateFilters } from "./types";
+import type { FilterCondition, Meta, O, UpdateFilters } from "./types";
 
-export class UpdateEndpoint extends OpenAPIRoute {
-	model = z.object({});
-	primaryKey?: Array<string>;
-	pathParameters?: Array<string>;
-	serializer = (obj: object) => obj;
+export class UpdateEndpoint<
+	HandleArgs extends Array<object> = Array<object>,
+> extends OpenAPIRoute<HandleArgs> {
+	get meta(): Meta {
+		throw new Error("get Meta not implemented");
+	}
 
 	getSchema() {
-		const bodyParameters = this.model.omit(
-			(this.pathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+		const bodyParameters = this.meta.fields.omit(
+			(this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
 		);
-		const pathParameters = this.model.pick(
-			(this.pathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+		const pathParameters = this.meta.model.object.pick(
+			(this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
 		);
 
 		return {
@@ -29,10 +29,11 @@ export class UpdateEndpoint extends OpenAPIRoute {
 					description: "Returns the updated Object",
 					...contentJson({
 						success: Boolean,
-						result: this.model,
+						result: this.meta.model.serializerObject,
 					}),
 					...this.schema?.responses?.[200],
 				},
+				...InputValidationException.schema(),
 				...NotFoundException.schema(),
 				...this.schema?.responses,
 			},
@@ -49,7 +50,7 @@ export class UpdateEndpoint extends OpenAPIRoute {
 		for (const part of [data.params, data.body]) {
 			if (part) {
 				for (const [key, value] of Object.entries(part)) {
-					if ((this.primaryKey || []).includes(key)) {
+					if ((this.meta.model.primaryKeys || []).includes(key)) {
 						filters.push({
 							field: key,
 							operator: "EQ",
@@ -68,23 +69,29 @@ export class UpdateEndpoint extends OpenAPIRoute {
 		};
 	}
 
-	async before(oldObj: object, filters: UpdateFilters): Promise<UpdateFilters> {
+	async before(
+		oldObj: O<typeof this.meta>,
+		filters: UpdateFilters,
+	): Promise<UpdateFilters> {
 		return filters;
 	}
 
-	async after(data: object): Promise<object> {
+	async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
 		return data;
 	}
 
-	async getObject(filters: UpdateFilters): Promise<object | null> {
+	async getObject(filters: UpdateFilters): Promise<O<typeof this.meta> | null> {
 		return null;
 	}
 
-	async update(oldObj: object, filters: UpdateFilters): Promise<object> {
+	async update(
+		oldObj: O<typeof this.meta>,
+		filters: UpdateFilters,
+	): Promise<O<typeof this.meta>> {
 		return oldObj;
 	}
 
-	async handle(...args: any[]) {
+	async handle(...args: HandleArgs) {
 		let filters = await this.getFilters();
 
 		const oldObj = await this.getObject(filters);
@@ -101,7 +108,7 @@ export class UpdateEndpoint extends OpenAPIRoute {
 
 		return {
 			success: true,
-			result: this.serializer(obj),
+			result: this.meta.model.serializer(obj),
 		};
 	}
 }

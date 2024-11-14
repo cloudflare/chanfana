@@ -2,28 +2,39 @@ import { type AnyZodObject, z } from "zod";
 import { contentJson } from "../contentTypes";
 import { Enumeration, Str } from "../parameters";
 import { OpenAPIRoute } from "../route";
-import type { FilterCondition, ListFilters } from "./types";
+import type {
+	FilterCondition,
+	ListFilters,
+	ListResult,
+	Meta,
+	O,
+} from "./types";
 
-class ListEndpoint extends OpenAPIRoute {
-	model = z.object({});
-	primaryKey?: Array<string>;
-	pathParameters?: Array<string>;
+export class ListEndpoint<
+	HandleArgs extends Array<object> = Array<object>,
+> extends OpenAPIRoute<HandleArgs> {
+	get meta(): Meta {
+		throw new Error("get Meta not implemented");
+	}
+
 	filterFields?: Array<string>;
 	searchFields?: Array<string>;
 	searchFieldName = "search";
 	optionFields = ["page", "per_page", "order_by", "order_by_direction"];
-	serializer = (obj: object) => obj;
 
 	getSchema() {
-		const parsedQueryParameters = this.model
+		const parsedQueryParameters = this.meta.fields
 			.pick(
 				(this.filterFields || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
 			)
 			.omit(
-				(this.pathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+				(this.params.urlParams || []).reduce(
+					(a, v) => ({ ...a, [v]: true }),
+					{},
+				),
 			).shape;
-		const pathParameters = this.model.pick(
-			(this.pathParameters || this.primaryKey || []).reduce(
+		const pathParameters = this.meta.fields.pick(
+			(this.params.urlParams || this.meta.model.primaryKeys || []).reduce(
 				(a, v) => ({ ...a, [v]: true }),
 				{},
 			),
@@ -72,7 +83,7 @@ class ListEndpoint extends OpenAPIRoute {
 					description: "List objects",
 					...contentJson({
 						success: Boolean,
-						result: [this.model],
+						result: [this.meta.model.serializerObject],
 					}),
 					...this.schema?.responses?.[200],
 				},
@@ -120,19 +131,19 @@ class ListEndpoint extends OpenAPIRoute {
 		return filters;
 	}
 
-	async after(data: {
-		result: Array<object>;
-	}): Promise<{ result: Array<object> }> {
+	async after(
+		data: ListResult<O<typeof this.meta>>,
+	): Promise<ListResult<O<typeof this.meta>>> {
 		return data;
 	}
 
-	async list(filters: ListFilters): Promise<{ result: Array<object> }> {
+	async list(filters: ListFilters): Promise<ListResult<O<typeof this.meta>>> {
 		return {
 			result: [],
 		};
 	}
 
-	async handle(...args: any[]) {
+	async handle(...args: HandleArgs) {
 		let filters = await this.getFilters();
 
 		filters = await this.before(filters);
@@ -143,7 +154,7 @@ class ListEndpoint extends OpenAPIRoute {
 
 		objs = {
 			...objs,
-			result: objs.result.map(this.serializer),
+			result: objs.result.map(this.meta.model.serializer),
 		};
 
 		return {

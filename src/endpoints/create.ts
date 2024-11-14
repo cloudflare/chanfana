@@ -1,20 +1,23 @@
-import { z } from "zod";
 import { contentJson } from "../contentTypes";
 import { InputValidationException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
+import type { Meta, O } from "./types";
 
-class CreateEndpoint extends OpenAPIRoute {
-	model = z.object({});
-	pathParameters?: Array<string>;
-	defaultValues?: Record<string, () => any>;
-	serializer = (obj: object) => obj;
+export class CreateEndpoint<
+	HandleArgs extends Array<object> = Array<object>,
+> extends OpenAPIRoute<HandleArgs> {
+	get meta(): Meta {
+		throw new Error("get Meta not implemented");
+	}
+
+	defaultValues?: Record<string, () => any>; // TODO: move this into model
 
 	getSchema() {
-		const bodyParameters = this.model.omit(
-			(this.pathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+		const bodyParameters = this.meta.fields.omit(
+			(this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
 		);
-		const pathParameters = this.model.pick(
-			(this.pathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+		const pathParameters = this.meta.fields.pick(
+			(this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
 		);
 
 		return {
@@ -28,7 +31,7 @@ class CreateEndpoint extends OpenAPIRoute {
 					description: "Returns the created Object",
 					...contentJson({
 						success: Boolean,
-						result: this.model,
+						result: this.meta.model.serializerObject,
 					}),
 					...this.schema?.responses?.[200],
 				},
@@ -39,7 +42,7 @@ class CreateEndpoint extends OpenAPIRoute {
 		};
 	}
 
-	async getObject(): Promise<object> {
+	async getObject(): Promise<O<typeof this.meta>> {
 		const data = await this.getValidatedData();
 
 		// @ts-ignore  TODO: check this
@@ -47,10 +50,8 @@ class CreateEndpoint extends OpenAPIRoute {
 			...(data.body as object),
 		};
 
-		if (this.pathParameters) {
-			for (const param of this.pathParameters) {
-				newData[param] = (data.params as any)[param];
-			}
+		for (const param of this.params.urlParams) {
+			newData[param] = (data.params as any)[param];
 		}
 
 		if (this.defaultValues) {
@@ -64,19 +65,19 @@ class CreateEndpoint extends OpenAPIRoute {
 		return newData;
 	}
 
-	async before(data: object): Promise<object> {
+	async before(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
 		return data;
 	}
 
-	async after(data: object): Promise<object> {
+	async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
 		return data;
 	}
 
-	async create(data: object): Promise<object> {
+	async create(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
 		return data;
 	}
 
-	async handle(...args: any[]) {
+	async handle(...args: HandleArgs) {
 		let obj = await this.getObject();
 
 		obj = await this.before(obj);
@@ -87,7 +88,7 @@ class CreateEndpoint extends OpenAPIRoute {
 
 		return {
 			success: true,
-			result: this.serializer(obj),
+			result: this.meta.model.serializer(obj as object),
 		};
 	}
 }

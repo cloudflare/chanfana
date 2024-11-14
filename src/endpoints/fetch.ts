@@ -1,19 +1,31 @@
-import { z } from "zod";
 import { contentJson } from "../contentTypes";
 import { NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
-import type { ListFilters } from "./types";
-import type { FilterCondition } from "./types";
+import type { FilterCondition, ListFilters, Meta, O } from "./types";
 
-class FetchEndpoint extends OpenAPIRoute {
-	model = z.object({});
-	primaryKey?: Array<string>;
-	serializer = (obj: object) => obj;
+export class FetchEndpoint<
+	HandleArgs extends Array<object> = Array<object>,
+> extends OpenAPIRoute<HandleArgs> {
+	get meta(): Meta {
+		throw new Error("get Meta not implemented");
+	}
 
 	getSchema() {
+		if (
+			this.meta.model.primaryKeys.sort().toString() !==
+			this.params.urlParams.sort().toString()
+		) {
+			throw Error(
+				`Model primaryKeys differ from urlParameters on: ${this.params.route}: ${JSON.stringify(this.meta.model.primaryKeys)} !== ${JSON.stringify(this.params.urlParams)}`,
+			);
+		}
+
 		//const queryParameters = this.model.omit((this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}));
-		const pathParameters = this.model.pick(
-			(this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+		const pathParameters = this.meta.fields.pick(
+			(this.meta.model.primaryKeys || []).reduce(
+				(a, v) => ({ ...a, [v]: true }),
+				{},
+			),
 		);
 
 		return {
@@ -27,7 +39,7 @@ class FetchEndpoint extends OpenAPIRoute {
 					description: "Returns a single object if found",
 					...contentJson({
 						success: Boolean,
-						result: this.model,
+						result: this.meta.model.serializerObject,
 					}),
 					...this.schema?.responses?.[200],
 				},
@@ -65,15 +77,15 @@ class FetchEndpoint extends OpenAPIRoute {
 		return filters;
 	}
 
-	async after(data: object): Promise<object> {
+	async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
 		return data;
 	}
 
-	async fetch(filters: ListFilters): Promise<object | null> {
+	async fetch(filters: ListFilters): Promise<O<typeof this.meta> | null> {
 		return null;
 	}
 
-	async handle(...args: any[]) {
+	async handle(...args: HandleArgs) {
 		let filters = await this.getFilters();
 
 		filters = await this.before(filters);
@@ -88,7 +100,7 @@ class FetchEndpoint extends OpenAPIRoute {
 
 		return {
 			success: true,
-			result: this.serializer(obj),
+			result: this.meta.model.serializer(obj),
 		};
 	}
 }

@@ -1,11 +1,16 @@
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { type AnyZodObject, z } from "zod";
+import {
+	type ApiException,
+	InputValidationException,
+	MultiException,
+} from "./exceptions";
 import { coerceInputs } from "./parameters";
 import type { OpenAPIRouteSchema, RouteOptions, ValidatedData } from "./types";
 import { jsonResp } from "./utils";
 extendZodWithOpenApi(z);
 
-export class OpenAPIRoute {
+export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 	handle(
 		...args: any[]
 	): Response | Promise<Response> | object | Promise<object> {
@@ -14,13 +19,14 @@ export class OpenAPIRoute {
 
 	static isRoute = true;
 
-	args: any[] = []; // Args the execute() was called with
+	args: HandleArgs; // Args the execute() was called with
 	validatedData: any = undefined; // this acts as a cache, in case the users calls the validate method twice
 	params: RouteOptions;
 	schema: OpenAPIRouteSchema = {};
 
 	constructor(params: RouteOptions) {
 		this.params = params;
+		this.args = [] as any;
 	}
 
 	async getValidatedData<S = any>(): Promise<ValidatedData<S>> {
@@ -62,19 +68,20 @@ export class OpenAPIRoute {
 	}
 
 	handleValidationError(errors: z.ZodIssue[]): Response {
-		return jsonResp(
-			{
-				errors: errors,
-				success: false,
-				result: {},
-			},
-			{
-				status: 400,
-			},
-		);
+		// Errors caught here are always validation errors
+		const updatedError: Array<object> = errors.map((err) => {
+			// @ts-ignore
+			if ((err as ApiException).buildResponse) {
+				// Error is already an internal exception
+				return err;
+			}
+			return new InputValidationException(err.message, err.path);
+		});
+
+		throw new MultiException(updatedError as Array<ApiException>);
 	}
 
-	async execute(...args: any[]) {
+	async execute(...args: HandleArgs) {
 		this.validatedData = undefined;
 		this.args = args;
 

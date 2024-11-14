@@ -1,25 +1,41 @@
-import { z } from "zod";
 import { contentJson } from "../contentTypes";
 import { NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
-import type { FilterCondition, Filters } from "./types";
+import type { FilterCondition, Filters, Meta, O } from "./types";
 
-class DeleteEndpoint extends OpenAPIRoute {
-	model = z.object({});
-	primaryKey?: Array<string>;
-	pathParameters?: Array<string>;
-	serializer = (obj: object) => obj;
+export class DeleteEndpoint<
+	HandleArgs extends Array<object> = Array<object>,
+> extends OpenAPIRoute<HandleArgs> {
+	get meta(): Meta {
+		throw new Error("get Meta not implemented");
+	}
 
 	getSchema() {
-		const bodyParameters = this.model
-			.pick((this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}))
-			.omit(
-				(this.pathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
-			);
-		const pathParameters = this.model
-			.pick((this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}))
+		const bodyParameters = this.meta.fields
 			.pick(
-				(this.pathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+				(this.meta.model.primaryKeys || []).reduce(
+					(a, v) => ({ ...a, [v]: true }),
+					{},
+				),
+			)
+			.omit(
+				(this.params.urlParams || []).reduce(
+					(a, v) => ({ ...a, [v]: true }),
+					{},
+				),
+			);
+		const pathParameters = this.meta.fields
+			.pick(
+				(this.meta.model.primaryKeys || []).reduce(
+					(a, v) => ({ ...a, [v]: true }),
+					{},
+				),
+			)
+			.pick(
+				(this.params.urlParams || []).reduce(
+					(a, v) => ({ ...a, [v]: true }),
+					{},
+				),
 			);
 
 		return {
@@ -35,7 +51,7 @@ class DeleteEndpoint extends OpenAPIRoute {
 					description: "Returns the Object if it was successfully deleted",
 					...contentJson({
 						success: Boolean,
-						result: this.model,
+						result: this.meta.model.serializerObject,
 					}),
 					...this.schema?.responses?.[200],
 				},
@@ -68,23 +84,29 @@ class DeleteEndpoint extends OpenAPIRoute {
 		};
 	}
 
-	async before(oldObj: object, filters: Filters): Promise<Filters> {
+	async before(
+		oldObj: O<typeof this.meta>,
+		filters: Filters,
+	): Promise<Filters> {
 		return filters;
 	}
 
-	async after(data: object): Promise<object> {
+	async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
 		return data;
 	}
 
-	async delete(oldObj: object, filters: Filters): Promise<object> {
-		return oldObj;
-	}
-
-	async getObject(filters: Filters): Promise<object | null> {
+	async delete(
+		oldObj: O<typeof this.meta>,
+		filters: Filters,
+	): Promise<O<typeof this.meta> | null> {
 		return null;
 	}
 
-	async handle(...args: any[]) {
+	async getObject(filters: Filters): Promise<O<typeof this.meta> | null> {
+		return null;
+	}
+
+	async handle(...args: HandleArgs) {
 		let filters = await this.getFilters();
 
 		const oldObj = await this.getObject(filters);
@@ -97,11 +119,15 @@ class DeleteEndpoint extends OpenAPIRoute {
 
 		let obj = await this.delete(oldObj, filters);
 
+		if (obj === null) {
+			throw new NotFoundException();
+		}
+
 		obj = await this.after(obj);
 
 		return {
 			success: true,
-			result: this.serializer(obj),
+			result: this.meta.model.serializer(obj),
 		};
 	}
 }

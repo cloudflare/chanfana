@@ -14,12 +14,19 @@ export type OpenAPIRouterType<M> = {
 	options: RouterOptions;
 	registry: OpenAPIRegistryMerger;
 
-	delete(path: string, endpoint: typeof OpenAPIRoute): M;
-	get(path: string, endpoint: typeof OpenAPIRoute): M;
-	head(path: string, endpoint: typeof OpenAPIRoute): M;
-	patch(path: string, endpoint: typeof OpenAPIRoute): M;
-	post(path: string, endpoint: typeof OpenAPIRoute): M;
-	put(path: string, endpoint: typeof OpenAPIRoute): M;
+	delete(path: string, endpoint: typeof OpenAPIRoute<any>): M;
+	delete(path: string, router: M): M;
+	get(path: string, endpoint: typeof OpenAPIRoute<any>): M;
+	get(path: string, router: M): M;
+	head(path: string, endpoint: typeof OpenAPIRoute<any>): M;
+	head(path: string, router: M): M;
+	patch(path: string, endpoint: typeof OpenAPIRoute<any>): M;
+	patch(path: string, router: M): M;
+	post(path: string, endpoint: typeof OpenAPIRoute<any>): M;
+	post(path: string, router: M): M;
+	put(path: string, endpoint: typeof OpenAPIRoute<any>): M;
+	put(path: string, router: M): M;
+	all(path: string, endpoint: typeof OpenAPIRoute<any>): M;
 	all(path: string, router: M): M;
 };
 
@@ -140,6 +147,14 @@ export class OpenAPIHandler {
 	registerRoute(params: { method: string; path: string; handlers: any[] }) {
 		const parsedRoute = this.parseRoute(params.path);
 
+		const parsedParams = ((this.options.base || "") + params.path).match(
+			/:(\w+)/g,
+		);
+		let urlParams: string[] = [];
+		if (parsedParams) {
+			urlParams = parsedParams.map((obj) => obj.replace(":", ""));
+		}
+
 		// @ts-ignore
 		let schema: OpenAPIRouteSchema = undefined;
 		// @ts-ignore
@@ -151,7 +166,10 @@ export class OpenAPIHandler {
 			}
 
 			if (handler.isRoute === true) {
-				schema = new handler({}).getSchemaZod();
+				schema = new handler({
+					route: parsedRoute,
+					urlParams: urlParams,
+				}).getSchemaZod();
 				break;
 			}
 		}
@@ -173,18 +191,13 @@ export class OpenAPIHandler {
 				},
 			};
 
-			const parsedParams = ((this.options.base || "") + params.path).match(
-				/:(\w+)/g,
-			);
-			if (parsedParams) {
+			if (urlParams.length > 0) {
 				schema.request = {
-					// TODO: make sure this works
 					params: z.object(
-						parsedParams.reduce(
-							// matched parameters start with ':' so replace the first occurrence with nothing
+						urlParams.reduce(
 							(obj, item) =>
 								Object.assign(obj, {
-									[item.replace(":", "")]: z.string(),
+									[item]: z.string(),
 								}),
 							{},
 						),
@@ -217,6 +230,8 @@ export class OpenAPIHandler {
 				return (...params: any[]) =>
 					new handler({
 						router: this,
+						route: parsedRoute,
+						urlParams: urlParams,
 						// raiseUnknownParameters: openapiConfig.raiseUnknownParameters,  TODO
 					}).execute(...params);
 			}
