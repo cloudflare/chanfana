@@ -23,7 +23,9 @@ export class CreateEndpoint<
 		return {
 			request: {
 				body: contentJson(bodyParameters),
-				params: pathParameters,
+				params: Object.keys(pathParameters.shape).length
+					? pathParameters
+					: undefined,
 				...this.schema?.request,
 			},
 			responses: {

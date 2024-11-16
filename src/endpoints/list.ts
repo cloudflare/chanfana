@@ -74,7 +74,9 @@ export class ListEndpoint<
 
 		return {
 			request: {
-				params: pathParameters,
+				params: Object.keys(pathParameters.shape).length
+					? pathParameters
+					: undefined,
 				query: queryParameters,
 				...this.schema?.request,
 			},

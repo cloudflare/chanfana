@@ -31,7 +31,9 @@ export class FetchEndpoint<
 		return {
 			request: {
 				//query: queryParameters,
-				params: pathParameters,
+				params: Object.keys(pathParameters.shape).length
+					? pathParameters
+					: undefined,
 				...this.schema?.request,
 			},
 			responses: {
