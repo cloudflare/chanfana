@@ -52,7 +52,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@cloudflare/vitest-pool-workers": "^0.5.26",
-		"@cloudflare/workers-types": "4.20241106.0",
+		"@cloudflare/workers-types": "4.20241112.0",
 		"@types/js-yaml": "^4.0.9",
 		"@types/node": "22.9.0",
 		"@types/service-worker-mock": "^2.0.1",
