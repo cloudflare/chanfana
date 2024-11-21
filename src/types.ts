@@ -63,6 +63,7 @@ export interface RouterOptions {
 	generateOperationIds?: boolean;
 	openapiVersion?: "3" | "3.1";
 	docsPageTitle?: string | null;
+	faviconHref?: string | null;
 }
 
 export interface RouteOptions {

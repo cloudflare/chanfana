@@ -39,6 +39,7 @@ interface RouterOptions {
     generateOperationIds?: boolean;
     openapiVersion?: "3" | "3.1";
     docsPageTitle?: string | null;
+    faviconHref?: string | null;
 }
 interface RouteOptions {
     router: any;
@@ -167,8 +168,8 @@ declare function Bool(params?: ParameterType): z.ZodBoolean;
 declare function Enumeration(params: EnumerationParameterType): z.ZodEnum<any>;
 declare function coerceInputs(data: Record<string, any>, schema?: RouteParameter): Record<string, any> | null;
 
-declare function getSwaggerUI(schemaUrl: string, docsPageTitle: string): string;
-declare function getReDocUI(schemaUrl: string, docsPageTitle: string): string;
+declare function getSwaggerUI(schemaUrl: string, docsPageTitle: string, faviconHref: string): string;
+declare function getReDocUI(schemaUrl: string, docsPageTitle: string, faviconHref: string): string;
 
 declare function jsonResp(data: any, params?: object): Response;
 
