@@ -9,6 +9,13 @@ updates:
         patterns:
           - "@cloudflare/*"
           - wrangler
+      dev:
+        patterns:
+          - "@types/*"
+          - "vitest*"
+          - typescript
+          - hono
+          - itty-router
     ignore:
       - dependency-name: '\*'
         update-types: [ "version-update:semver-major" ]
