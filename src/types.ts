@@ -32,6 +32,15 @@ export type SetOptional<BaseType, Keys extends keyof BaseType> = Simplify<
     Partial<Pick<BaseType, Keys>>
 >;
 
+export type SetRequired<BaseType, Keys extends keyof BaseType> = BaseType extends unknown
+  ? Simplify<
+      // Pick just the keys that are optional from the base type.
+      Except<BaseType, Keys> &
+        // Pick the keys that should be required from the base type and make them required.
+        Required<Pick<BaseType, Keys>>
+    >
+  : never;
+
 // The following types are copied from @asteasolutions/zod-to-openapi as they are not exported
 export type OpenAPIObjectConfig = Omit<OpenAPIObject, "paths" | "components" | "webhooks">;
 export type OpenAPIObjectConfigV31 = Omit<OpenAPIObject, "paths" | "components" | "webhooks">;

@@ -1,5 +1,5 @@
 import type { AnyZodObject, z } from "zod";
-import type { SetOptional } from "../types";
+import type { SetRequired } from "../types";
 
 export type FilterCondition = {
   field: string;
@@ -30,17 +30,19 @@ export type Model = {
   tableName: string;
   schema: AnyZodObject;
   primaryKeys: Array<string>;
-  serializer: (obj: object) => object;
-  serializerObject: AnyZodObject;
+  serializer?: (obj: object) => object;
+  serializerObject?: AnyZodObject;
 };
 
+export type ModelComplete = SetRequired<Model, "serializer" | "serializerObject">;
+
 export type MetaInput = {
-  model: SetOptional<Model, "serializer" | "serializerObject">;
+  model: Model;
   fields?: AnyZodObject;
 };
 
 export type Meta = {
-  model: Model;
+  model: ModelComplete;
   fields: AnyZodObject;
 };
 
@@ -54,7 +56,7 @@ export function MetaGenerator(meta: MetaInput) {
   return {
     fields: meta.fields ?? meta.model.schema,
     model: {
-      serializer: (obj: object) => obj,
+      serializer: (obj: any): any => obj,
       serializerObject: meta.model.schema,
       ...meta.model,
     },

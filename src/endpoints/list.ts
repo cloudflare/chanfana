@@ -9,16 +9,24 @@ import {
   type Meta,
   MetaGenerator,
   type MetaInput,
+  type Model,
   type O,
 } from "./types";
 
 export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
-  get model(): MetaInput {
-    throw new Error("get meta not implemented");
+  get fields(): AnyZodObject | undefined {
+    return undefined;
+  }
+
+  get model(): Model {
+    throw new Error("get model not implemented");
   }
 
   get meta() {
-    return MetaGenerator(this.model);
+    return MetaGenerator({
+      model: this.model,
+      fields: this.fields,
+    });
   }
 
   filterFields?: Array<string>;
