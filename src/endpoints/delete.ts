@@ -1,135 +1,107 @@
 import { contentJson } from "../contentTypes";
 import { NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
-import type { FilterCondition, Filters, Meta, O } from "./types";
+import { type FilterCondition, type Filters, type Meta, MetaGenerator, type MetaInput, type O } from "./types";
 
-export class DeleteEndpoint<
-	HandleArgs extends Array<object> = Array<object>,
-> extends OpenAPIRoute<HandleArgs> {
-	get meta(): Meta {
-		throw new Error("get Meta not implemented");
-	}
+export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
+  get model(): MetaInput {
+    throw new Error("get meta not implemented");
+  }
 
-	getSchema() {
-		const bodyParameters = this.meta.fields
-			.pick(
-				(this.meta.model.primaryKeys || []).reduce(
-					(a, v) => ({ ...a, [v]: true }),
-					{},
-				),
-			)
-			.omit(
-				(this.params.urlParams || []).reduce(
-					(a, v) => ({ ...a, [v]: true }),
-					{},
-				),
-			);
-		const pathParameters = this.meta.fields
-			.pick(
-				(this.meta.model.primaryKeys || []).reduce(
-					(a, v) => ({ ...a, [v]: true }),
-					{},
-				),
-			)
-			.pick(
-				(this.params.urlParams || []).reduce(
-					(a, v) => ({ ...a, [v]: true }),
-					{},
-				),
-			);
+  get meta() {
+    return MetaGenerator(this.model);
+  }
 
-		return {
-			request: {
-				body: Object.keys(bodyParameters.shape).length
-					? contentJson(bodyParameters)
-					: undefined,
-				params: Object.keys(pathParameters.shape).length
-					? pathParameters
-					: undefined,
-				...this.schema?.request,
-			},
-			responses: {
-				"200": {
-					description: "Returns the Object if it was successfully deleted",
-					...contentJson({
-						success: Boolean,
-						result: this.meta.model.serializerObject,
-					}),
-					...this.schema?.responses?.[200],
-				},
-				...NotFoundException.schema(),
-				...this.schema?.responses,
-			},
-			...this.schema,
-		};
-	}
+  getSchema() {
+    const bodyParameters = this.meta.fields
+      .pick((this.meta.model.primaryKeys || []).reduce((a, v) => ({ ...a, [v]: true }), {}))
+      .omit((this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}));
+    const pathParameters = this.meta.fields
+      .pick((this.meta.model.primaryKeys || []).reduce((a, v) => ({ ...a, [v]: true }), {}))
+      .pick((this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}));
 
-	async getFilters(): Promise<Filters> {
-		const data = await this.getValidatedData();
+    return {
+      request: {
+        body: Object.keys(bodyParameters.shape).length ? contentJson(bodyParameters) : undefined,
+        params: Object.keys(pathParameters.shape).length ? pathParameters : undefined,
+        ...this.schema?.request,
+      },
+      responses: {
+        "200": {
+          description: "Returns the Object if it was successfully deleted",
+          ...contentJson({
+            success: Boolean,
+            result: this.meta.model.serializerObject,
+          }),
+          ...this.schema?.responses?.[200],
+        },
+        ...NotFoundException.schema(),
+        ...this.schema?.responses,
+      },
+      ...this.schema,
+    };
+  }
 
-		const filters: Array<FilterCondition> = [];
+  async getFilters(): Promise<Filters> {
+    const data = await this.getValidatedData();
 
-		for (const part of [data.params, data.body]) {
-			if (part) {
-				for (const [key, value] of Object.entries(part)) {
-					filters.push({
-						field: key,
-						operator: "EQ",
-						value: value as string,
-					});
-				}
-			}
-		}
+    const filters: Array<FilterCondition> = [];
 
-		return {
-			filters,
-		};
-	}
+    for (const part of [data.params, data.body]) {
+      if (part) {
+        for (const [key, value] of Object.entries(part)) {
+          filters.push({
+            field: key,
+            operator: "EQ",
+            value: value as string,
+          });
+        }
+      }
+    }
 
-	async before(
-		oldObj: O<typeof this.meta>,
-		filters: Filters,
-	): Promise<Filters> {
-		return filters;
-	}
+    return {
+      filters,
+    };
+  }
 
-	async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
-		return data;
-	}
+  async before(oldObj: O<typeof this.meta>, filters: Filters): Promise<Filters> {
+    return filters;
+  }
 
-	async delete(
-		oldObj: O<typeof this.meta>,
-		filters: Filters,
-	): Promise<O<typeof this.meta> | null> {
-		return null;
-	}
+  async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+    return data;
+  }
 
-	async getObject(filters: Filters): Promise<O<typeof this.meta> | null> {
-		return null;
-	}
+  async delete(oldObj: O<typeof this.meta>, filters: Filters): Promise<O<typeof this.meta> | null> {
+    return null;
+  }
 
-	async handle(...args: HandleArgs) {
-		let filters = await this.getFilters();
+  async getObject(filters: Filters): Promise<O<typeof this.meta> | null> {
+    return null;
+  }
 
-		const oldObj = await this.getObject(filters);
+  async handle(...args: HandleArgs) {
+    let filters = await this.getFilters();
 
-		if (oldObj === null) {
-			throw new NotFoundException();
-		}
+    const oldObj = await this.getObject(filters);
 
-		filters = await this.before(oldObj, filters);
+    if (oldObj === null) {
+      throw new NotFoundException();
+    }
 
-		let obj = await this.delete(oldObj, filters);
+    filters = await this.before(oldObj, filters);
 
-		if (obj === null) {
-			throw new NotFoundException();
-		}
+    let obj = await this.delete(oldObj, filters);
 
-		obj = await this.after(obj);
+    if (obj === null) {
+      throw new NotFoundException();
+    }
 
-		return {
-			success: true,
-			result: this.meta.model.serializer(obj),
-		};
-	}
+    obj = await this.after(obj);
+
+    return {
+      success: true,
+      result: this.meta.model.serializer(obj),
+    };
+  }
 }

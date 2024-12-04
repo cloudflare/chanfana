@@ -1,108 +1,102 @@
 import { contentJson } from "../contentTypes";
 import { NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
-import type { FilterCondition, ListFilters, Meta, O } from "./types";
+import { type FilterCondition, type ListFilters, type Meta, MetaGenerator, type MetaInput, type O } from "./types";
 
-export class FetchEndpoint<
-	HandleArgs extends Array<object> = Array<object>,
-> extends OpenAPIRoute<HandleArgs> {
-	get meta(): Meta {
-		throw new Error("get Meta not implemented");
-	}
+export class FetchEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
+  get model(): MetaInput {
+    throw new Error("get meta not implemented");
+  }
 
-	getSchema() {
-		if (
-			this.meta.model.primaryKeys.sort().toString() !==
-			this.params.urlParams.sort().toString()
-		) {
-			throw Error(
-				`Model primaryKeys differ from urlParameters on: ${this.params.route}: ${JSON.stringify(this.meta.model.primaryKeys)} !== ${JSON.stringify(this.params.urlParams)}`,
-			);
-		}
+  get meta() {
+    return MetaGenerator(this.model);
+  }
 
-		//const queryParameters = this.model.omit((this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}));
-		const pathParameters = this.meta.fields.pick(
-			(this.meta.model.primaryKeys || []).reduce(
-				(a, v) => ({ ...a, [v]: true }),
-				{},
-			),
-		);
+  getSchema() {
+    if (this.meta.model.primaryKeys.sort().toString() !== this.params.urlParams.sort().toString()) {
+      throw Error(
+        `Model primaryKeys differ from urlParameters on: ${this.params.route}: ${JSON.stringify(this.meta.model.primaryKeys)} !== ${JSON.stringify(this.params.urlParams)}`,
+      );
+    }
 
-		return {
-			request: {
-				//query: queryParameters,
-				params: Object.keys(pathParameters.shape).length
-					? pathParameters
-					: undefined,
-				...this.schema?.request,
-			},
-			responses: {
-				"200": {
-					description: "Returns a single object if found",
-					...contentJson({
-						success: Boolean,
-						result: this.meta.model.serializerObject,
-					}),
-					...this.schema?.responses?.[200],
-				},
-				...NotFoundException.schema(),
-				...this.schema?.responses,
-			},
-			...this.schema,
-		};
-	}
+    //const queryParameters = this.model.omit((this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}));
+    const pathParameters = this.meta.fields.pick(
+      (this.meta.model.primaryKeys || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+    );
 
-	async getFilters(): Promise<ListFilters> {
-		const data = await this.getValidatedData();
+    return {
+      request: {
+        //query: queryParameters,
+        params: Object.keys(pathParameters.shape).length ? pathParameters : undefined,
+        ...this.schema?.request,
+      },
+      responses: {
+        "200": {
+          description: "Returns a single object if found",
+          ...contentJson({
+            success: Boolean,
+            result: this.meta.model.serializerObject,
+          }),
+          ...this.schema?.responses?.[200],
+        },
+        ...NotFoundException.schema(),
+        ...this.schema?.responses,
+      },
+      ...this.schema,
+    };
+  }
 
-		const filters: Array<FilterCondition> = [];
+  async getFilters(): Promise<ListFilters> {
+    const data = await this.getValidatedData();
 
-		for (const part of [data.params, data.query]) {
-			if (part) {
-				for (const [key, value] of Object.entries(part)) {
-					filters.push({
-						field: key,
-						operator: "EQ",
-						value: value as string,
-					});
-				}
-			}
-		}
+    const filters: Array<FilterCondition> = [];
 
-		return {
-			filters: filters,
-			options: {}, // TODO: make a new type for this
-		};
-	}
+    for (const part of [data.params, data.query]) {
+      if (part) {
+        for (const [key, value] of Object.entries(part)) {
+          filters.push({
+            field: key,
+            operator: "EQ",
+            value: value as string,
+          });
+        }
+      }
+    }
 
-	async before(filters: ListFilters): Promise<ListFilters> {
-		return filters;
-	}
+    return {
+      filters: filters,
+      options: {}, // TODO: make a new type for this
+    };
+  }
 
-	async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
-		return data;
-	}
+  async before(filters: ListFilters): Promise<ListFilters> {
+    return filters;
+  }
 
-	async fetch(filters: ListFilters): Promise<O<typeof this.meta> | null> {
-		return null;
-	}
+  async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+    return data;
+  }
 
-	async handle(...args: HandleArgs) {
-		let filters = await this.getFilters();
+  async fetch(filters: ListFilters): Promise<O<typeof this.meta> | null> {
+    return null;
+  }
 
-		filters = await this.before(filters);
+  async handle(...args: HandleArgs) {
+    let filters = await this.getFilters();
 
-		let obj = await this.fetch(filters);
+    filters = await this.before(filters);
 
-		if (!obj) {
-			throw new NotFoundException();
-		}
+    let obj = await this.fetch(filters);
 
-		obj = await this.after(obj);
+    if (!obj) {
+      throw new NotFoundException();
+    }
 
-		return {
-			success: true,
-			result: this.meta.model.serializer(obj),
-		};
-	}
+    obj = await this.after(obj);
+
+    return {
+      success: true,
+      result: this.meta.model.serializer(obj),
+    };
+  }
 }

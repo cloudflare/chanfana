@@ -1,96 +1,96 @@
 import { contentJson } from "../contentTypes";
 import { InputValidationException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
-import type { Meta, O } from "./types";
+import { type Meta, MetaGenerator, type MetaInput, type O } from "./types";
 
-export class CreateEndpoint<
-	HandleArgs extends Array<object> = Array<object>,
-> extends OpenAPIRoute<HandleArgs> {
-	get meta(): Meta {
-		throw new Error("get Meta not implemented");
-	}
+export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
+  get model(): MetaInput {
+    throw new Error("get meta not implemented");
+  }
 
-	defaultValues?: Record<string, () => any>; // TODO: move this into model
+  get meta() {
+    return MetaGenerator(this.model);
+  }
 
-	getSchema() {
-		const bodyParameters = this.meta.fields.omit(
-			(this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
-		);
-		const pathParameters = this.meta.fields.pick(
-			(this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
-		);
+  defaultValues?: Record<string, () => any>; // TODO: move this into model
 
-		return {
-			request: {
-				body: contentJson(bodyParameters),
-				params: Object.keys(pathParameters.shape).length
-					? pathParameters
-					: undefined,
-				...this.schema?.request,
-			},
-			responses: {
-				"200": {
-					description: "Returns the created Object",
-					...contentJson({
-						success: Boolean,
-						result: this.meta.model.serializerObject,
-					}),
-					...this.schema?.responses?.[200],
-				},
-				...InputValidationException.schema(),
-				...this.schema?.responses,
-			},
-			...this.schema,
-		};
-	}
+  getSchema() {
+    const bodyParameters = this.meta.fields.omit(
+      (this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+    );
+    const pathParameters = this.meta.fields.pick(
+      (this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+    );
 
-	async getObject(): Promise<O<typeof this.meta>> {
-		const data = await this.getValidatedData();
+    return {
+      request: {
+        body: contentJson(bodyParameters),
+        params: Object.keys(pathParameters.shape).length ? pathParameters : undefined,
+        ...this.schema?.request,
+      },
+      responses: {
+        "200": {
+          description: "Returns the created Object",
+          ...contentJson({
+            success: Boolean,
+            result: this.meta.model.serializerObject,
+          }),
+          ...this.schema?.responses?.[200],
+        },
+        ...InputValidationException.schema(),
+        ...this.schema?.responses,
+      },
+      ...this.schema,
+    };
+  }
 
-		// @ts-ignore  TODO: check this
-		const newData: any = {
-			...(data.body as object),
-		};
+  async getObject(): Promise<O<typeof this.meta>> {
+    const data = await this.getValidatedData();
 
-		for (const param of this.params.urlParams) {
-			newData[param] = (data.params as any)[param];
-		}
+    // @ts-ignore  TODO: check this
+    const newData: any = {
+      ...(data.body as object),
+    };
 
-		if (this.defaultValues) {
-			for (const [key, value] of Object.entries(this.defaultValues)) {
-				if (newData[key] === undefined) {
-					newData[key] = value();
-				}
-			}
-		}
+    for (const param of this.params.urlParams) {
+      newData[param] = (data.params as any)[param];
+    }
 
-		return newData;
-	}
+    if (this.defaultValues) {
+      for (const [key, value] of Object.entries(this.defaultValues)) {
+        if (newData[key] === undefined) {
+          newData[key] = value();
+        }
+      }
+    }
 
-	async before(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
-		return data;
-	}
+    return newData;
+  }
 
-	async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
-		return data;
-	}
+  async before(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+    return data;
+  }
 
-	async create(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
-		return data;
-	}
+  async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+    return data;
+  }
 
-	async handle(...args: HandleArgs) {
-		let obj = await this.getObject();
+  async create(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+    return data;
+  }
 
-		obj = await this.before(obj);
+  async handle(...args: HandleArgs) {
+    let obj = await this.getObject();
 
-		obj = await this.create(obj);
+    obj = await this.before(obj);
 
-		obj = await this.after(obj);
+    obj = await this.create(obj);
 
-		return {
-			success: true,
-			result: this.meta.model.serializer(obj as object),
-		};
-	}
+    obj = await this.after(obj);
+
+    return {
+      success: true,
+      result: this.meta.model.serializer(obj as object),
+    };
+  }
 }

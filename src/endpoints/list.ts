@@ -2,166 +2,156 @@ import { type AnyZodObject, z } from "zod";
 import { contentJson } from "../contentTypes";
 import { Enumeration, Str } from "../parameters";
 import { OpenAPIRoute } from "../route";
-import type {
-	FilterCondition,
-	ListFilters,
-	ListResult,
-	Meta,
-	O,
+import {
+  type FilterCondition,
+  type ListFilters,
+  type ListResult,
+  type Meta,
+  MetaGenerator,
+  type MetaInput,
+  type O,
 } from "./types";
 
-export class ListEndpoint<
-	HandleArgs extends Array<object> = Array<object>,
-> extends OpenAPIRoute<HandleArgs> {
-	get meta(): Meta {
-		throw new Error("get Meta not implemented");
-	}
+export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
+  get model(): MetaInput {
+    throw new Error("get meta not implemented");
+  }
 
-	filterFields?: Array<string>;
-	searchFields?: Array<string>;
-	searchFieldName = "search";
-	optionFields = ["page", "per_page", "order_by", "order_by_direction"];
+  get meta() {
+    return MetaGenerator(this.model);
+  }
 
-	getSchema() {
-		const parsedQueryParameters = this.meta.fields
-			.pick(
-				(this.filterFields || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
-			)
-			.omit(
-				(this.params.urlParams || []).reduce(
-					(a, v) => ({ ...a, [v]: true }),
-					{},
-				),
-			).shape;
-		const pathParameters = this.meta.fields.pick(
-			(this.params.urlParams || this.meta.model.primaryKeys || []).reduce(
-				(a, v) => ({ ...a, [v]: true }),
-				{},
-			),
-		);
+  filterFields?: Array<string>;
+  searchFields?: Array<string>;
+  searchFieldName = "search";
+  optionFields = ["page", "per_page", "order_by", "order_by_direction"];
 
-		for (const [key, value] of Object.entries(parsedQueryParameters)) {
-			// @ts-ignore  TODO: check this
-			parsedQueryParameters[key] = (value as AnyZodObject).optional();
-		}
+  getSchema() {
+    const parsedQueryParameters = this.meta.fields
+      .pick((this.filterFields || []).reduce((a, v) => ({ ...a, [v]: true }), {}))
+      .omit((this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {})).shape;
+    const pathParameters = this.meta.fields.pick(
+      (this.params.urlParams || this.meta.model.primaryKeys || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+    );
 
-		if (this.searchFields) {
-			// @ts-ignore  TODO: check this
-			parsedQueryParameters[this.searchFieldName] = z
-				.string()
-				.optional()
-				.openapi({
-					description: `Search by ${this.searchFields.join(", ")}`,
-				});
-		}
+    for (const [key, value] of Object.entries(parsedQueryParameters)) {
+      // @ts-ignore  TODO: check this
+      parsedQueryParameters[key] = (value as AnyZodObject).optional();
+    }
 
-		const queryParameters = z
-			.object({
-				page: z.number().int().min(1).optional().default(1),
-				per_page: z.number().int().min(1).max(100).optional().default(20),
-				order_by: Str({
-					description: "Order By Column Name",
-					required: false,
-				}),
-				order_by_direction: Enumeration({
-					default: "asc",
-					values: ["asc", "desc"],
-					description: "Order By Direction",
-					required: false,
-				}),
-			})
-			.extend(parsedQueryParameters);
+    if (this.searchFields) {
+      // @ts-ignore  TODO: check this
+      parsedQueryParameters[this.searchFieldName] = z
+        .string()
+        .optional()
+        .openapi({
+          description: `Search by ${this.searchFields.join(", ")}`,
+        });
+    }
 
-		return {
-			request: {
-				params: Object.keys(pathParameters.shape).length
-					? pathParameters
-					: undefined,
-				query: queryParameters,
-				...this.schema?.request,
-			},
-			responses: {
-				"200": {
-					description: "List objects",
-					...contentJson({
-						success: Boolean,
-						result: [this.meta.model.serializerObject],
-					}),
-					...this.schema?.responses?.[200],
-				},
-				...this.schema?.responses,
-			},
-			...this.schema,
-		};
-	}
+    const queryParameters = z
+      .object({
+        page: z.number().int().min(1).optional().default(1),
+        per_page: z.number().int().min(1).max(100).optional().default(20),
+        order_by: Str({
+          description: "Order By Column Name",
+          required: false,
+        }),
+        order_by_direction: Enumeration({
+          default: "asc",
+          values: ["asc", "desc"],
+          description: "Order By Direction",
+          required: false,
+        }),
+      })
+      .extend(parsedQueryParameters);
 
-	async getFilters(): Promise<ListFilters> {
-		const data = await this.getValidatedData();
+    return {
+      request: {
+        params: Object.keys(pathParameters.shape).length ? pathParameters : undefined,
+        query: queryParameters,
+        ...this.schema?.request,
+      },
+      responses: {
+        "200": {
+          description: "List objects",
+          ...contentJson({
+            success: Boolean,
+            result: [this.meta.model.serializerObject],
+          }),
+          ...this.schema?.responses?.[200],
+        },
+        ...this.schema?.responses,
+      },
+      ...this.schema,
+    };
+  }
 
-		const filters: Array<FilterCondition> = [];
-		const options: Record<string, string> = {}; // TODO: fix this type
+  async getFilters(): Promise<ListFilters> {
+    const data = await this.getValidatedData();
 
-		for (const part of [data.params, data.query]) {
-			if (part) {
-				for (const [key, value] of Object.entries(part)) {
-					if (this.searchFields && key === this.searchFieldName) {
-						filters.push({
-							field: key,
-							operator: "LIKE",
-							value: value as string,
-						});
-					} else if (this.optionFields.includes(key)) {
-						options[key] = value as string;
-					} else {
-						filters.push({
-							field: key,
-							operator: "EQ",
-							value: value as string,
-						});
-					}
-				}
-			}
-		}
+    const filters: Array<FilterCondition> = [];
+    const options: Record<string, string> = {}; // TODO: fix this type
 
-		return {
-			options,
-			filters,
-		};
-	}
+    for (const part of [data.params, data.query]) {
+      if (part) {
+        for (const [key, value] of Object.entries(part)) {
+          if (this.searchFields && key === this.searchFieldName) {
+            filters.push({
+              field: key,
+              operator: "LIKE",
+              value: value as string,
+            });
+          } else if (this.optionFields.includes(key)) {
+            options[key] = value as string;
+          } else {
+            filters.push({
+              field: key,
+              operator: "EQ",
+              value: value as string,
+            });
+          }
+        }
+      }
+    }
 
-	async before(filters: ListFilters): Promise<ListFilters> {
-		return filters;
-	}
+    return {
+      options,
+      filters,
+    };
+  }
 
-	async after(
-		data: ListResult<O<typeof this.meta>>,
-	): Promise<ListResult<O<typeof this.meta>>> {
-		return data;
-	}
+  async before(filters: ListFilters): Promise<ListFilters> {
+    return filters;
+  }
 
-	async list(filters: ListFilters): Promise<ListResult<O<typeof this.meta>>> {
-		return {
-			result: [],
-		};
-	}
+  async after(data: ListResult<O<typeof this.meta>>): Promise<ListResult<O<typeof this.meta>>> {
+    return data;
+  }
 
-	async handle(...args: HandleArgs) {
-		let filters = await this.getFilters();
+  async list(filters: ListFilters): Promise<ListResult<O<typeof this.meta>>> {
+    return {
+      result: [],
+    };
+  }
 
-		filters = await this.before(filters);
+  async handle(...args: HandleArgs) {
+    let filters = await this.getFilters();
 
-		let objs = await this.list(filters);
+    filters = await this.before(filters);
 
-		objs = await this.after(objs);
+    let objs = await this.list(filters);
 
-		objs = {
-			...objs,
-			result: objs.result.map(this.meta.model.serializer),
-		};
+    objs = await this.after(objs);
 
-		return {
-			success: true,
-			...objs,
-		};
-	}
+    objs = {
+      ...objs,
+      result: objs.result.map(this.meta.model.serializer),
+    };
+
+    return {
+      success: true,
+      ...objs,
+    };
+  }
 }
