@@ -1,106 +1,118 @@
+import type { AnyZodObject } from "zod";
 import { contentJson } from "../contentTypes";
 import { NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
-import type { FilterCondition, ListFilters, Meta, O } from "./types";
+import {
+  type FilterCondition,
+  type ListFilters,
+  type Meta,
+  MetaGenerator,
+  type MetaInput,
+  type Model,
+  type O,
+} from "./types";
 
-export class FetchEndpoint<
-	HandleArgs extends Array<object> = Array<object>,
-> extends OpenAPIRoute<HandleArgs> {
-	get meta(): Meta {
-		throw new Error("get Meta not implemented");
-	}
+export class FetchEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
+  get fields(): AnyZodObject | undefined {
+    return undefined;
+  }
 
-	getSchema() {
-		if (
-			this.meta.model.primaryKeys.sort().toString() !==
-			this.params.urlParams.sort().toString()
-		) {
-			throw Error(
-				`Model primaryKeys differ from urlParameters on: ${this.params.route}: ${JSON.stringify(this.meta.model.primaryKeys)} !== ${JSON.stringify(this.params.urlParams)}`,
-			);
-		}
+  get model(): Model {
+    throw new Error("get model not implemented");
+  }
 
-		//const queryParameters = this.model.omit((this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}));
-		const pathParameters = this.meta.fields.pick(
-			(this.meta.model.primaryKeys || []).reduce(
-				(a, v) => ({ ...a, [v]: true }),
-				{},
-			),
-		);
+  get meta() {
+    return MetaGenerator({
+      model: this.model,
+      fields: this.fields,
+    });
+  }
 
-		return {
-			request: {
-				//query: queryParameters,
-				params: pathParameters,
-				...this.schema?.request,
-			},
-			responses: {
-				"200": {
-					description: "Returns a single object if found",
-					...contentJson({
-						success: Boolean,
-						result: this.meta.model.serializerObject,
-					}),
-					...this.schema?.responses?.[200],
-				},
-				...NotFoundException.schema(),
-				...this.schema?.responses,
-			},
-			...this.schema,
-		};
-	}
+  getSchema() {
+    if (this.meta.model.primaryKeys.sort().toString() !== this.params.urlParams.sort().toString()) {
+      throw Error(
+        `Model primaryKeys differ from urlParameters on: ${this.params.route}: ${JSON.stringify(this.meta.model.primaryKeys)} !== ${JSON.stringify(this.params.urlParams)}`,
+      );
+    }
 
-	async getFilters(): Promise<ListFilters> {
-		const data = await this.getValidatedData();
+    //const queryParameters = this.model.omit((this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}));
+    const pathParameters = this.meta.fields.pick(
+      (this.meta.model.primaryKeys || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+    );
 
-		const filters: Array<FilterCondition> = [];
+    return {
+      request: {
+        //query: queryParameters,
+        params: Object.keys(pathParameters.shape).length ? pathParameters : undefined,
+        ...this.schema?.request,
+      },
+      responses: {
+        "200": {
+          description: "Returns a single object if found",
+          ...contentJson({
+            success: Boolean,
+            result: this.meta.model.serializerObject,
+          }),
+          ...this.schema?.responses?.[200],
+        },
+        ...NotFoundException.schema(),
+        ...this.schema?.responses,
+      },
+      ...this.schema,
+    };
+  }
 
-		for (const part of [data.params, data.query]) {
-			if (part) {
-				for (const [key, value] of Object.entries(part)) {
-					filters.push({
-						field: key,
-						operator: "EQ",
-						value: value as string,
-					});
-				}
-			}
-		}
+  async getFilters(): Promise<ListFilters> {
+    const data = await this.getValidatedData();
 
-		return {
-			filters: filters,
-			options: {}, // TODO: make a new type for this
-		};
-	}
+    const filters: Array<FilterCondition> = [];
 
-	async before(filters: ListFilters): Promise<ListFilters> {
-		return filters;
-	}
+    for (const part of [data.params, data.query]) {
+      if (part) {
+        for (const [key, value] of Object.entries(part)) {
+          filters.push({
+            field: key,
+            operator: "EQ",
+            value: value as string,
+          });
+        }
+      }
+    }
 
-	async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
-		return data;
-	}
+    return {
+      filters: filters,
+      options: {}, // TODO: make a new type for this
+    };
+  }
 
-	async fetch(filters: ListFilters): Promise<O<typeof this.meta> | null> {
-		return null;
-	}
+  async before(filters: ListFilters): Promise<ListFilters> {
+    return filters;
+  }
 
-	async handle(...args: HandleArgs) {
-		let filters = await this.getFilters();
+  async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+    return data;
+  }
 
-		filters = await this.before(filters);
+  async fetch(filters: ListFilters): Promise<O<typeof this.meta> | null> {
+    return null;
+  }
 
-		let obj = await this.fetch(filters);
+  async handle(...args: HandleArgs) {
+    let filters = await this.getFilters();
 
-		if (!obj) {
-			throw new NotFoundException();
-		}
+    filters = await this.before(filters);
 
-		obj = await this.after(obj);
+    let obj = await this.fetch(filters);
 
-		return {
-			success: true,
-			result: this.meta.model.serializer(obj),
-		};
-	}
+    if (!obj) {
+      throw new NotFoundException();
+    }
+
+    obj = await this.after(obj);
+
+    return {
+      success: true,
+      result: this.meta.model.serializer(obj),
+    };
+  }
 }

@@ -3,8 +3,8 @@ import vitestOpenAPI from "vitest-openapi";
 import { todoRouter } from "../router";
 
 describe("openapiValidation", () => {
-	it("loadSpec", async () => {
-		console.log(todoRouter.schema);
-		vitestOpenAPI(todoRouter.schema);
-	});
+  it("loadSpec", async () => {
+    console.log(todoRouter.schema);
+    vitestOpenAPI(todoRouter.schema);
+  });
 });

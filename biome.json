@@ -10,8 +10,10 @@
 		"ignore": ["dist", "docs", "example"]
 	},
 	"formatter": {
-		"enabled": true,
-		"indentStyle": "tab"
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 120
 	},
 	"organizeImports": {
 		"enabled": true
