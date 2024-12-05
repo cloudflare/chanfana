@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://chanfana.pages.dev/">
-    <img src="https://raw.githubusercontent.com/cloudflare/chanfana/refs/heads/main/docs/images/logo.png" width="auto" height="200" alt="chanfana"/>
+    <img src="https://raw.githubusercontent.com/cloudflare/chanfana/refs/heads/main/docs/images/logo.png" width="500" height="auto" alt="chanfana"/>
   </a>
 </div>
 

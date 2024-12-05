@@ -1,16 +1,21 @@
-# chanfana
+<div align="center">
+  <a href="https://chanfana.pages.dev/">
+    <img src="https://raw.githubusercontent.com/cloudflare/chanfana/refs/heads/main/docs/images/logo.png" width="500" height="auto" alt="chanfana"/>
+  </a>
+</div>
+
 
 <p align="center">
     <em>OpenAPI 3 and 3.1 schema generator and validator for <a href="https://github.com/honojs/hono" target="_blank">Hono</a>, <a href="https://github.com/kwhitley/itty-router" target="_blank">itty-router</a> and more!</em>
 </p>
 
----
+<hr />
 
 **Documentation**: <a href="https://chanfana.pages.dev/">chanfana.pages.dev</a>
 
 **Source Code**: <a href="https://github.com/cloudflare/chanfana/">github.com/cloudflare/chanfana</a>
 
----
+<hr />
 
 [chanfana](https://github.com/cloudflare/chanfana) **(previously known as itty-router-openapi)** is a library that adds
 OpenAPI schema generation and validation to any router (<a href="https://github.com/honojs/hono" target="_blank">
