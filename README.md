@@ -1,8 +1,9 @@
 <div align="center">
   <a href="https://chanfana.pages.dev/">
-    <img src="https://raw.githubusercontent.com/cloudflare/chanfana/refs/heads/main/docs/images/logo.png" width="auto" height="400" alt="chanfana"/>
+    <img src="https://raw.githubusercontent.com/cloudflare/chanfana/refs/heads/main/docs/images/logo.png" width="auto" height="200" alt="chanfana"/>
   </a>
 </div>
+
 
 <p align="center">
     <em>OpenAPI 3 and 3.1 schema generator and validator for <a href="https://github.com/honojs/hono" target="_blank">Hono</a>, <a href="https://github.com/kwhitley/itty-router" target="_blank">itty-router</a> and more!</em>
