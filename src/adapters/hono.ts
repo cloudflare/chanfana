@@ -1,5 +1,11 @@
 import { OpenAPIHandler, type OpenAPIRouterType } from "../openapi";
+import type { OpenAPIRoute } from "../route";
 import type { RouterOptions } from "../types";
+
+export type HonoOpenAPIRouterType<M> = OpenAPIRouterType<M> & {
+  on(method: string, path: string, endpoint: typeof OpenAPIRoute<any>): M;
+  on(method: string, path: string, router: M): M;
+};
 
 export class HonoOpenAPIHandler extends OpenAPIHandler {
   getRequest(args: any[]) {
@@ -11,7 +17,7 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
   }
 }
 
-export function fromHono<M>(router: M, options?: RouterOptions): M & OpenAPIRouterType<M> {
+export function fromHono<M>(router: M, options?: RouterOptions): M & HonoOpenAPIRouterType<M> {
   const openapiRouter = new HonoOpenAPIHandler(router, options);
 
   return new Proxy(router, {
@@ -35,6 +41,21 @@ export function fromHono<M>(router: M, options?: RouterOptions): M & OpenAPIRout
               path: route,
               handlers: handlers,
             });
+          } else if (prop === "on") {
+            const methods: string | string[] = route;
+            const paths: string | string[] = handlers.shift();
+
+            if (Array.isArray(methods) || Array.isArray(paths)) {
+              throw new Error("chanfana only supports single method+path on hono.on('method', 'path', EndpointClass)");
+            }
+
+            handlers = openapiRouter.registerRoute({
+              method: methods.toLowerCase(),
+              path: paths,
+              handlers: handlers,
+            });
+
+            handlers = [paths, ...handlers];
           }
         }
 
