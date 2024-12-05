@@ -1,31 +1,14 @@
-import type { AnyZodObject } from "zod";
 import { contentJson } from "../contentTypes";
 import { InputValidationException, NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
-import {
-  type FilterCondition,
-  type Meta,
-  MetaGenerator,
-  type MetaInput,
-  type Model,
-  type O,
-  type UpdateFilters,
-} from "./types";
+import { type FilterCondition, MetaGenerator, type MetaInput, type O, type UpdateFilters } from "./types";
 
 export class UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
-  get fields(): AnyZodObject | undefined {
-    return undefined;
-  }
-
-  get model(): Model {
-    throw new Error("get model not implemented");
-  }
+  // @ts-ignore
+  _meta: MetaInput;
 
   get meta() {
-    return MetaGenerator({
-      model: this.model,
-      fields: this.fields,
-    });
+    return MetaGenerator(this._meta);
   }
 
   getSchema() {

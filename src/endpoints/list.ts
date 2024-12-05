@@ -6,27 +6,17 @@ import {
   type FilterCondition,
   type ListFilters,
   type ListResult,
-  type Meta,
   MetaGenerator,
   type MetaInput,
-  type Model,
   type O,
 } from "./types";
 
 export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
-  get fields(): AnyZodObject | undefined {
-    return undefined;
-  }
-
-  get model(): Model {
-    throw new Error("get model not implemented");
-  }
+  // @ts-ignore
+  _meta: MetaInput;
 
   get meta() {
-    return MetaGenerator({
-      model: this.model,
-      fields: this.fields,
-    });
+    return MetaGenerator(this._meta);
   }
 
   filterFields?: Array<string>;
