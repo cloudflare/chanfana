@@ -482,13 +482,64 @@ describe("bodyParametersValidation", () => {
     );
     const resp = await request.json();
 
-    //expect(request.status).toEqual(200)
+    expect(request.status).toEqual(200);
 
     expect(resp).toEqual({
       todo: {
         title: "my todo",
         description: "this will be done",
         type: "nextWeek",
+      },
+    });
+  });
+
+  it("header should be required", async () => {
+    const request = await todoRouter.fetch(
+      buildRequest({
+        method: "get",
+        path: "/header",
+      }),
+      {},
+      {},
+    );
+    const resp = await request.json();
+
+    expect(request.status).toEqual(400);
+
+    expect(resp).toEqual({
+      errors: [
+        {
+          code: "invalid_type",
+          expected: "string",
+          message: "Expected string, received null",
+          path: ["headers", "p_hostname"],
+          received: "null",
+        },
+      ],
+      result: {},
+      success: false,
+    });
+  });
+
+  it("header should be accepted if sent", async () => {
+    const request = await todoRouter.fetch(
+      buildRequest({
+        method: "get",
+        path: "/header",
+        headers: {
+          p_hostname: "www.cloudflare.com",
+        },
+      }),
+      {},
+      {},
+    );
+    const resp = await request.json();
+
+    expect(request.status).toEqual(200);
+
+    expect(resp).toEqual({
+      headers: {
+        p_hostname: "www.cloudflare.com",
       },
     });
   });

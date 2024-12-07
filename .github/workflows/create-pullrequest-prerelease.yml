@@ -26,3 +26,22 @@ jobs:
         with:
           name: npm-package-chanfana-${{ github.event.number }} # encode the PR number into the artifact name
           path: chanfana-*.tgz
+
+      - name: 'Comment on PR with Link'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          number: ${{ github.event.number }}
+          message: |
+            🧪 A prerelease is available for testing 🧪
+
+            You can install this latest build in your project with:
+
+            ```sh
+            npm install --save https://prerelease-registry.devprod.cloudflare.dev/chanfana/runs/${{ github.workflow_run.id }}/npm-package-chanfana-${{ github.event.number }}
+            ```
+
+            Or you can immediately run this with `npx`:
+
+            ```sh
+            npx https://prerelease-registry.devprod.cloudflare.dev/chanfana/runs/${{ github.workflow_run.id }}/npm-package-chanfana-${{ github.event.number }}
+            ```

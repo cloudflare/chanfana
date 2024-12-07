@@ -39,12 +39,12 @@
 		"umd",
 		"typed"
 	],
-	"author": "gmassadas@cloudflare.com",
+	"author": "Gabriel Massadas <gmassadas@cloudflare.com> (https://github.com/g4brym)",
 	"license": "MIT",
 	"homepage": "https://chanfana.pages.dev",
 	"repository": {
 		"type": "git",
-		"url": "git+ssh://git@github.com/cloudflare/chanfana.git"
+		"url": "https://github.com/cloudflare/chanfana.git"
 	},
 	"bugs": {
 		"url": "https://github.com/cloudflare/chanfana/issues"
