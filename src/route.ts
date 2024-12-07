@@ -122,8 +122,10 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       rawSchema.query = schema.request?.query;
       unvalidatedData.query = {};
     }
+    console.log(schema.request);
     if (schema.request?.headers) {
       rawSchema.headers = schema.request?.headers;
+      console.log(schema.request?.headers);
       unvalidatedData.headers = {};
     }
 
@@ -134,9 +136,9 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     if (schema.request?.headers) {
       const tmpHeaders: Record<string, any> = {};
 
-      // @ts-ignore
-      for (const header of Object.keys(schema.request?.headers.shape)) {
-        tmpHeaders[header] = request.headers.get(header);
+      const rHeaders = new Headers(request.headers);
+      for (const header of Object.keys((schema.request?.headers as AnyZodObject).shape)) {
+        tmpHeaders[header] = rHeaders.get(header);
       }
 
       unvalidatedData.headers = coerceInputs(tmpHeaders, schema.request?.headers as AnyZodObject);
