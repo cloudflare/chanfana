@@ -5,20 +5,12 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      cloudflare:
-        patterns:
-          - "@cloudflare/*"
-          - wrangler
-      dev:
-        patterns:
-          - "@types/*"
-          - "vitest*"
-          - typescript
-          - hono
-          - itty-router
-    ignore:
-      - dependency-name: '\*'
-        update-types: [ "version-update:semver-major" ]
+      major:
+        update-types: [ "major" ]
+      prod-deps:
+        dependency-type: "production"
+      dev-deps:
+        dependency-type: "development"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
