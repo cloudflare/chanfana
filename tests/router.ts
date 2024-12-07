@@ -261,12 +261,33 @@ export class ToDoCreateTyped extends OpenAPIRoute {
   }
 }
 
+export class ToDoHeaderCheck extends OpenAPIRoute {
+  schema = {
+    tags: ["ToDo"],
+    summary: "List all ToDos",
+    request: {
+      headers: z.object({
+        p_hostname: Hostname(),
+      }),
+    },
+  };
+
+  async handle(request: Request, env: any, context: any) {
+    const data = await this.getValidatedData<typeof this.schema>();
+
+    return {
+      headers: data.headers,
+    };
+  }
+}
+
 export const todoRouter = fromIttyRouter(AutoRouter(), { openapiVersion: "3" });
 todoRouter.get("/todos", ToDoList);
 todoRouter.get("/todos/:id", ToDoGet);
 todoRouter.post("/todos", ToDoCreate);
 todoRouter.post("/todos-typed", ToDoCreateTyped);
 todoRouter.get("/contenttype", ContentTypeGet);
+todoRouter.get("/header", ToDoHeaderCheck);
 
 // 404 for everything else
 todoRouter.all("*", () => new Response("Not Found.", { status: 404 }));
