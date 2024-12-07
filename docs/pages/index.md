@@ -26,9 +26,9 @@ library for Cloudflare Workers but runs on any runtime supported by the base rou
 The key features are:
 
 - OpenAPI 3 and 3.1 schema generator and validator
-- [Query](https://chanfana.pages.dev/user-guide/query-parameters/), [Path](https://chanfana.pages.dev/user-guide/path-parameters/), [Headers](https://chanfana.pages.dev/user-guide/header-parameters/) and [Body](https://chanfana.pages.dev/user-guide/request-body/) typescript inference
 - Fully written in typescript
 - [Class-based endpoints](https://chanfana.pages.dev/user-guide/first-steps/)
+- [Query](https://chanfana.pages.dev/user-guide/query-parameters/), [Path](https://chanfana.pages.dev/user-guide/path-parameters/), [Headers](https://chanfana.pages.dev/user-guide/header-parameters/) and [Body](https://chanfana.pages.dev/user-guide/request-body/) typescript inference
 - Extend existing [Hono](https://chanfana.pages.dev/routers/hono/), [itty-router](https://chanfana.pages.dev/routers/itty-router/), etc application, without touching old routes
 
 ## Getting started
@@ -53,6 +53,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 
 export type Env = {
+    // Example bindings
     DB: D1Database
     BUCKET: R2Bucket
 }
@@ -86,7 +87,7 @@ const app = new Hono()
 // Setup OpenAPI registry
 const openapi = fromHono(app)
 
-// Register OpenAPI endpoints
+// Register OpenAPI endpoints (this will also register the routes in Hono)
 openapi.get('/entry/:id', GetPageNumber)
 
 // Export the Hono app
