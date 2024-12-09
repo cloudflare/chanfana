@@ -37,11 +37,11 @@ jobs:
             You can install this latest build in your project with:
 
             ```sh
-            npm install --save https://prerelease-registry.devprod.cloudflare.dev/chanfana/runs/${{ github.workflow_run.id }}/npm-package-chanfana-${{ github.event.number }}
+            npm install --save https://prerelease-registry.devprod.cloudflare.dev/chanfana/runs/${{ github.run_id }}/npm-package-chanfana-${{ github.event.number }}
             ```
 
             Or you can immediately run this with `npx`:
 
             ```sh
-            npx https://prerelease-registry.devprod.cloudflare.dev/chanfana/runs/${{ github.workflow_run.id }}/npm-package-chanfana-${{ github.event.number }}
+            npx https://prerelease-registry.devprod.cloudflare.dev/chanfana/runs/${{ github.run_id }}/npm-package-chanfana-${{ github.event.number }}
             ```
