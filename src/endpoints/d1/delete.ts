@@ -1,10 +1,23 @@
-import { ApiException } from "../../../exceptions";
-import { DeleteEndpoint } from "../../delete";
-import type { Filters, O } from "../../types";
+import { ApiException } from "../../exceptions";
+import { DeleteEndpoint } from "../delete";
+import type { Filters, Logger, O } from "../types";
 
-export class QBDeleteEndpoint<HandleArgs extends Array<object> = Array<object>> extends DeleteEndpoint<HandleArgs> {
-  qb: any; // D1QB
-  logger?: any;
+export class D1DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> extends DeleteEndpoint<HandleArgs> {
+  dbName = "replace-me";
+  logger?: Logger;
+
+  getDBBinding() {
+    const env = this.params.router.getBindings(this.args);
+    if (env[this.dbName] === undefined) {
+      throw new ApiException(`Binding "${this.dbName}" is not defined in worker`);
+    }
+
+    if (env[this.dbName].prepare === undefined) {
+      throw new ApiException(`Binding "${this.dbName}" is not a D1 binding`);
+    }
+
+    return env[this.dbName];
+  }
 
   getSafeFilters(filters: Filters) {
     const conditions: string[] = [];

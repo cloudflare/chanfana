@@ -1,10 +1,23 @@
-import { ApiException } from "../../../exceptions";
-import { ListEndpoint } from "../../list";
-import type { ListFilters, ListResult, O } from "../../types";
+import { ApiException } from "../../exceptions";
+import { ListEndpoint } from "../list";
+import type { ListFilters, ListResult, Logger, O } from "../types";
 
-export class QBListEndpoint<HandleArgs extends Array<object> = Array<object>> extends ListEndpoint<HandleArgs> {
-  qb: any; // D1QB
-  logger?: any;
+export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> extends ListEndpoint<HandleArgs> {
+  dbName = "replace-me";
+  logger?: Logger;
+
+  getDBBinding() {
+    const env = this.params.router.getBindings(this.args);
+    if (env[this.dbName] === undefined) {
+      throw new ApiException(`Binding "${this.dbName}" is not defined in worker`);
+    }
+
+    if (env[this.dbName].prepare === undefined) {
+      throw new ApiException(`Binding "${this.dbName}" is not a D1 binding`);
+    }
+
+    return env[this.dbName];
+  }
 
   async list(filters: ListFilters): Promise<ListResult<O<typeof this.meta>> & { result_info: object }> {
     const offset = (filters.options.per_page || 20) * (filters.options.page || 0) - (filters.options.per_page || 20);
