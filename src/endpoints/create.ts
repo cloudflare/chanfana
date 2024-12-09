@@ -11,8 +11,6 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return MetaGenerator(this._meta);
   }
 
-  defaultValues?: Record<string, () => any>; // TODO: move this into model
-
   getSchema() {
     const bodyParameters = this.meta.fields.omit(
       (this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
@@ -53,14 +51,6 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
 
     for (const param of this.params.urlParams) {
       newData[param] = (data.params as any)[param];
-    }
-
-    if (this.defaultValues) {
-      for (const [key, value] of Object.entries(this.defaultValues)) {
-        if (newData[key] === undefined) {
-          newData[key] = value();
-        }
-      }
     }
 
     return newData;

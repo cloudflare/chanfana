@@ -122,10 +122,9 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       rawSchema.query = schema.request?.query;
       unvalidatedData.query = {};
     }
-    console.log(schema.request);
+
     if (schema.request?.headers) {
       rawSchema.headers = schema.request?.headers;
-      console.log(schema.request?.headers);
       unvalidatedData.headers = {};
     }
 
