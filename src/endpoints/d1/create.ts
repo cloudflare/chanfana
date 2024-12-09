@@ -1,10 +1,23 @@
-import { ApiException, InputValidationException } from "../../../exceptions";
-import { CreateEndpoint } from "../../create";
-import type { O } from "../../types";
+import { ApiException, InputValidationException } from "../../exceptions";
+import { CreateEndpoint } from "../create";
+import type { Logger, O } from "../types";
 
-export class QBCreateEndpoint<HandleArgs extends Array<object> = Array<object>> extends CreateEndpoint<HandleArgs> {
-  qb: any; // D1QB
-  logger?: any;
+export class D1CreateEndpoint<HandleArgs extends Array<object> = Array<object>> extends CreateEndpoint<HandleArgs> {
+  dbName = "replace-me";
+  logger?: Logger;
+
+  getDBBinding() {
+    const env = this.params.router.getBindings(this.args);
+    if (env[this.dbName] === undefined) {
+      throw new ApiException(`Binding "${this.dbName}" is not defined in worker`);
+    }
+
+    if (env[this.dbName].prepare === undefined) {
+      throw new ApiException(`Binding "${this.dbName}" is not a D1 binding`);
+    }
+
+    return env[this.dbName];
+  }
 
   async create(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
     let inserted;

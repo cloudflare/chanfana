@@ -1,10 +1,23 @@
-import { ApiException } from "../../../exceptions";
-import type { O, UpdateFilters } from "../../types";
-import { UpdateEndpoint } from "../../update";
+import { ApiException } from "../../exceptions";
+import type { Logger, O, UpdateFilters } from "../types";
+import { UpdateEndpoint } from "../update";
 
-export class QBUpdateEndpoint<HandleArgs extends Array<object> = Array<object>> extends UpdateEndpoint<HandleArgs> {
-  qb: any; // D1QB
-  logger?: any;
+export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> extends UpdateEndpoint<HandleArgs> {
+  dbName = "replace-me";
+  logger?: Logger;
+
+  getDBBinding() {
+    const env = this.params.router.getBindings(this.args);
+    if (env[this.dbName] === undefined) {
+      throw new ApiException(`Binding "${this.dbName}" is not defined in worker`);
+    }
+
+    if (env[this.dbName].prepare === undefined) {
+      throw new ApiException(`Binding "${this.dbName}" is not a D1 binding`);
+    }
+
+    return env[this.dbName];
+  }
 
   getSafeFilters(filters: UpdateFilters) {
     // Filters should only apply to primary keys
