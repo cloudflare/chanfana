@@ -9,6 +9,10 @@ export class IttyRouterOpenAPIHandler extends OpenAPIHandler {
   getUrlParams(args: any[]): Record<string, any> {
     return args[0].params;
   }
+
+  getBindings(args: any[]): Record<string, any> {
+    return args[1];
+  }
 }
 
 export function fromIttyRouter<M>(router: M, options?: RouterOptions): M & OpenAPIRouterType<M> {

@@ -19,8 +19,8 @@ export * from "./endpoints/fetch";
 export * from "./endpoints/list";
 export * from "./endpoints/update";
 
-export * from "./endpoints/orms/workers-qb/create";
-export * from "./endpoints/orms/workers-qb/delete";
-export * from "./endpoints/orms/workers-qb/fetch";
-export * from "./endpoints/orms/workers-qb/list";
-export * from "./endpoints/orms/workers-qb/update";
+export * from "./endpoints/d1/create";
+export * from "./endpoints/d1/delete";
+export * from "./endpoints/d1/fetch";
+export * from "./endpoints/d1/list";
+export * from "./endpoints/d1/update";

@@ -15,6 +15,10 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
   getUrlParams(args: any[]): Record<string, any> {
     return args[0].req.param();
   }
+
+  getBindings(args: any[]): Record<string, any> {
+    return args[0].env;
+  }
 }
 
 export function fromHono<M>(router: M, options?: RouterOptions): M & HonoOpenAPIRouterType<M> {

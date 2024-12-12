@@ -240,4 +240,8 @@ export class OpenAPIHandler {
   getUrlParams(args: any[]): Record<string, any> {
     throw new Error("getUrlParams not implemented");
   }
+
+  getBindings(args: any[]): Record<string, any> {
+    throw new Error("getBindings not implemented");
+  }
 }
