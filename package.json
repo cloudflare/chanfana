@@ -1,74 +1,70 @@
 {
-	"name": "chanfana",
-	"version": "2.4.2",
-	"description": "OpenAPI 3 and 3.1 schema generator and validator for Hono, itty-router and more!",
-	"main": "dist/index.js",
-	"module": "dist/index.mjs",
-	"types": "dist/index.d.ts",
-	"files": [
-		"dist",
-		"LICENSE",
-		"README.md"
-	],
-	"scripts": {
-		"prepare": "husky",
-		"build": "rm -rf dist/ && tsup src/index.ts --format cjs,esm --dts --config tsconfig.json",
-		"lint": "npx @biomejs/biome check src/ tests/ || (npx @biomejs/biome check --write src/ tests/; exit 1)",
-		"test": "vitest run --root tests",
-		"deploy-docs": "cd docs && mkdocs build && wrangler pages deploy site --project-name chanfana --branch main"
-	},
-	"keywords": [
-		"cloudflare",
-		"worker",
-		"workers",
-		"serverless",
-		"cloudflare workers",
-		"router",
-		"openapi",
-		"swagger",
-		"openapi generator",
-		"cf",
-		"optional",
-		"middleware",
-		"parameters",
-		"typescript",
-		"npm",
-		"package",
-		"cjs",
-		"esm",
-		"umd",
-		"typed"
-	],
-	"author": "Gabriel Massadas <gmassadas@cloudflare.com> (https://github.com/g4brym)",
-	"license": "MIT",
-	"homepage": "https://chanfana.pages.dev",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/cloudflare/chanfana.git"
-	},
-	"bugs": {
-		"url": "https://github.com/cloudflare/chanfana/issues"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
-		"@cloudflare/vitest-pool-workers": "^0.5.26",
-		"@cloudflare/workers-types": "4.20241127.0",
-		"@types/js-yaml": "^4.0.9",
-		"@types/node": "22.10.1",
-		"@types/service-worker-mock": "^2.0.1",
-		"hono": "4.6.12",
-		"husky": "9.1.7",
-		"itty-router": "5.0.18",
-		"tsup": "8.3.5",
-		"typescript": "5.7.2",
-		"vitest": "2.1.6",
-		"vitest-openapi": "^1.0.3",
-		"wrangler": "3.91.0"
-	},
-	"dependencies": {
-		"@asteasolutions/zod-to-openapi": "^7.2.0",
-		"js-yaml": "^4.1.0",
-		"openapi3-ts": "^4.4.0",
-		"zod": "^3.23.8"
-	}
+  "name": "chanfana",
+  "version": "2.4.2",
+  "description": "OpenAPI 3 and 3.1 schema generator and validator for Hono, itty-router and more!",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "LICENSE", "README.md"],
+  "scripts": {
+    "prepare": "husky",
+    "build": "rm -rf dist/ && tsup src/index.ts --format cjs,esm --dts --config tsconfig.json",
+    "lint": "npx @biomejs/biome check src/ tests/ || (npx @biomejs/biome check --write src/ tests/; exit 1)",
+    "test": "vitest run --root tests",
+    "deploy-docs": "cd docs && mkdocs build && wrangler pages deploy site --project-name chanfana --branch main"
+  },
+  "keywords": [
+    "cloudflare",
+    "worker",
+    "workers",
+    "serverless",
+    "cloudflare workers",
+    "router",
+    "openapi",
+    "swagger",
+    "openapi generator",
+    "cf",
+    "optional",
+    "middleware",
+    "parameters",
+    "typescript",
+    "npm",
+    "package",
+    "cjs",
+    "esm",
+    "umd",
+    "typed"
+  ],
+  "author": "Gabriel Massadas <gmassadas@cloudflare.com> (https://github.com/g4brym)",
+  "license": "MIT",
+  "homepage": "https://chanfana.pages.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cloudflare/chanfana.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cloudflare/chanfana/issues"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@cloudflare/vitest-pool-workers": "^0.5.26",
+    "@cloudflare/workers-types": "4.20241127.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "22.10.1",
+    "@types/service-worker-mock": "^2.0.1",
+    "hono": "4.6.12",
+    "husky": "9.1.7",
+    "itty-router": "5.0.18",
+    "tsup": "8.3.5",
+    "typescript": "5.7.2",
+    "vitest": "2.1.6",
+    "vitest-openapi": "^1.0.3",
+    "wrangler": "3.91.0"
+  },
+  "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^7.2.0",
+    "js-yaml": "^4.1.0",
+    "openapi3-ts": "^4.4.0",
+    "zod": "^3.23.8"
+  }
 }

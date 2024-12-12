@@ -1,7 +1,7 @@
 import { contentJson } from "./contentTypes";
 
 export class ApiException extends Error {
-  isVisible = false;
+  isVisible = true;
   message: string;
   default_message = "Internal Error";
   status = 500;
