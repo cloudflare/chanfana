@@ -1,10 +1,11 @@
-import { ApiException } from "../../exceptions";
+import { ApiException, type InputValidationException } from "../../exceptions";
 import type { Logger, O, UpdateFilters } from "../types";
 import { UpdateEndpoint } from "../update";
 
 export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> extends UpdateEndpoint<HandleArgs> {
   dbName = "DB";
   logger?: Logger;
+  constraintsMessages: Record<string, InputValidationException> = {};
 
   getDBBinding(): D1Database {
     const env = this.params.router.getBindings(this.args);
@@ -74,6 +75,13 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
     } catch (e: any) {
       if (this.logger)
         this.logger.error(`Caught exception while trying to update ${this.meta.model.tableName}: ${e.message}`);
+      if (e.message.includes("UNIQUE constraint failed")) {
+        const constraintMessage = e.message.split("UNIQUE constraint failed:")[1].split(":")[0].trim();
+        if (this.constraintsMessages[constraintMessage]) {
+          throw this.constraintsMessages[constraintMessage];
+        }
+      }
+
       throw new ApiException(e.message);
     }
 
