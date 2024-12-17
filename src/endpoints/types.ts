@@ -31,10 +31,10 @@ export type Model = {
   schema: AnyZodObject;
   primaryKeys: Array<string>;
   serializer?: (obj: object) => object;
-  serializerObject?: AnyZodObject;
+  serializerSchema?: AnyZodObject;
 };
 
-export type ModelComplete = SetRequired<Model, "serializer" | "serializerObject">;
+export type ModelComplete = SetRequired<Model, "serializer" | "serializerSchema">;
 
 export type MetaInput = {
   model: Model;
@@ -57,7 +57,7 @@ export function MetaGenerator(meta: MetaInput) {
     fields: meta.fields ?? meta.model.schema,
     model: {
       serializer: (obj: any): any => obj,
-      serializerObject: meta.model.schema,
+      serializerSchema: meta.model.schema,
       ...meta.model,
     },
   };

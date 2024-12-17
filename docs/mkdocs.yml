@@ -70,6 +70,13 @@ nav:
       - advanced-user-guide/openapi-schema-customizations.md
       - advanced-user-guide/streaming-responses.md
       - advanced-user-guide/utilities.md
+  - Generic CRUD endpoints:
+      - generic-cruds/getting-started-with-cruds.md
+      - generic-cruds/create-endpoint.md
+      - generic-cruds/read-endpoint.md
+      - generic-cruds/update-endpoint.md
+      - generic-cruds/delete-endpoint.md
+      - generic-cruds/list-endpoint.md
 markdown_extensions:
   - toc:
       permalink: true
