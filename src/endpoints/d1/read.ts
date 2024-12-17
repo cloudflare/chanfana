@@ -1,8 +1,8 @@
 import { ApiException } from "../../exceptions";
-import { FetchEndpoint } from "../fetch";
+import { ReadEndpoint } from "../read";
 import type { ListFilters, Logger, O } from "../types";
 
-export class D1FetchEndpoint<HandleArgs extends Array<object> = Array<object>> extends FetchEndpoint<HandleArgs> {
+export class D1ReadEndpoint<HandleArgs extends Array<object> = Array<object>> extends ReadEndpoint<HandleArgs> {
   dbName = "DB";
   logger?: Logger;
 

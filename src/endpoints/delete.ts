@@ -30,7 +30,7 @@ export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> ex
           description: "Returns the Object if it was successfully deleted",
           ...contentJson({
             success: Boolean,
-            result: this.meta.model.serializerObject,
+            result: this.meta.model.serializerSchema,
           }),
           ...this.schema?.responses?.[200],
         },

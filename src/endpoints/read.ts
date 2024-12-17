@@ -3,7 +3,7 @@ import { NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
 import { type FilterCondition, type ListFilters, MetaGenerator, type MetaInput, type O } from "./types";
 
-export class FetchEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
+export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
   // @ts-ignore
   _meta: MetaInput;
 
@@ -34,7 +34,7 @@ export class FetchEndpoint<HandleArgs extends Array<object> = Array<object>> ext
           description: "Returns a single object if found",
           ...contentJson({
             success: Boolean,
-            result: this.meta.model.serializerObject,
+            result: this.meta.model.serializerSchema,
           }),
           ...this.schema?.responses?.[200],
         },

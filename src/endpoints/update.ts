@@ -30,7 +30,7 @@ export class UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
           description: "Returns the updated Object",
           ...contentJson({
             success: Boolean,
-            result: this.meta.model.serializerObject,
+            result: this.meta.model.serializerSchema,
           }),
           ...this.schema?.responses?.[200],
         },

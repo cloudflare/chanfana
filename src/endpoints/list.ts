@@ -75,7 +75,7 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
           description: "List objects",
           ...contentJson({
             success: Boolean,
-            result: [this.meta.model.serializerObject],
+            result: [this.meta.model.serializerSchema],
           }),
           ...this.schema?.responses?.[200],
         },
