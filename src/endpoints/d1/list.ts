@@ -48,7 +48,7 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
       where = `WHERE ${conditions.join(" AND ")}`;
     }
 
-    let orderBy = `ORDER BY ${this.defaultOrderBy || this.meta.model.primaryKeys[0]} DESC`;
+    let orderBy = `ORDER BY ${this.defaultOrderBy || `${this.meta.model.primaryKeys[0]} DESC`}`;
     if (filters.options.order_by) {
       orderBy = `ORDER BY ${filters.options.order_by} ${filters.options.order_by_direction || "ASC"}`;
     }
