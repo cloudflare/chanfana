@@ -23,6 +23,8 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
   searchFields?: Array<string>;
   searchFieldName = "search";
   optionFields = ["page", "per_page", "order_by", "order_by_direction"];
+  orderByFields = [];
+  defaultOrderBy?: string;
 
   getSchema() {
     const parsedQueryParameters = this.meta.fields
@@ -47,11 +49,18 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
         });
     }
 
-    const queryParameters = z
+    let queryParameters = z
       .object({
         page: z.number().int().min(1).optional().default(1),
         per_page: z.number().int().min(1).max(100).optional().default(20),
-        order_by: Str({
+      })
+      .extend(parsedQueryParameters);
+
+    if (this.orderByFields && this.orderByFields.length > 0) {
+      queryParameters = queryParameters.extend({
+        order_by: Enumeration({
+          default: this.orderByFields[0],
+          values: this.orderByFields,
           description: "Order By Column Name",
           required: false,
         }),
@@ -61,8 +70,8 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
           description: "Order By Direction",
           required: false,
         }),
-      })
-      .extend(parsedQueryParameters);
+      });
+    }
 
     return {
       request: {
