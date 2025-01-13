@@ -47,19 +47,19 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@cloudflare/vitest-pool-workers": "^0.5.26",
-    "@cloudflare/workers-types": "4.20241127.0",
+    "@cloudflare/vitest-pool-workers": "^0.6.0",
+    "@cloudflare/workers-types": "4.20250109.0",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "22.10.1",
+    "@types/node": "22.10.5",
     "@types/service-worker-mock": "^2.0.1",
-    "hono": "4.6.12",
+    "hono": "4.6.16",
     "husky": "9.1.7",
     "itty-router": "5.0.18",
     "tsup": "8.3.5",
-    "typescript": "5.7.2",
-    "vitest": "2.1.6",
+    "typescript": "5.7.3",
+    "vitest": "2.1.8",
     "vitest-openapi": "^1.0.3",
-    "wrangler": "3.91.0"
+    "wrangler": "3.101.0"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.2.0",
