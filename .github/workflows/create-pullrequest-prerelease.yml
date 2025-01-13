@@ -30,7 +30,7 @@ jobs:
       - name: 'Comment on PR with Link'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          number: ${{ github.event.number }}
+          number: ${{ env.WORKFLOW_RUN_PR }}
           message: |
             🧪 A prerelease is available for testing 🧪
 
