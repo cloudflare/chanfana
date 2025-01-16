@@ -1,24 +1,43 @@
-The create class, allows you to specify witch fields the user is able to submit, you can set this in the `fields` parameter of the `_meta` variable.
+# Create Endpoint
 
-Methods available:
+The Create endpoint allows you to generate API endpoints for creating new resources based on your model definition. You can specify which fields users are allowed to submit through the endpoint.
 
-- `getSchema();` this allows you to live change your openapi schema
-- `async getObject(): Promise<O<typeof this.meta>>;` this allows you to customize the object after validation
-- `async before(data: O<typeof this.meta>): Promise<O<typeof this.meta>>;` add custom logic before creating the object
-- `async create(data: O<typeof this.meta>): Promise<O<typeof this.meta>>;` create the object in the database
-- `async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>>;` add custom logic after creating the object
-- `async handle(...args);` overwrite the response or the order of the method calls
+## Base Configuration
 
-Call order:
+To define a Create endpoint, extend one of the base classes (`CreateEndpoint` for custom databases or `D1CreateEndpoint` for D1) and configure the `_meta` object:
+
+```ts
+export class CreateEvaluation extends D1CreateEndpoint {
+  _meta = {
+    model: evaluationModel,
+    fields: evaluationModel.schema.pick({
+      gateway_id: true,
+      name: true,
+    })
+  };
+}
+```
+
+## Available Methods
+
+You can customize the Create endpoint behavior by overriding these methods:
+
+- `getSchema()`: Customize the OpenAPI schema at runtime
+- `async getObject()`: Transform or enhance the object after validation
+- `async before(data)`: Add custom logic before creating the object
+- `async create(data)`: Create the object in the database
+- `async after(data)`: Add custom logic after creating the object
+- `async handle(...args)`: Override the default execution flow
+
+## Execution Flow
+
+By default, the Create endpoint follows this execution order:
 
 ```ts
 async function handle(...args) {
   let obj = await this.getObject();
-
   obj = await this.before(obj);
-
   obj = await this.create(obj);
-
   obj = await this.after(obj);
 
   return {
@@ -27,46 +46,50 @@ async function handle(...args) {
   };
 }
 ```
-  
-Example router registration:
+
+## Route Registration
+
+Register your Create endpoint like any other route. Primary keys not present in the URL are expected in the request body:
+
 ```ts
-// Primary keys not present in the url are expected in the request body
 router.post("/gateways/:gateway_id/evaluations", CreateEvaluation);
 ```
 
+## Database Adapters
 
-## D1 Endpoint
-The D1 create adapter exposes 3 additional configuration:
+### D1 Adapter
 
-- `dbName`: your D1 binding name, by default is set to "DB"
-- `logger`: this allows you to get logger messages for validation errors, objects created and other;
-- `constraintsMessages`: this allows you to customize database constraint error messages
+The `D1CreateEndpoint` provides built-in support for Cloudflare D1. Configure it with these options:
 
-Here is an example of a simple create endpoint, using the example model defined in the [getting started with cruds example](./getting-started-with-cruds.md):
 ```ts
 import { D1CreateEndpoint } from 'chanfana'
 
 export class CreateEvaluation extends D1CreateEndpoint {
   _meta = {
     model: evaluationModel,
-    fields: evaluationModel.schema
-      .pick({
-        gateway_id: true,
-        name: true,
-      })
+    fields: evaluationModel.schema.pick({
+      gateway_id: true,
+      name: true,
+    })
   };
+
+  // Optional configurations
+  dbName = "DB";  // D1 binding name (defaults to "DB")
+  logger = true;  // Enable logging for validation errors and operations
 }
 ```
 
-### Customizing constraints messages
-In order to have custom error messages for database constraint error, just define the field inside your class
-with an object where the key is a comma separated list of the fields in the constraint and the value is a exception of the type
+#### Custom Constraint Messages
+
+Customize database constraint violation messages by defining the `constraintsMessages` object:
 
 ```ts
 import { D1CreateEndpoint, InputValidationException } from 'chanfana'
 
 export class CreateEvaluation extends D1CreateEndpoint {
-  _meta = {...}
+  _meta = {
+    // ... configuration as above
+  };
   
   constraintsMessages = {
     "evaluations.name, evaluations.gateway_id": new InputValidationException(
@@ -77,19 +100,23 @@ export class CreateEvaluation extends D1CreateEndpoint {
 }
 ```
 
-## Bring your own Database Endpoint
+### Bring your own Database Adapter
 
-In our to use Bring your own Database, just extend your class from the base `CreateEndpoint` and overwrite the `create` method.
+For databases other than D1, extend the base `CreateEndpoint` class and implement the `create` method:
 
 ```ts
 import { CreateEndpoint } from 'chanfana'
 
 export class MyCustomCreate extends CreateEndpoint {
   async create(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
-    // TODO: insert my object here, data is already validated
+    // Implement your database insertion logic here
+    // The 'data' parameter contains the validated object
 
-    // Return the insert object
-    return data;
+    return data; // Return the created object
   }
 }
 ```
+
+## Related Resources
+- [Getting Started with CRUDS](./getting-started-with-cruds.md)
+

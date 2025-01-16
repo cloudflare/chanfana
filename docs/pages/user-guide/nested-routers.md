@@ -2,6 +2,30 @@ For big projects, having all routes in the same file can be chaotic.
 
 In this example we split some routes to a different router
 
+## Hono
+
+```ts
+import { fromHono, OpenAPIRoute } from 'chanfana'
+import { Hono } from 'hono'
+
+const authors = fromHono(new Hono())
+  .get('/', ListAuthors)
+  .post('/', CreateAuthor)
+  .get('/:id', GetAuthor)
+
+const books = fromHono(new Hono())
+  .get('/', ListBooks)
+  .post('/', CreateBook)
+  .get('/:id', GetBook)
+
+const app = fromHono(new Hono())
+app.route('/authors', authors)
+app.route('/books', books)
+```
+
+
+## Itty router
+
 ```ts
 // api/attacks/router.ts
 import { fromIttyRouter } from 'chanfana'
