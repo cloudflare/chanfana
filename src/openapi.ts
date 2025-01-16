@@ -10,21 +10,6 @@ export type OpenAPIRouterType<M> = {
   original: M;
   options: RouterOptions;
   registry: OpenAPIRegistryMerger;
-
-  delete(path: string, endpoint: typeof OpenAPIRoute<any>): M;
-  delete(path: string, router: M): M;
-  get(path: string, endpoint: typeof OpenAPIRoute<any>): M;
-  get(path: string, router: M): M;
-  head(path: string, endpoint: typeof OpenAPIRoute<any>): M;
-  head(path: string, router: M): M;
-  patch(path: string, endpoint: typeof OpenAPIRoute<any>): M;
-  patch(path: string, router: M): M;
-  post(path: string, endpoint: typeof OpenAPIRoute<any>): M;
-  post(path: string, router: M): M;
-  put(path: string, endpoint: typeof OpenAPIRoute<any>): M;
-  put(path: string, router: M): M;
-  all(path: string, endpoint: typeof OpenAPIRoute<any>): M;
-  all(path: string, router: M): M;
 };
 
 export class OpenAPIHandler {
@@ -105,10 +90,13 @@ export class OpenAPIHandler {
 
   registerNestedRouter(params: {
     method: string;
-    path: string;
     nestedRouter: any;
+    path?: string;
   }) {
-    this.registry.merge(params.nestedRouter.registry);
+    // Only overwrite the path if the nested router don't have a base already
+    const path = params.nestedRouter.options?.base ? undefined : params.path;
+
+    this.registry.merge(params.nestedRouter.registry, path);
 
     return [params.nestedRouter.fetch];
   }
@@ -119,7 +107,7 @@ export class OpenAPIHandler {
       .replaceAll(/:(\w+)/g, "{$1}"); // convert parameters into openapi compliant
   }
 
-  registerRoute(params: { method: string; path: string; handlers: any[] }) {
+  registerRoute(params: { method: string; path: string; handlers: any[]; doRegister?: boolean }) {
     const parsedRoute = this.parseRoute(params.path);
 
     const parsedParams = ((this.options.base || "") + params.path).match(/:(\w+)/g);
@@ -188,12 +176,14 @@ export class OpenAPIHandler {
       }
     }
 
-    this.registry.registerPath({
-      ...schema,
-      // @ts-ignore
-      method: params.method,
-      path: parsedRoute,
-    });
+    if (params.doRegister === undefined || params.doRegister) {
+      this.registry.registerPath({
+        ...schema,
+        // @ts-ignore
+        method: params.method,
+        path: parsedRoute,
+      });
+    }
 
     return params.handlers.map((handler: any) => {
       if (handler.isRoute) {
