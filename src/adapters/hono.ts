@@ -85,7 +85,7 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
 }
 
 export function fromHono<
-  M extends Hono,
+  M extends Hono<E, S, BasePath>,
   E extends Env = M extends Hono<infer E, any, any> ? E : never,
   S extends Schema = M extends Hono<any, infer S, any> ? S : never,
   BasePath extends string = M extends Hono<any, any, infer BP> ? BP : never,
