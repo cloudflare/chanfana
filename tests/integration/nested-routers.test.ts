@@ -90,4 +90,62 @@ describe("innerRouter", () => {
     expect(request.status).toEqual(404);
     expect(resp).toEqual("Not Found.");
   });
+
+  it("nested router with base path", async () => {
+    const innerRouter = fromIttyRouter(AutoRouter(), {
+      base: "/api/v1",
+    });
+    innerRouter.get("/todo/:id", ToDoGet);
+
+    const router = fromIttyRouter(AutoRouter());
+    router.all("/api/v1/*", innerRouter);
+
+    const request = await router.fetch(new Request("http://localhost:8080/openapi.json"));
+    const resp = await request.json();
+
+    expect(request.status).toEqual(200);
+    expect(resp).toEqual({
+      components: {
+        parameters: {},
+        schemas: {},
+      },
+      info: {
+        title: "OpenAPI",
+        version: "1.0.0",
+      },
+      openapi: "3.1.0",
+      paths: {
+        "/api/v1/todo/{id}": {
+          get: {
+            operationId: "get_ToDoGet",
+            parameters: [
+              {
+                in: "path",
+                name: "id",
+                required: true,
+                schema: {
+                  type: "number",
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                content: {
+                  "application/json": {
+                    schema: {
+                      todo: {},
+                    },
+                  },
+                },
+                description: "example",
+              },
+            },
+            summary: "Get a single ToDo",
+            tags: ["ToDo"],
+          },
+        },
+      },
+      webhooks: {},
+    });
+  });
 });

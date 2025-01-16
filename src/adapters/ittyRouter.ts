@@ -49,7 +49,7 @@ export function fromIttyRouter<M>(router: M, options?: RouterOptions): M & IttyR
             handlers = openapiRouter.registerNestedRouter({
               method: prop,
               nestedRouter: handlers[0],
-              path: route,
+              path: undefined,
             });
           } else if (openapiRouter.allowedMethods.includes(prop)) {
             handlers = openapiRouter.registerRoute({
