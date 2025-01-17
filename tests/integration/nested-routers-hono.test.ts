@@ -1,7 +1,8 @@
 import { Hono } from "hono";
+import { AutoRouter } from "itty-router";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { fromHono } from "../../src";
+import { fromHono, fromIttyRouter } from "../../src";
 import { OpenAPIRoute } from "../../src/route";
 import { jsonResp } from "../../src/utils";
 
@@ -117,5 +118,61 @@ describe("innerRouter", () => {
 
     expect(request.status).toEqual(404);
     expect(resp).toEqual("Not Found.");
+  });
+
+  it("nested router with base path", async () => {
+    const innerRouter = fromHono(new Hono());
+    innerRouter.get("/todo/:id", ToDoGet);
+
+    const router = fromHono(new Hono());
+    router.route("/api/v1/:prefix", innerRouter);
+
+    const request = await router.fetch(new Request("http://localhost:8080/openapi.json"));
+    const resp = await request.json();
+
+    expect(request.status).toEqual(200);
+    expect(resp).toEqual({
+      components: {
+        parameters: {},
+        schemas: {},
+      },
+      info: {
+        title: "OpenAPI",
+        version: "1.0.0",
+      },
+      openapi: "3.1.0",
+      paths: {
+        "/api/v1/{prefix}/todo/{id}": {
+          get: {
+            operationId: "get_ToDoGet",
+            parameters: [
+              {
+                in: "path",
+                name: "id",
+                required: true,
+                schema: {
+                  type: "number",
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                content: {
+                  "application/json": {
+                    schema: {
+                      todo: {},
+                    },
+                  },
+                },
+                description: "example",
+              },
+            },
+            summary: "Get a single ToDo",
+            tags: ["ToDo"],
+          },
+        },
+      },
+      webhooks: {},
+    });
   });
 });

@@ -94,7 +94,13 @@ export class OpenAPIHandler {
     path?: string;
   }) {
     // Only overwrite the path if the nested router don't have a base already
-    const path = params.nestedRouter.options?.base ? undefined : params.path;
+    const path = params.nestedRouter.options?.base
+      ? undefined
+      : params.path
+        ? params.path
+            .replaceAll(/\/+(\/|$)/g, "$1") // strip double & trailing splash
+            .replaceAll(/:(\w+)/g, "{$1}") // convert parameters into openapi compliant
+        : undefined; // ;
 
     this.registry.merge(params.nestedRouter.registry, path);
 
