@@ -93,12 +93,12 @@ describe("innerRouter", () => {
 
   it("nested router with base path", async () => {
     const innerRouter = fromIttyRouter(AutoRouter(), {
-      base: "/api/v1",
+      base: "/api/v1/:prefix",
     });
     innerRouter.get("/todo/:id", ToDoGet);
 
     const router = fromIttyRouter(AutoRouter());
-    router.all("/api/v1/*", innerRouter);
+    router.all("/api/v1/:prefix/*", innerRouter);
 
     const request = await router.fetch(new Request("http://localhost:8080/openapi.json"));
     const resp = await request.json();
@@ -115,7 +115,7 @@ describe("innerRouter", () => {
       },
       openapi: "3.1.0",
       paths: {
-        "/api/v1/todo/{id}": {
+        "/api/v1/{prefix}/todo/{id}": {
           get: {
             operationId: "get_ToDoGet",
             parameters: [
