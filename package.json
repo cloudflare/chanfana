@@ -5,13 +5,20 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "files": ["dist", "LICENSE", "README.md"],
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "prepare": "husky",
     "build": "rm -rf dist/ && tsup src/index.ts --format cjs,esm --dts --config tsconfig.json --external Hono",
     "lint": "npx @biomejs/biome check src/ tests/ || (npx @biomejs/biome check --write src/ tests/; exit 1)",
     "test": "vitest run --root tests",
-    "deploy-docs": "cd docs && mkdocs build && wrangler pages deploy site --project-name chanfana --branch main"
+    "deploy-docs": "cd docs && mkdocs build && wrangler pages deploy site --project-name chanfana --branch main",
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
   },
   "keywords": [
     "cloudflare",
@@ -57,6 +64,7 @@
     "itty-router": "5.0.18",
     "tsup": "8.3.5",
     "typescript": "5.7.3",
+    "vitepress": "^1.6.3",
     "vitest": "2.1.8",
     "vitest-openapi": "^1.0.3",
     "wrangler": "3.101.0"
