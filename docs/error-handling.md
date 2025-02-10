@@ -31,9 +31,10 @@ Chanfana uses custom exception classes to represent different types of API error
 
 ```typescript
 import { ApiException } from 'chanfana';
+import { type Context } from 'hono';
 
 class MyEndpoint {
-    async handle() {
+    async handle(c: Context) {
         const operationSuccessful = false; // Simulate an error condition
 
         if (!operationSuccessful) {
@@ -84,6 +85,7 @@ Chanfana provides several pre-built exception classes that extend `ApiException`
 ```typescript
 import { InputValidationException, OpenAPIRoute, contentJson } from 'chanfana';
 import { z } from 'zod';
+import { type Context } from 'hono';
 
 class CreateUserEndpoint extends OpenAPIRoute {
     schema = {
@@ -95,11 +97,11 @@ class CreateUserEndpoint extends OpenAPIRoute {
         },
         responses: {
             "200": { description: 'User created' },
-            "400": InputValidationException.schema()["400"], // Document 400 error
+            ...InputValidationException.schema(), // Document HTTP 400 error
         },
     };
 
-    async handle() {
+    async handle(c: Context) {
         const data = await this.getValidatedData<typeof this.schema>();
         const username = data.body.username;
         const email = data.body.email;
@@ -152,6 +154,7 @@ In this example, if the `checkUsernameExists` function returns `true`, we throw 
 ```typescript
 import { NotFoundException, OpenAPIRoute, contentJson } from 'chanfana';
 import { z } from 'zod';
+import { type Context } from 'hono';
 
 class GetProductEndpoint extends OpenAPIRoute {
     schema = {
@@ -160,11 +163,11 @@ class GetProductEndpoint extends OpenAPIRoute {
         },
         responses: {
             "200": { description: 'Product details' },
-            "404": NotFoundException.schema()["404"], // Document 404 error
+            ...NotFoundException.schema(), // Document HTTP 404 error
         },
     };
 
-    async handle() {
+    async handle(c: Context) {
         const data = await this.getValidatedData<typeof this.schema>();
         const productId = data.params.productId;
 
@@ -215,6 +218,7 @@ If `getProductFromDatabase` returns `null`, a `NotFoundException` is thrown. Cha
 ```typescript
 import { MultiException, InputValidationException, OpenAPIRoute, contentJson } from 'chanfana';
 import { z } from 'zod';
+import { type Context } from 'hono';
 
 class ValidateMultipleFieldsEndpoint extends OpenAPIRoute {
     schema = {
@@ -226,11 +230,11 @@ class ValidateMultipleFieldsEndpoint extends OpenAPIRoute {
             })),
         },
         responses: {
-            "400": InputValidationException.schema()["400"], // Document 400 error
+            ...InputValidationException.schema(), // Document HTTP 400 error
         },
     };
 
-    async handle() {
+    async handle(c: Context) {
         const data = await this.getValidatedData<typeof this.schema>();
         const field1 = data.body.field1;
         const field2 = data.body.field2;
@@ -283,22 +287,23 @@ You can create your own custom exception classes by extending `ApiException`. Th
 ```typescript
 import { ApiException, contentJson } from 'chanfana';
 import { z } from 'zod';
+import { type Context } from 'hono';
 
 export class AuthenticationException extends ApiException {
     default_message = "Authentication failed";
     status = 401;
-    code = 7003;
+    code = 1000;
 }
 
 // ... in your endpoint ...
 class AuthenticatedEndpoint extends OpenAPIRoute {
     schema = {
         responses: {
-            "401": AuthenticationException.schema()["401"], // Document 401 error
+            ...AuthenticationException.schema(), // Document HTTP 401 error
         },
     };
 
-    async handle() {
+    async handle(c: Context) {
         const isAuthenticated = await authenticateUser(); // Assume this function checks authentication
 
         if (!isAuthenticated) {
@@ -315,13 +320,13 @@ async function authenticateUser(): Promise<boolean> {
 }
 ```
 
-In this example, we create a custom `AuthenticationException` class with a `401 Unauthorized` status code and a specific error code. We also document the `401` response in the endpoint's `schema.responses` using `AuthenticationException.schema()["401"]`.
+In this example, we create a custom `AuthenticationException` class with a `401 Unauthorized` status code and a specific error code. We also document the `401` response in the endpoint's `schema.responses` using `...AuthenticationException.schema()`.
 
 ## Defining Exception Schemas for OpenAPI Documentation
 
 The `static schema()` method in `ApiException` and its subclasses is used to generate OpenAPI schema definitions for error responses. This ensures that your API documentation accurately reflects potential error scenarios and their response structures.
 
-When you call `MyExceptionClass.schema()["XXX"]` (where "XXX" is a status code), it returns an OpenAPI response object that you can include in your endpoint's `schema.responses`. This automatically documents the error response with the correct status code, description, and response body schema (based on the `ApiException`'s `buildResponse()` output).
+When you call `...MyExceptionClass.schema()` it returns an OpenAPI response object that you can include in your endpoint's `schema.responses`. This automatically documents the error response with the correct status code, description, and response body schema (based on the `ApiException`'s `buildResponse()` output).
 
 ## Global Error Handling Strategies
 
@@ -332,11 +337,18 @@ While Chanfana provides structured exception handling within endpoints, you migh
 In Hono, you can use the `app.onError` handler to catch unhandled exceptions:
 
 ```typescript
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { fromHono, ApiException } from 'chanfana';
 
-const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+export type Env = {
+    // Example bindings, use your own
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
+
+const app = new Hono<{ Bindings: Env }>();
+const openapi = fromHono(app);
 
 openapi.get('/error', () => {
     throw new Error("Something went terribly wrong!"); // Throw a standard error

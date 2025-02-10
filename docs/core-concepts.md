@@ -93,4 +93,4 @@ By understanding these core concepts, you are well-equipped to start building ro
 
 ---
 
-Next, let's explore how to [**Define Endpoints with `OpenAPIRoute`**](./defining-endpoints.md) in more detail.
+Next, let's explore how to [**Define Endpoints**](./endpoints/defining-endpoints.md) in more detail.

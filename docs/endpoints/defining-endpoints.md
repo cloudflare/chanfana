@@ -21,6 +21,7 @@ Here's the basic structure of an `OpenAPIRoute` class:
 ```typescript
 import { OpenAPIRoute } from 'chanfana';
 import { z } from 'zod';
+import { type Context } from 'hono';
 
 class MyEndpoint extends OpenAPIRoute {
     schema = {
@@ -33,7 +34,7 @@ class MyEndpoint extends OpenAPIRoute {
         },
     };
 
-    async handle(...args: any[]) {
+    async handle(c: Context) {
         // Implement your endpoint logic here
         // Access validated data using this.getValidatedData()
         // Return a Response, Promise<Response>, or a plain object
@@ -59,6 +60,7 @@ The `request` property is an optional object that defines the structure of the i
 ```typescript
 import { OpenAPIRoute, contentJson } from 'chanfana';
 import { z } from 'zod';
+import { type Context } from 'hono';
 
 class ExampleEndpoint extends OpenAPIRoute {
     schema = {
@@ -77,7 +79,7 @@ class ExampleEndpoint extends OpenAPIRoute {
         },
     };
 
-    async handle() {
+    async handle(c: Context) {
         const data = await this.getValidatedData<typeof this.schema>();
         // data.body will be of type { name: string, email: string }
         // data.query will be of type { page: number, pageSize: number }
@@ -100,9 +102,9 @@ Each response definition should include:
 **Example: Response Schema with Success and Error Responses**
 
 ```typescript
-import { OpenAPIRoute, contentJson } from 'chanfana';
+import { OpenAPIRoute, contentJson, InputValidationException } from 'chanfana';
 import { z } from 'zod';
-import { InputValidationException } from '../exceptions'; // Assuming exceptions.ts is in the same directory
+import { type Context } from 'hono';
 
 class AnotherEndpoint extends OpenAPIRoute {
     schema = {
@@ -114,7 +116,7 @@ class AnotherEndpoint extends OpenAPIRoute {
                     data: z.object({ id: z.number() }),
                 })),
             },
-            "400": InputValidationException.schema()["400"], // Reusing schema from InputValidationException
+            ...InputValidationException.schema(),
             "500": {
                 description: 'Internal Server Error',
                 content: contentJson(z.object({
@@ -125,7 +127,7 @@ class AnotherEndpoint extends OpenAPIRoute {
         },
     };
 
-    async handle() {
+    async handle(c: Context) {
         // ... your logic ...
         const success = Math.random() > 0.5;
         if (success) {
@@ -155,6 +157,7 @@ The `handle` method is where you write the core logic of your API endpoint. It's
 ```typescript
 import { OpenAPIRoute, contentJson } from 'chanfana';
 import { z } from 'zod';
+import { type Context } from 'hono';
 
 class UserEndpoint extends OpenAPIRoute {
     schema = {
@@ -176,7 +179,7 @@ class UserEndpoint extends OpenAPIRoute {
         },
     };
 
-    async handle() {
+    async handle(c: Context) {
         const data = await this.getValidatedData<typeof this.schema>();
         const userId = data.params.userId;
 
@@ -205,7 +208,9 @@ The `getValidatedData<S = any>()` method is crucial for accessing the validated 
 **Example: Using `getValidatedData()`**
 
 ```typescript
-async handle() {
+import { type Context } from 'hono';
+
+async handle(c: Context) {
     const data = await this.getValidatedData<typeof this.schema>();
     const userName = data.body.name; // TypeScript knows data.body.name is a string
     const pageNumber = data.query.page; // TypeScript knows data.query.page is a number
@@ -219,9 +224,16 @@ async handle() {
 Let's put it all together with a simple greeting endpoint that takes a name as a query parameter and returns a personalized greeting.
 
 ```typescript
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { fromHono, OpenAPIRoute } from 'chanfana';
 import { z } from 'zod';
+
+export type Env = {
+    // Example bindings, use your own
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
 
 class GreetingEndpoint extends OpenAPIRoute {
     schema = {
@@ -240,15 +252,15 @@ class GreetingEndpoint extends OpenAPIRoute {
         },
     };
 
-    async handle() {
+    async handle(c: AppContext) {
         const data = await this.getValidatedData<typeof this.schema>();
         const name = data.query.name;
         return { greeting: `Hello, ${name}! Welcome to Chanfana.` };
     }
 }
 
-const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const app = new Hono<{ Bindings: Env }>();
+const openapi = fromHono(app);
 openapi.get('/greet', GreetingEndpoint);
 
 export default app;

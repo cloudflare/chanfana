@@ -26,6 +26,7 @@ These status codes indicate that the request was successfully processed. Common 
 ```typescript
 import { OpenAPIRoute, contentJson } from 'chanfana';
 import { z } from 'zod';
+import { type Context } from 'hono';
 
 class CreateResourceEndpoint extends OpenAPIRoute {
     schema = {
@@ -45,7 +46,7 @@ class CreateResourceEndpoint extends OpenAPIRoute {
         },
     };
 
-    async handle() {
+    async handle(c: Context) {
         // ... logic to create resource ...
         const newResourceId = 'resource-123';
         const resource = { id: newResourceId, createdAt: new Date().toISOString() };
@@ -76,9 +77,9 @@ These status codes indicate that an error occurred during request processing. It
 **Example: Error Responses**
 
 ```typescript
-import { OpenAPIRoute, contentJson } from 'chanfana';
+import { OpenAPIRoute, contentJson, InputValidationException, NotFoundException } from 'chanfana';
 import { z } from 'zod';
-import { InputValidationException, NotFoundException } from '../exceptions'; // Assuming exceptions.ts
+import { type Context } from 'hono';
 
 class GetItemEndpoint extends OpenAPIRoute {
     schema = {
@@ -93,8 +94,8 @@ class GetItemEndpoint extends OpenAPIRoute {
                     name: z.string(),
                 })),
             },
-            "400": InputValidationException.schema()["400"], // Reusing schema from InputValidationException
-            "404": NotFoundException.schema()["404"],       // Reusing schema from NotFoundException
+            ...InputValidationException.schema(),
+            ...NotFoundException.schema(),
             "500": {
                 description: 'Internal Server Error',
                 content: contentJson(z.object({
@@ -103,13 +104,20 @@ class GetItemEndpoint extends OpenAPIRoute {
             },
         },
     };
+    
+    getItemFromDatabase(itemId: string) {
+        // ... your database lookup logic ...
+        // Simulate item not found for certain IDs
+        if (itemId === 'item-not-found') return null;
+        return { id: itemId, name: `Item ${itemId}` };
+    }
 
-    async handle() {
+    async handle(c: Context) {
         const data = await this.getValidatedData<typeof this.schema>();
         const itemId = data.params.itemId;
 
         // Simulate item retrieval (replace with actual logic)
-        const item = getItemFromDatabase(itemId); // Assume this function might return null
+        const item = this.getItemFromDatabase(itemId); // Assume this function might return null
 
         if (!item) {
             throw new NotFoundException(`Item with ID '${itemId}' not found`);
@@ -117,13 +125,6 @@ class GetItemEndpoint extends OpenAPIRoute {
 
         return { ...item };
     }
-}
-
-function getItemFromDatabase(itemId: string) {
-    // ... your database lookup logic ...
-    // Simulate item not found for certain IDs
-    if (itemId === 'item-not-found') return null;
-    return { id: itemId, name: `Item ${itemId}` };
 }
 ```
 
@@ -169,10 +170,16 @@ You can use the same Zod schema capabilities for response bodies as you do for r
 Let's look at a complete example that defines both request and response schemas for a simple endpoint:
 
 ```typescript
-import { Hono } from 'hono';
-import { fromHono, OpenAPIRoute, contentJson } from 'chanfana';
+import { Hono, type Context } from 'hono';
+import { fromHono, OpenAPIRoute, contentJson, InputValidationException, NotFoundException } from 'chanfana';
 import { z } from 'zod';
-import { InputValidationException, NotFoundException } from '../exceptions'; // Assuming exceptions.ts
+
+export type Env = {
+    // Example bindings, use your own
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
 
 class ProductEndpoint extends OpenAPIRoute {
     schema = {
@@ -192,8 +199,8 @@ class ProductEndpoint extends OpenAPIRoute {
                     imageUrl: z.string().url().optional(),
                 })),
             },
-            "400": InputValidationException.schema()["400"],
-            "404": NotFoundException.schema()["404"],
+            ...InputValidationException.schema(),
+            ...NotFoundException.schema(),
             "500": {
                 description: 'Internal Server Error',
                 content: contentJson(z.object({
@@ -202,13 +209,25 @@ class ProductEndpoint extends OpenAPIRoute {
             },
         },
     };
+    
+    getProductFromDatabase(productId: string) {
+        // ... your database lookup logic ...
+        // Simulate product data
+        return {
+            id: productId,
+            name: `Awesome Product ${productId}`,
+            description: 'This is a simulated product for demonstration.',
+            price: 99.99,
+            imageUrl: 'https://example.com/product-image.jpg',
+        };
+    }
 
-    async handle() {
+    async handle(c: AppContext) {
         const data = await this.getValidatedData<typeof this.schema>();
         const productId = data.params.productId;
 
         // Simulate fetching product data (replace with actual logic)
-        const product = getProductFromDatabase(productId);
+        const product = this.getProductFromDatabase(productId);
 
         if (!product) {
             throw new NotFoundException(`Product with ID '${productId}' not found`);
@@ -218,20 +237,8 @@ class ProductEndpoint extends OpenAPIRoute {
     }
 }
 
-function getProductFromDatabase(productId: string) {
-    // ... your database lookup logic ...
-    // Simulate product data
-    return {
-        id: productId,
-        name: `Awesome Product ${productId}`,
-        description: 'This is a simulated product for demonstration.',
-        price: 99.99,
-        imageUrl: 'https://example.com/product-image.jpg',
-    };
-}
-
-const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const app = new Hono<{ Bindings: Env }>();
+const openapi = fromHono(app);
 openapi.get('/products/:productId', ProductEndpoint);
 
 export default app;

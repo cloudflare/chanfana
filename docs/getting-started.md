@@ -48,10 +48,17 @@ Let's create a simple "Hello, World!" API endpoint using Hono and Chanfana.
 3.  **Create a file named `index.ts` (or `src/index.ts` if you are setting up a more structured project) and add the following code:**
 
     ```typescript
-    import { Hono } from 'hono';
+    import { Hono, type Context } from 'hono';
     import { fromHono, OpenAPIRoute } from 'chanfana';
     import { z } from 'zod';
 
+    export type Env = {
+        // Example bindings, use your own
+        DB: D1Database
+        BUCKET: R2Bucket
+    }
+    export type AppContext = Context<{ Bindings: Env }>
+    
     // Define a simple endpoint class
     class HelloEndpoint extends OpenAPIRoute {
         schema = {
@@ -67,19 +74,16 @@ Let's create a simple "Hello, World!" API endpoint using Hono and Chanfana.
             },
         };
 
-        async handle() {
+        async handle(c: AppContext) {
             return { message: 'Hello, Chanfana!' };
         }
     }
 
     // Create a Hono app
-    const app = new Hono();
+    const app = new Hono<{ Bindings: Env }>();
 
     // Initialize Chanfana for Hono
-    const openapi = fromHono(app, {
-        openapi_url: '/openapi.json', // URL to serve OpenAPI schema
-        docs_url: '/docs',           // URL to serve Swagger UI
-    });
+    const openapi = fromHono(app);
 
     // Register the endpoint
     openapi.get('/hello', HelloEndpoint);
@@ -160,7 +164,7 @@ Now, let's do the same with itty-router.
             },
         };
 
-        async handle() {
+        async handle(request: Request, env, ctx) {
             return { message: 'Hello, Chanfana for itty-router!' };
         }
     }
@@ -169,10 +173,7 @@ Now, let's do the same with itty-router.
     const router = Router();
 
     // Initialize Chanfana for itty-router
-    const openapi = fromIttyRouter(router, {
-        openapi_url: '/openapi.json', // URL to serve OpenAPI schema
-        docs_url: '/docs',           // URL to serve Swagger UI
-    });
+    const openapi = fromIttyRouter(router);
 
     // Register the endpoint
     openapi.get('/hello', HelloEndpoint);

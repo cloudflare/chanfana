@@ -26,9 +26,16 @@ To integrate Chanfana into your Hono application, you use the `fromHono` functio
 **Example: Basic Hono Integration**
 
 ```typescript
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { fromHono, OpenAPIRoute } from 'chanfana';
 import { z } from 'zod';
+
+export type Env = {
+    // Example bindings
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
 
 class MyEndpoint extends OpenAPIRoute {
     schema = {
@@ -36,18 +43,15 @@ class MyEndpoint extends OpenAPIRoute {
             "200": { description: 'Success' },
         },
     };
-    async handle() {
+    async handle(c: AppContext) {
         return { message: 'Hello from Hono!' };
     }
 }
 
-const app = new Hono();
+const app = new Hono<{ Bindings: Env }>();
 
 // Initialize Chanfana for Hono using fromHono
-const openapi = fromHono(app, {
-    openapi_url: '/openapi.json', // URL to serve OpenAPI schema
-    docs_url: '/docs',           // URL to serve Swagger UI
-});
+const openapi = fromHono(app);
 
 // Register your OpenAPIRoute endpoints using the openapi instance
 openapi.get('/hello', MyEndpoint);
@@ -71,16 +75,23 @@ export default app;
 **Example: Extending an Existing Hono App**
 
 ```typescript
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { fromHono, OpenAPIRoute } from 'chanfana';
 
-const app = new Hono();
+export type Env = {
+    // Example bindings, use your own
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
+
+const app = new Hono<{ Bindings: Env }>();
 
 // Existing Hono route (without OpenAPI)
 app.get('/legacy-route', (c) => c.text('This is a legacy route'));
 
 // Initialize Chanfana
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const openapi = fromHono(app);
 
 // New OpenAPI-documented route
 class NewEndpoint extends OpenAPIRoute {
@@ -89,7 +100,7 @@ class NewEndpoint extends OpenAPIRoute {
             "200": { description: 'Success' },
         },
     };
-    async handle() {
+    async handle(c: AppContext) {
         return { message: 'This is a new OpenAPI route!' };
     }
 }
@@ -137,7 +148,7 @@ class MyEndpoint extends OpenAPIRoute {
             "200": { description: 'Success' },
         },
     };
-    async handle() {
+    async handle(request: Request, env, ctx) {
         return { message: 'Hello from itty-router!' };
     }
 }
@@ -145,10 +156,7 @@ class MyEndpoint extends OpenAPIRoute {
 const router = Router();
 
 // Initialize Chanfana for itty-router using fromIttyRouter
-const openapi = fromIttyRouter(router, {
-    openapi_url: '/openapi.json', // URL to serve OpenAPI schema
-    docs_url: '/docs',           // URL to serve Swagger UI
-});
+const openapi = fromIttyRouter(router);
 
 // Register your OpenAPIRoute endpoints using the openapi instance
 openapi.get('/hello', MyEndpoint);

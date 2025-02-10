@@ -15,6 +15,7 @@ The `contentJson` helper function simplifies defining JSON request bodies in you
 ```typescript
 import { OpenAPIRoute, contentJson } from 'chanfana';
 import { z } from 'zod';
+import { type Context } from 'hono';
 
 class CreateUserEndpoint extends OpenAPIRoute {
     schema = {
@@ -32,7 +33,7 @@ class CreateUserEndpoint extends OpenAPIRoute {
         },
     };
 
-    async handle() {
+    async handle(c: Context) {
         const data = await this.getValidatedData<typeof this.schema>();
         const userDetails = data.body; // Type-safe access to validated body
 
@@ -89,6 +90,7 @@ Use `z.object({})` within `schema.request.query` to define the expected query pa
 ```typescript
 import { OpenAPIRoute } from 'chanfana';
 import { z } from 'zod';
+import { type Context } from 'hono';
 
 class ListProductsEndpoint extends OpenAPIRoute {
     schema = {
@@ -108,7 +110,7 @@ class ListProductsEndpoint extends OpenAPIRoute {
         },
     };
 
-    async handle() {
+    async handle(c: Context) {
         const data = await this.getValidatedData<typeof this.schema>();
         const queryParams = data.query; // Type-safe access to validated query parameters
 
@@ -141,6 +143,7 @@ Use `z.object({})` within `schema.request.params` to define the expected path pa
 ```typescript
 import { OpenAPIRoute } from 'chanfana';
 import { z } from 'zod';
+import { type Context } from 'hono';
 
 class GetProductEndpoint extends OpenAPIRoute {
     schema = {
@@ -154,7 +157,7 @@ class GetProductEndpoint extends OpenAPIRoute {
         },
     };
 
-    async handle() {
+    async handle(c: Context) {
         const data = await this.getValidatedData<typeof this.schema>();
         const productId = data.params.productId; // Type-safe access to validated path parameter
 
@@ -193,6 +196,7 @@ Use `z.object({})` within `schema.request.headers` to define the headers you wan
 ```typescript
 import { OpenAPIRoute } from 'chanfana';
 import { z } from 'zod';
+import { type Context } from 'hono';
 
 class AuthenticatedEndpoint extends OpenAPIRoute {
     schema = {
@@ -206,7 +210,7 @@ class AuthenticatedEndpoint extends OpenAPIRoute {
         },
     };
 
-    async handle() {
+    async handle(c: Context) {
         const data = await this.getValidatedData<typeof this.schema>();
         const apiKey = data.headers['X-API-Key']; // Type-safe access to validated header
 

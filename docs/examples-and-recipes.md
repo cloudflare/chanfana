@@ -69,12 +69,12 @@ Let's build a complete example of a simple Task Management API using Hono, Chanf
 
 
     const app = new Hono<{ Bindings: { DB: D1Database } }>();
-    const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs', base: '/api' });
+    const openapi = fromHono(app);
 
     openapi.post('/tasks', CreateTask);
-    openapi.get('/tasks/:taskId', GetTask);
-    openapi.put('/tasks/:taskId', UpdateTask);
-    openapi.delete('/tasks/:taskId', DeleteTask);
+    openapi.get('/tasks/:id', GetTask);
+    openapi.put('/tasks/:id', UpdateTask);
+    openapi.delete('/tasks/:id', DeleteTask);
     openapi.get('/tasks', ListTasks);
 
 
@@ -168,9 +168,16 @@ Chanfana automatically generates query parameters in your OpenAPI spec based on 
 **Example: Basic File Upload Handling in Hono (Conceptual)**
 
 ```typescript
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { fromHono, OpenAPIRoute } from 'chanfana';
 import { z } from 'zod';
+
+export type Env = {
+    // Example bindings, use your own
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
 
 class UploadFileEndpoint extends OpenAPIRoute {
     schema = {
@@ -204,7 +211,7 @@ class UploadFileEndpoint extends OpenAPIRoute {
         },
     };
 
-    async handle(c: any) { // Hono Context
+    async handle(c: AppContext) { // Hono Context
         const formData = await c.req.formData();
         const file = formData.get('file') as File;
         const description = formData.get('description') as string | null;
@@ -220,8 +227,8 @@ class UploadFileEndpoint extends OpenAPIRoute {
 }
 
 
-const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const app = new Hono<{ Bindings: Env }>();
+const openapi = fromHono(app);
 
 openapi.post('/upload', UploadFileEndpoint);
 
@@ -252,16 +259,23 @@ API authentication and authorization are critical for securing your APIs. Here's
 **Example: API Key Authentication Middleware**
 
 ```typescript
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { fromHono, OpenAPIRoute } from 'chanfana';
 import { z } from 'zod';
-import { AuthenticationException } from '../exceptions'; // Assuming custom exception
+
+export type Env = {
+    // Example bindings, use your own
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
 
 // API Key Authentication Middleware
 const apiKeyAuthMiddleware = async (c, next) => {
     const apiKey = c.req.header('X-API-Key');
     if (!apiKey || apiKey !== process.env.API_KEY) { // Validate against API_KEY environment variable
-        throw new AuthenticationException("Invalid API Key.");
+        throw new HTTPException(401, { message: 'Invalid API Key.' })
     }
     await next();
 };
@@ -271,17 +285,17 @@ class ProtectedDataEndpoint extends OpenAPIRoute {
     schema = {
         responses: {
             "200": { description: 'Protected data' },
-            "401": AuthenticationException.schema()["401"], // Document 401 error
+            "401": { description: 'Invalid API Key' },
         },
     };
-    async handle() {
+    async handle(c: AppContext) {
         return { message: 'Access granted to protected data' };
     }
 }
 
 
-const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const app = new Hono<{ Bindings: Env }>();
+const openapi = fromHono(app);
 
 // Apply API Key authentication middleware to /protected route
 openapi.get('/protected', apiKeyAuthMiddleware, ProtectedDataEndpoint);
@@ -294,9 +308,9 @@ export default app;
 *   **`apiKeyAuthMiddleware`:** This middleware function:
     *   Retrieves the `X-API-Key` header from the request.
     *   Validates the API key against an expected value (e.g., from environment variables).
-    *   If the API key is invalid or missing, it throws an `AuthenticationException` (custom exception, as defined in the Error Handling section).
+    *   If the API key is invalid or missing, it throws an `HTTPException`.
     *   If the API key is valid, it calls `next()` to proceed to the next handler in the chain (the endpoint).
-*   **`ProtectedDataEndpoint`:** This endpoint is protected by the `apiKeyAuthMiddleware`. It also documents a `401 Unauthorized` response using `AuthenticationException.schema()["401"]`.
+*   **`ProtectedDataEndpoint`:** This endpoint is protected by the `apiKeyAuthMiddleware`. It also documents a `401 Unauthorized`.
 *   **Applying Middleware:** We use `openapi.get('/protected', apiKeyAuthMiddleware, ProtectedDataEndpoint)` to apply the `apiKeyAuthMiddleware` to the `/protected` route.
 
 **Security Considerations for Authentication:**

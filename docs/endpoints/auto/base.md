@@ -86,7 +86,7 @@ class CreateProduct extends CreateEndpoint {
 }
 
 const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const openapi = fromHono(app);
 openapi.post('/products', CreateProduct);
 
 export default app;
@@ -127,7 +127,7 @@ class GetProduct extends ReadEndpoint {
 }
 
 const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const openapi = fromHono(app);
 openapi.get('/products/:productId', GetProduct); // Route with path parameter :productId
 
 export default app;
@@ -174,7 +174,7 @@ class UpdateProduct extends UpdateEndpoint {
 }
 
 const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const openapi = fromHono(app);
 openapi.put('/products/:productId', UpdateProduct); // Or .patch() for PATCH requests
 
 export default app;
@@ -221,7 +221,7 @@ class DeleteProduct extends DeleteEndpoint {
 }
 
 const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const openapi = fromHono(app);
 openapi.delete('/products/:productId', DeleteProduct);
 
 export default app;
@@ -271,7 +271,7 @@ class ListProducts extends ListEndpoint {
 }
 
 const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const openapi = fromHono(app);
 openapi.get('/products', ListProducts);
 
 export default app;

@@ -105,7 +105,7 @@ This section provides solutions to common issues you might encounter while using
 
 **Q: Does Chanfana support authentication and authorization?**
 
-**A:** Chanfana itself does not provide built-in authentication or authorization mechanisms. However, it is designed to work seamlessly with middleware and custom logic for implementing authentication and authorization in your API endpoints. Refer to the [Examples and Recipes](./examples-recipes.md) section for a basic example of API key authentication.
+**A:** Chanfana itself does not provide built-in authentication or authorization mechanisms. However, it is designed to work seamlessly with middleware and custom logic for implementing authentication and authorization in your API endpoints. Refer to the [Examples and Recipes](./examples-and-recipes.md) section for a basic example of API key authentication.
 
 **Q: How can I handle different content types (e.g., XML, plain text) in request and responses?**
 

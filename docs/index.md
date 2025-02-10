@@ -29,8 +29,8 @@ features:
     link: /auto-endpoints
   - title: ⌨️ TypeScript Type Inference
     details: Automatic type inference for request parameters, providing a type-safe and developer-friendly experience.
-    link: /endpoints/defining-endpoints
+    link: /getting-started
   - title: 🔌 Router Adapters
     details: Seamlessly integrate Chanfana with popular routers like Hono and itty-router.
-    link: /endpoints/defining-endpoints
+    link: /router-adapters
 ---

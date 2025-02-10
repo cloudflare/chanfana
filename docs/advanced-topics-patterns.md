@@ -9,22 +9,49 @@ For large APIs with many endpoints, organizing your routes into nested routers c
 **Example: Nested Routers with Hono**
 
 ```typescript
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { fromHono, OpenAPIRoute } from 'chanfana';
 import { z } from 'zod';
+
+export type Env = {
+    // Example bindings, use your own
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
 
 // User Routes (nested router)
 const userRoutes = new Hono();
 
 class ListUsersEndpoint extends OpenAPIRoute {
-    schema = { responses: { "200": { description: 'List users' } } };
-    async handle() { return { message: 'List users' }; }
+    schema = { 
+      responses: { 
+        "200": { 
+          description: 'List users' 
+        } 
+      } 
+    };
+    
+    async handle(c: AppContext) { 
+      return { 
+        message: 'List users' 
+      }; 
+    }
 }
 userRoutes.get('/', ListUsersEndpoint);
 
 class GetUserEndpoint extends OpenAPIRoute {
-    schema = { responses: { "200": { description: 'Get user' } } };
-    async handle() { return { message: 'Get user' }; }
+    schema = { 
+      responses: { 
+        "200": { 
+          description: 'Get user' 
+        } 
+      } 
+    };
+    
+    async handle(c: AppContext) { 
+      return { message: 'Get user' }; 
+    }
 }
 userRoutes.get('/:userId', GetUserEndpoint);
 
@@ -32,14 +59,23 @@ userRoutes.get('/:userId', GetUserEndpoint);
 const productRoutes = new Hono();
 
 class ListProductsEndpoint extends OpenAPIRoute {
-    schema = { responses: { "200": { description: 'List products' } } };
-    async handle() { return { message: 'List products' }; }
+    schema = { 
+      responses: { 
+        "200": { 
+          description: 'List products' 
+        } 
+      } 
+    };
+    
+    async handle(c: AppContext) { 
+      return { message: 'List products' }; 
+    }
 }
 productRoutes.get('/', ListProductsEndpoint);
 
 // Main App
 const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const openapi = fromHono(app);
 
 // Mount nested routers
 openapi.route('/users', userRoutes);
@@ -69,9 +105,16 @@ Chanfana is designed to work seamlessly with the middleware capabilities of your
 **Example: Authentication Middleware in Hono**
 
 ```typescript
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { fromHono, OpenAPIRoute } from 'chanfana';
 import { z } from 'zod';
+
+export type Env = {
+    // Example bindings, use your own
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
 
 // Authentication Middleware
 const authMiddleware = async (c, next) => {
@@ -86,11 +129,14 @@ class ProtectedEndpoint extends OpenAPIRoute {
     schema = {
         responses: { "200": { description: 'Protected resource' } },
     };
-    async handle() { return { message: 'Protected data' }; }
+    
+    async handle(c: AppContext) { 
+      return { message: 'Protected data' }; 
+    }
 }
 
-const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const app = new Hono<{ Bindings: Env }>();
+const openapi = fromHono(app);
 
 // Apply authentication middleware to the /protected route
 openapi.get('/protected', authMiddleware, ProtectedEndpoint);
@@ -157,7 +203,7 @@ class ListProductsEndpoint extends ListEndpoint {
 }
 
 const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const openapi = fromHono(app);
 openapi.get('/products', ListProductsEndpoint);
 
 export default app;
@@ -184,7 +230,7 @@ For production APIs, logging and monitoring are crucial. You can integrate loggi
 **Example: Request Logging Middleware in Hono**
 
 ```typescript
-import { Hono } from 'hono';
+import { Hono, type Context } from 'hono';
 import { fromHono, OpenAPIRoute } from 'chanfana';
 import { z } from 'zod';
 
@@ -201,12 +247,21 @@ const loggingMiddleware = async (c, next) => {
 };
 
 class MyEndpoint extends OpenAPIRoute {
-    schema = { responses: { "200": { description: 'Success' } } };
-    async handle() { return { message: 'Hello' }; }
+    schema = { 
+      responses: { 
+        "200": { 
+          description: 'Success' 
+        } 
+      } 
+    };
+    
+    async handle(c: Context) { 
+      return { message: 'Hello' }; 
+    }
 }
 
 const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const openapi = fromHono(app);
 
 // Apply logging middleware globally
 app.use(loggingMiddleware);
@@ -228,43 +283,53 @@ For complex APIs, you might want to create your own abstract base classes that e
 
 ```typescript
 import { OpenAPIRoute } from 'chanfana';
-import { AuthenticationException } from '../exceptions'; // Assuming AuthenticationException
+import { HTTPException } from 'hono/http-exception';
+
+export type Env = {
+    // Example bindings, use your own
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
 
 // Abstract Base Class for Authenticated Endpoints
 abstract class AuthenticatedRoute extends OpenAPIRoute {
-    async beforeHandle() { // Custom lifecycle method (not Chanfana built-in, just an example)
-        const isAuthenticated = await this.isAuthenticated(); // Abstract method to be implemented in subclasses
+    async beforeHandle(c: AppContext) { // Custom lifecycle method (not Chanfana built-in, just an example)
+        const isAuthenticated = await this.isAuthenticated(c); // Abstract method to be implemented in subclasses
         if (!isAuthenticated) {
-            throw new AuthenticationException("Authentication required.");
+            throw new HTTPException(401, { message: 'Authentication required.' })
         }
     }
 
-    abstract isAuthenticated(): Promise<boolean>; // Abstract method to be implemented by subclasses
+    abstract isAuthenticated(c: AppContext): Promise<boolean>; // Abstract method to be implemented by subclasses
 
-    async execute(...args: any[]) { // Override execute to include beforeHandle
-        await this.beforeHandle();
-        return super.execute(...args);
+    async execute(c: [AppContext]) { // Override execute to include beforeHandle
+        await this.beforeHandle(c[0]);
+        return super.execute(c);
     }
 }
 
 // Concrete Authenticated Endpoint
 class MyAuthenticatedEndpoint extends AuthenticatedRoute {
     schema = {
-        responses: { "200": { description: 'Authenticated data' }, "401": AuthenticationException.schema()["401"] },
+        responses: { 
+          "200": {description: 'Authenticated data'}, 
+          "401": {description: 'Request not Authenticated'}
+        },
     };
 
-    async isAuthenticated(): Promise<boolean> {
+    async isAuthenticated(c: AppContext): Promise<boolean> {
         // ... your authentication logic ...
         return true; // Replace with actual authentication check
     }
 
-    async handle() {
+    async handle(c: AppContext) {
         return { message: 'Authenticated data' };
     }
 }
 
-const app = new Hono();
-const openapi = fromHono(app, { openapi_url: '/openapi.json', docs_url: '/docs' });
+const app = new Hono<{ Bindings: Env }>();
+const openapi = fromHono(app);
 
 openapi.get('/protected', MyAuthenticatedEndpoint);
 
