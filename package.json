@@ -15,7 +15,7 @@
     "build": "rm -rf dist/ && tsup src/index.ts --format cjs,esm --dts --config tsconfig.json --external Hono",
     "lint": "npx @biomejs/biome check src/ tests/ || (npx @biomejs/biome check --write src/ tests/; exit 1)",
     "test": "vitest run --root tests",
-    "deploy-docs": "cd docs && mkdocs build && wrangler pages deploy site --project-name chanfana --branch main",
+    "docs:deploy": "npm run docs:build && wrangler pages deploy .vitepress/dist/ --project-name chanfana --branch main",
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build",
     "docs:preview": "vitepress preview"
