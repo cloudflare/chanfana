@@ -82,7 +82,7 @@ export class GetPageNumber extends OpenAPIRoute {
 }
 
 // Start a Hono app
-const app = new Hono()
+const app = new Hono<{ Bindings: Env }>()
 
 // Setup OpenAPI registry
 const openapi = fromHono(app)

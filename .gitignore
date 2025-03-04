@@ -122,3 +122,4 @@ dist
 .DS_Store
 docs/site
 .wrangler
+.vitepress/cache
