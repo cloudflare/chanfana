@@ -51,7 +51,7 @@ export class OpenAPIHandler {
     }
 
     if (this.options?.openapi_url !== null) {
-      this.router.get(this.options?.openapi_url || "/openapi.json", () => {
+      this.router.get((this.options?.base || "") + (this.options?.openapi_url || "/openapi.json"), () => {
         return new Response(JSON.stringify(this.getGeneratedSchema()), {
           headers: {
             "content-type": "application/json;charset=UTF-8",
@@ -60,7 +60,7 @@ export class OpenAPIHandler {
         });
       });
 
-      this.router.get((this.options?.openapi_url || "/openapi.json").replace(".json", ".yaml"), () => {
+      this.router.get((this.options?.base || "") + (this.options?.openapi_url || "/openapi.json").replace(".json", ".yaml"), () => {
         return new Response(yaml.dump(this.getGeneratedSchema()), {
           headers: {
             "content-type": "text/yaml;charset=UTF-8",
