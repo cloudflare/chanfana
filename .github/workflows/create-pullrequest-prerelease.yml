@@ -1,11 +1,12 @@
 name: Create Pull Request Prerelease
-
-on: pull_request
+on:
+  push:
+    branches:
+      - "**"
 
 jobs:
   build:
     if: ${{ github.repository_owner == 'cloudflare' }}
-    name: Build & Publish a Prerelease to the Adhoc Registry
     runs-on: ubuntu-latest
 
     steps:
