@@ -70,7 +70,7 @@ export class InputValidationException extends ApiException {
   }
 }
 
-export class MultiException extends Error {
+export class MultiException extends ApiException {
   isVisible = true;
   errors: Array<ApiException>;
   status = 400;
@@ -92,7 +92,7 @@ export class MultiException extends Error {
   }
 
   buildResponse() {
-    return this.errors.map((err) => err.buildResponse()[0]);
+    return this.errors.flatMap((err) => err.buildResponse());
   }
 }
 

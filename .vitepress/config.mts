@@ -23,7 +23,7 @@ export default defineConfig({
           {text: 'Getting Started', link: '/getting-started'},
           {text: 'Core Concepts', link: '/core-concepts'},
           {text: 'Router Adapters', link: '/router-adapters'},
-          {text: 'Recipies', link: '/examples-and-recipies'},
+          {text: 'Recipies', link: '/examples-and-recipes'},
         ]
       },
       {

@@ -21,7 +21,7 @@ describe("openapi schema", () => {
   });
 
   it("with base defined", async () => {
-    const router = fromIttyRouter(AutoRouter({ base: "/api" }), {
+    const router = fromIttyRouter(AutoRouter(), {
       base: "/api",
     });
     router.get("/todo", ToDoGet);
