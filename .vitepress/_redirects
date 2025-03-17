@@ -1,0 +1,11 @@
+/types / 302
+/types/ / 302
+/type-hint / 302
+/type-hint/ / 302
+/routers/hono /router-adapters 302
+/routers/hono/ /router-adapters 302
+/routers/itty-router /router-adapters 302
+/routers/itty-router/ /router-adapters 302
+/user-guide/* /endpoints/defining-endpoints 302
+/advanced-user-guide/* /examples-and-recipes 302
+/generic-cruds/* /endpoints/auto/base 302
