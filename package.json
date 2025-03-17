@@ -17,7 +17,7 @@
     "test": "vitest run --root tests",
     "docs:deploy": "npm run docs:build && wrangler pages deploy .vitepress/dist/ --project-name chanfana --branch main",
     "docs:dev": "vitepress dev",
-    "docs:build": "vitepress build",
+    "docs:build": "vitepress build && cp .vitepress/_redirects .vitepress/dist/",
     "docs:preview": "vitepress preview"
   },
   "keywords": [

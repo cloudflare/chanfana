@@ -100,7 +100,69 @@ Let's build a complete example of a simple Task Management API using Hono, Chanf
 
 This example sets up a fully functional Task Management API with CRUD operations, input validation, OpenAPI documentation, and D1 database persistence, all with minimal code thanks to Chanfana's predefined D1 endpoints.
 
-## Recipe: Implementing Pagination for List Endpoints
+## OpenAPI schema customizations
+
+Besides adding a schema to your endpoints, its also recommended you customize your schema. This can be done by passing
+the schema argument when creating your router.
+
+All [OpenAPI Object Properties](https://swagger.io/specification/#schema) except `paths`, `components` and `webhooks` are
+available.
+
+`paths` can only be added by registering routes like:
+```ts
+const router = Router()
+const openAPI = fromIttyRouter(router)
+openAPI.post('/scan/metadata/', ScanMetadataCreate)
+```
+
+`components` can only be added by registering them in the main router like:
+```ts
+const router = Router()
+const openAPI = fromIttyRouter(router)
+const bearerAuth = openAPI.registry.registerComponent(
+  'securitySchemes',
+  'bearerAuth',
+  {
+    type: 'http',
+    scheme: 'bearer',
+    bearerFormat: 'JWT',
+  },
+)
+```
+
+Every other property must be defined in your main/root router as such:
+
+```ts
+const router = Router()
+const openAPI = fromIttyRouter(router, {
+  schema: {
+    info: {
+      title: 'Radar Worker API',
+      version: '1.0',
+    },
+    servers: [
+      {
+        "url": "https://development.gigantic-server.com/v1",
+        "description": "Development server"
+      },
+      {
+        "url": "https://staging.gigantic-server.com/v1",
+        "description": "Staging server"
+      },
+      {
+        "url": "https://api.gigantic-server.com/v1",
+        "description": "Production server"
+      }
+    ]
+  },
+})
+```
+
+For more information on the structure of every available property you can read the specification for
+[OpenAPI 3 here](https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md) and
+[OpenAPI 3.1 here](https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.1.0.md).
+
+## Pagination for List Endpoints
 
 Pagination is essential for list endpoints to handle large datasets efficiently. Chanfana's `ListEndpoint` and `D1ListEndpoint` automatically support pagination using query parameters `page` and `per_page`.
 
@@ -139,7 +201,7 @@ class MyListEndpoint extends ListEndpoint {
 
 Chanfana automatically documents these query parameters in your OpenAPI specification and makes them available in the `filters.options` object within your `list` method.
 
-## Recipe: Implementing Filtering for List Endpoints
+## Filtering for List Endpoints
 
 Filtering allows clients to narrow down the results of list endpoints based on specific criteria. `ListEndpoint` and `D1ListEndpoint` provide built-in support for filtering based on the `filterFields` property.
 
@@ -161,7 +223,7 @@ class MyD1ListEndpoint extends D1ListEndpoint {
 
 Chanfana automatically generates query parameters in your OpenAPI spec based on `filterFields`. In your `list` method (or the default D1 `list` method), the `filters.filters` array will contain filter conditions based on the provided query parameters.
 
-## Recipe: Handling File Uploads (if supported, or planned)
+## File Uploads (if supported, or planned)
 
 *(Currently, Chanfana core library does not have built-in direct support for file uploads in terms of specialized parameter types or request body handling for `multipart/form-data`. However, you can handle file uploads using the underlying router's capabilities and standard Fetch API methods within your `OpenAPIRoute` endpoints.)*
 
@@ -252,7 +314,7 @@ export default app;
 
 *(Future versions of Chanfana might introduce more specialized parameter types or utilities for handling file uploads more seamlessly.)*
 
-## Recipe: API Authentication and Authorization (Basic Example)
+## API Authentication and Authorization (Basic Example)
 
 API authentication and authorization are critical for securing your APIs. Here's a basic example of implementing API key-based authentication using middleware in Hono and Chanfana.
 
@@ -319,6 +381,357 @@ export default app;
 *   **HTTPS:** Always use HTTPS to encrypt communication between clients and your API, protecting API keys and other sensitive data in transit.
 *   **Rate Limiting and Abuse Prevention:** Implement rate limiting and other security measures to prevent abuse of your API and protect against brute-force attacks on authentication.
 *   **More Robust Authentication Methods:** For production APIs, consider more robust authentication methods like OAuth 2.0, JWT (JSON Web Tokens), or session-based authentication, depending on your security requirements.
+
+## Custom Error Handling
+
+In order to customize the zod error formats, just overwrite the `handleValidationError` function in your endpoint class
+
+```ts
+import { OpenAPIRoute } from 'chanfana'
+import { Context } from 'hono'
+
+export class ToDoList extends OpenAPIRoute {
+  schema = {
+    // ...
+  }
+
+  handleValidationError(errors: z.ZodIssue[]): Response {
+    return Response.json({
+      errors: errors,
+      success: false,
+      result: {},
+    }, {
+      status: 400,
+    })
+  }
+
+  async handle(c: Context) {
+    // ...
+  }
+}
+```
+
+### Reusing errors handlers across the project
+
+First define a generic class that extends `OpenAPIRoute`, in this function define you cross endpoint functions
+
+```ts
+import { OpenAPIRoute } from "chanfana";
+
+class MyProjectRoute extends OpenAPIRoute {
+  handleValidationError(errors: z.ZodIssue[]): Response {
+    return Response.json({
+      errors: errors,
+      success: false,
+      result: {},
+    }, {
+      status: 400,
+    })
+  }
+}
+```
+
+Then, in your endpoint extend from the new class
+
+```ts
+import { MyProjectRoute } from './route'
+import { Context } from 'hono'
+
+export class ToDoList extends MyProjectRoute {
+  schema = {
+    // ...
+  }
+
+  async handle(c: Context) {
+    // ...
+  }
+}
+```
+
+## Custom Response Formats
+
+### Describing a binary file:
+
+```ts
+import { OpenAPIRoute, Str } from 'chanfana'
+import { Context } from 'hono'
+
+export class ToDoList extends OpenAPIRoute {
+  schema = {
+    summary: 'My summary of a custom pdf file endpoint.',
+    responses: {
+      '200': {
+        description: 'PDF response',
+        content: {
+          'application/pdf': {
+            schema: Str({ format: 'binary' }),
+          },
+        },
+      },
+    },
+  }
+
+  async handle(c: Context) {
+    // ...
+  }
+}
+```
+
+### Describing multiple content types:
+
+```ts
+import { OpenAPIRoute, Str } from 'chanfana'
+import { Context } from 'hono'
+
+export class ToDoList extends OpenAPIRoute {
+  schema = {
+    summary: 'My summary of a custom pdf file endpoint.',
+    responses: {
+      '200': {
+        description: 'Successful response',
+        content: {
+          'application/json': {
+            schema: z.object({
+              title: z.string()
+            }),
+          },
+          'audio/mpeg': {
+            schema: Str({ format: 'binary' }),
+          },
+        },
+      },
+    },
+  }
+
+  async handle(c: Context) {
+    // ...
+  }
+}
+```
+
+## Custom Response Headers
+
+### Describing response headers:
+
+```ts
+import { OpenAPIRoute, Str } from 'chanfana'
+import { Context } from 'hono'
+
+export class ToDoList extends OpenAPIRoute {
+  schema = {
+    responses: {
+      200: {
+        description: 'Object with user data.',
+        content: {
+          'application/json': {
+            schema: z.object({
+              series: z.object({
+                timestamps: z.string().date().array(),
+                values: z.number().array(),
+              })
+            }),
+          },
+        },
+        headers: {
+          'x-bar': 'header-example',
+          'x-foo': new Str({required: false}),
+        },
+      },
+    },
+  }
+
+
+  async handle(c: Context) {
+    // ...
+  }
+}
+```
+
+### Describing response headers with zod:
+
+```ts
+import { OpenAPIRoute, Str } from 'chanfana'
+import { Context } from 'hono'
+
+export class ToDoList extends OpenAPIRoute {
+  schema = {
+    responses: {
+      200: {
+        description: 'Object with user data.',
+        content: {
+          'application/json': {
+            schema: z.object({
+              series: z.object({
+                timestamps: z.string().date().array(),
+                values: z.number().array(),
+              })
+            }),
+          },
+        },
+        headers: z.object({
+          'x-bar': z.string()
+        }),
+      },
+    },
+  }
+
+
+  async handle(c: Context) {
+    // ...
+  }
+}
+```
+
+## Hiding Routes in OpenAPI Schema
+
+If you don't want a route to be displayed in the openapi schema, just register it in the base router
+
+```ts
+import { fromIttyRouter } from 'chanfana'
+import { Router } from 'itty-router'
+
+const router = Router()
+const openAPI = fromIttyRouter(router)
+
+router.get(
+  '/todos/:id',
+  ({ params }) => new Response(`Todo #${params.id}`)
+)
+```
+
+This endpoint will still be accessible, but will not be shown in the schema.
+
+## Reusable Schemas
+
+Before continuing, please learn more about [Reusing Descriptions by OpenAPI](https://learn.openapis.org/specification/components.html).
+
+To start reusing your schemas, all you need to do is call the `.openapi("schema name here")` after any schema you have
+defined. This includes `parameters`, `requestBody`, `responses` even `Enum`.
+
+!!! note
+
+    This is only available when using [chanfana types](../types.md#chanfana-types) or
+    [zod types](../types.md#zod-types)
+
+
+```ts
+export class PutMetadata extends OpenAPIRoute {
+  schema = {
+    operationId: 'post-bucket-put-object-metadata',
+    tags: ['Buckets'],
+    summary: 'Update object metadata',
+    parameters: {
+      bucket: Path(String),
+      key: Path(z.string().describe('base64 encoded file key')),
+    },
+    requestBody: z.object({
+      customMetadata: z.record(z.string(), z.any())
+    }).openapi("Object metadata")
+  }
+
+  // ...
+}
+```
+
+Then when running the server, it would get rendered like this:
+
+![Reusable Parameters](https://raw.githubusercontent.com/cloudflare/chanfana/main/docs/images/reusable-parameters.png)
+
+The OpenAPI spec will also reflect this, by moving the schemas out of the endpoint and into the `components`:
+
+```json
+{
+  "components": {
+    "schemas": {
+      "Object metadata": {
+        "type": "object",
+        "properties": {
+          "customMetadata": {
+            "type": "object",
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "customMetadata"
+        ]
+      }
+    }
+  }
+}
+```
+
+Inside the endpoint schema, the reusable parameter is referenced by the name:
+
+```json
+{
+  "paths": {
+    "post": {
+      "operationId": "post-bucket-put-object-metadata",
+      "tags": [
+        "Buckets"
+      ],
+      "summary": "Update object metadata",
+      "parameters": [],
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Object metadata"
+            }
+          }
+        }
+      },
+      "responses": {}
+    }
+  }
+}
+}
+```
+
+## Accessing URL parameters from the class schema
+
+You can now get a list of url parameters inside the getSchema function.
+This can be very helpful when auto generating schemas
+
+```ts
+import { OpenAPIRoute } from './route'
+
+// Define route
+router.get("/v1/:account_id/gateways/:gateway_id", GetGateway);
+
+export class GetAccountStats extends OpenAPIRoute {
+	getSchema() {
+    console.log(this.params.urlParams)
+
+    // The line above will print this: ["account_id", "gateway_id"]
+    // You can use this to manipulate the schema, adding or removing fields
+
+		return this.schema
+	}
+};
+```
+
+## CI/CD Pipelines
+
+For CI/CD pipelines, you can read the complete `openapi.json` schemas by calling the `schema` property from the router
+instance.
+
+Here is an example of a nodejs script that would pick the schema, make some changes and write it to a file, to be able
+to
+be picked from a CI/CD pipeline.
+
+```ts
+import fs from 'fs'
+import { openAPI } from '../src/router'
+
+// Get the Schema from chanfana
+const schema = openAPI.schema
+
+// Optionaly: update the schema with some costumizations for publishing
+
+// Write the final schema
+fs.writeFileSync('./public-api.json', JSON.stringify(schema, null, 2))
+```
 
 ---
 
