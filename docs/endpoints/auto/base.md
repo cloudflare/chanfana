@@ -24,6 +24,7 @@ The `Meta` object has the following structure:
 type MetaInput = {
     model: Model;
     fields?: AnyZodObject; // Optional, defaults to model.schema
+    pathParameters?: Array<string>; // Optional, to explicitly define path parameters
 };
 
 type Model = {
@@ -43,8 +44,86 @@ type Model = {
     *   **`primaryKeys` (required):** An array of strings representing the primary key fields of your data model. Used for identifying resources in `ReadEndpoint`, `UpdateEndpoint`, and `DeleteEndpoint`.
     *   **`serializer` (optional):** A function to serialize your data before sending it in responses. Useful for data transformation or formatting. If not provided, a default serializer that returns the object as is is used.
     *   **`serializerSchema` (optional):** A Zod schema for the serialized output. If a `serializer` is provided, you should also provide a `serializerSchema` to document the serialized response structure correctly. If not provided, defaults to `model.schema`.
-
 *   **`fields` (optional):**  A Zod schema that represents all possible fields of your data model. If not provided, it defaults to `model.schema`. You can use `fields` to define a broader schema than `model.schema` if needed, for example, if your database table has more columns than you want to expose in your API.
+*   **`pathParameters` (optional):** An array of strings to explicitly define the path parameters for the endpoint. This is particularly useful in nested route scenarios where the URL parameters might not directly correspond to the model's primary keys in a one-to-one manner within each route segment.  If not provided, Chanfana will infer path parameters from the primary keys defined in your `model`.
+
+**Addressing Primary Key Validation in Nested Routes:**
+
+In applications with modular routes, especially when using nested routes, a bug was identified in how primary keys were validated. Previously, auto endpoints validated primary keys based only on the URL parameters defined in the *current* route segment. This approach failed in nested routes where the full path defines a composite primary key spanning across multiple route levels.
+
+For example, consider the route structure: `/users/:userId/posts/:postId`.  If `posts` model has a composite primary key `['userId', 'postId']`, and the `ReadEndpoint` for `/posts/:postId` was defined without considering the parent `/users/:userId` route, validation would incorrectly compare the model's `primaryKeys` ( `['userId', 'postId']`) against the URL parameters of just the current segment (`['postId']`), leading to a validation error like: "Model primaryKeys differ from urlParameters on: /{postId}: ["userId","postId"] !== ["postId"]".
+
+To resolve this, Chanfana introduces the `pathParameters` property in the `Meta` object. By explicitly defining `pathParameters`, you can tell Chanfana exactly which URL parameters correspond to the primary keys of your model, considering the full merged path of nested routes.
+
+**Example of using `pathParameters` in Nested Routes:**
+
+Let's revisit the nested routes example from the bug report to demonstrate how to use `pathParameters` to fix the validation issue.
+
+```typescript
+import { Hono } from 'hono';
+import { fromHono, ReadEndpoint, ListEndpoint, contentJson } from 'chanfana';
+import { z } from 'zod';
+
+// Define User and UserPost Models and Metas
+const UserSchema = z.object({
+    id: z.string().uuid(),
+    username: z.string(),
+});
+const userMeta = {
+    model: { schema: UserSchema, primaryKeys: ['id'] },
+};
+
+const UserPostSchema = z.object({
+    userId: z.string().uuid(),
+    id: z.string().uuid(),
+    title: z.string(),
+    content: z.string(),
+});
+export const userPostMeta = {
+    model: {
+        schema: UserPostSchema,
+        primaryKeys: ['userId', 'id'],
+        tableName: 'posts',
+    },
+    pathParameters: ['userId', 'id'], // Explicitly define pathParameters
+};
+
+
+// User Endpoints
+class ListUsers extends ListEndpoint { _meta = userMeta; async list() { return { result: [] }; } }
+class ReadUser extends ReadEndpoint { _meta = userMeta; async fetch() { return {}; } }
+
+const usersApp = new Hono();
+export const usersRoute = fromHono(usersApp)
+    .get('/', ListUsers)
+    .get('/:id', ReadUser)
+    .route('/:userId/posts', userPostsRoute); // Nested user posts route
+
+// UserPost Endpoints
+class ListUserPosts extends ListEndpoint { _meta = userPostMeta; async list() { return { result: [] }; } }
+class ReadUserPost extends ReadEndpoint { _meta = userPostMeta; async fetch() { return {}; } }
+
+
+const userPostsApp = new Hono();
+export const userPostsRoute = fromHono(userPostsApp)
+    .get('/', ListUserPosts)
+    .get('/:id', ReadUserPost);
+
+
+// Main App
+const app = new Hono();
+const apiRoute = fromHono(app)
+    .route('/users', usersRoute);
+
+export default app;
+```
+
+In this corrected example:
+
+- We added `pathParameters: ['userId', 'id']` to the `userPostMeta`. This explicitly tells `ReadUserPost` (and other auto endpoints for user posts) that the path parameters for identifying a user post are `userId` and `id`, in that order, corresponding to the route structure `/users/:userId/posts/:id`.
+- Now, when Chanfana validates the `ReadUserPost` endpoint for the route `/users/:userId/posts/:id`, it correctly compares the model's `primaryKeys` `['userId', 'id']` with the explicitly defined `pathParameters` `['userId', 'id']`, resolving the validation error.
+
+By using `pathParameters`, you ensure correct primary key validation in nested route scenarios and gain more control over how URL parameters are mapped to your data model's primary keys. If you are not using nested routes or your URL parameters directly match your model's primary keys in each route segment, you can omit `pathParameters`, and Chanfana will default to inferring them from your `model.primaryKeys`.
 
 ## `CreateEndpoint`: Streamlining Resource Creation
 
@@ -251,7 +330,7 @@ import { z } from 'zod';
 
 class ListProducts extends ListEndpoint {
     _meta = productMeta;
-  
+
     filterFields = ['category', 'minPrice', 'maxPrice']; // Fields available for filtering
     orderByFields = ['name', 'price', 'createdAt'];     // Fields available for ordering
     defaultOrderBy = 'name';                             // Default sort field
@@ -292,6 +371,7 @@ You can customize auto endpoints by:
 
 *   **Overriding lifecycle methods:** Methods like `create`, `read`, `update`, `delete`, `list`, `before`, and `after` can be overridden to implement your specific business logic, data access, and pre/post-processing steps.
 *   **Setting `filterFields`, `orderByFields`, `defaultOrderBy` (for `ListEndpoint`):**  Configure filtering and sorting capabilities for list endpoints.
+*   **Using `pathParameters` in `Meta`:** Explicitly define path parameters, especially for nested routes.
 *   **Extending auto endpoint classes:** You can create your own custom base endpoint classes that extend `CreateEndpoint`, `ReadEndpoint`, etc., to add reusable logic or modify default behavior.
 
 ## When to Use Auto Endpoints

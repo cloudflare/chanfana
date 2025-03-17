@@ -39,6 +39,7 @@ export type ModelComplete = SetRequired<Model, "serializer" | "serializerSchema"
 export type MetaInput = {
   model: Model;
   fields?: AnyZodObject;
+  pathParameters?: Array<string>;
 };
 
 export type Meta = {
@@ -60,6 +61,7 @@ export function MetaGenerator(meta: MetaInput) {
       serializerSchema: meta.model.schema,
       ...meta.model,
     },
+    pathParameters: meta.pathParameters ?? null,
   };
 }
 
