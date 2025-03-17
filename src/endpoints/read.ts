@@ -12,15 +12,20 @@ export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> exte
   }
 
   getSchema() {
-    if (this.meta.model.primaryKeys.sort().toString() !== this.params.urlParams.sort().toString()) {
+    if (
+      !this.meta.pathParameters &&
+      this.meta.model.primaryKeys.sort().toString() !== this.params.urlParams.sort().toString()
+    ) {
       throw Error(
-        `Model primaryKeys differ from urlParameters on: ${this.params.route}: ${JSON.stringify(this.meta.model.primaryKeys)} !== ${JSON.stringify(this.params.urlParams)}`,
+        `Model primaryKeys differ from urlParameters on: ${this.params.route}: ${JSON.stringify(this.meta.model.primaryKeys)} !== ${JSON.stringify(this.params.urlParams)}, fix url parameters or define pathParameters in your Model`,
       );
     }
 
+    const inputPathParameters = this.meta.pathParameters ?? this.meta.model.primaryKeys;
+
     //const queryParameters = this.model.omit((this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}));
     const pathParameters = this.meta.fields.pick(
-      (this.meta.model.primaryKeys || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
+      (inputPathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
     );
 
     return {
