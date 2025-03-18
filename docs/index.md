@@ -12,7 +12,7 @@ hero:
       link: /getting-started
     - theme: alt
       text: Auto Endpoints
-      link: /auto-endpoints
+      link: /endpoints/auto/base
 
 features:
   - title: ✨ OpenAPI Schema Generation
@@ -26,7 +26,7 @@ features:
     link: /endpoints/defining-endpoints
   - title: 📦 Auto CRUD Endpoints
     details: Auto generate endpoints for common CRUD operations, reducing boilerplate.
-    link: /auto-endpoints
+    link: /endpoints/auto/base
   - title: ⌨️ TypeScript Type Inference
     details: Automatic type inference for request parameters, providing a type-safe and developer-friendly experience.
     link: /getting-started
