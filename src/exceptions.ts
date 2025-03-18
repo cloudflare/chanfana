@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { contentJson } from "./contentTypes";
 
 export class ApiException extends Error {
@@ -38,7 +39,7 @@ export class ApiException extends Error {
       [inst.status]: {
         description: inst.default_message,
         ...contentJson({
-          success: false,
+          success: z.literal(false),
           errors: [innerError],
         }),
       },
