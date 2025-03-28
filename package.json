@@ -1,6 +1,6 @@
 {
   "name": "chanfana",
-  "version": "2.7.2",
+  "version": "2.8.0",
   "description": "OpenAPI 3 and 3.1 schema generator and validator for Hono, itty-router and more!",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

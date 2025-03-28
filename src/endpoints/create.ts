@@ -26,7 +26,7 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
         ...this.schema?.request,
       },
       responses: {
-        "200": {
+        "201": {
           description: "Returns the created Object",
           ...contentJson({
             success: Boolean,
@@ -77,9 +77,12 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
 
     obj = await this.after(obj);
 
-    return {
-      success: true,
-      result: this.meta.model.serializer(obj as object),
-    };
+    return Response.json(
+      {
+        success: true,
+        result: this.meta.model.serializer(obj as object),
+      },
+      { status: 201 },
+    );
   }
 }
