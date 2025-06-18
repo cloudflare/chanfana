@@ -8,7 +8,6 @@ export default defineWorkersConfig({
     //   include: ["**/*.{test,spec}-d.ts"], // Explicitly include type-check test files
     // },
     include: ["**/*.{test,spec}.?(c|m)[jt]s?(x)"], // Regular test files
-    exclude: ["**/cli.test.ts"], // Exclude the CLI test from worker environment
     poolOptions: {
       workers: {
         wrangler: {
