@@ -12,6 +12,12 @@ export type OpenAPIRouterType<M> = {
   registry: OpenAPIRegistryMerger;
 };
 
+/**
+ * Handles the generation of OpenAPI schema and serves the documentation UI.
+ *
+ * Paths defined with `x-ignore: true` in their `OpenAPIRouteSchema`
+ * will be excluded from the generated OpenAPI specification by the CLI tool.
+ */
 export class OpenAPIHandler {
   router: any;
   options: RouterOptions;

@@ -120,6 +120,7 @@ export type OpenAPIRouteSchema = Simplify<
     responses?: {
       [statusCode: string]: ResponseConfig;
     };
+    "x-ignore"?: boolean;
   }
 >;
 
