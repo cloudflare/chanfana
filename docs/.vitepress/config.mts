@@ -21,6 +21,7 @@ export default defineConfig({
         items: [
           {text: "Introduction", link: "/introduction"},
           {text: "Getting Started", link: "/getting-started"},
+          {text: "Command Line Interface (CLI)", link: "/cli"},
           {text: "Core Concepts", link: "/core-concepts"},
           {text: "Router Adapters", link: "/router-adapters"},
           {text: "Examples and Recipes", link: "/examples-and-recipes"},

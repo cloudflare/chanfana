@@ -70,7 +70,10 @@ const priceSchema = Num({
 
 **Options:**
 
-*   All options from `Str` (except string-specific options like `minLength`, `maxLength`).
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
 *   **`minimum`:** Minimum allowed value.
 *   **`maximum`:** Maximum allowed value.
 *   **`exclusiveMinimum`:** (boolean) If `true`, the value must be strictly greater than `minimum`.
@@ -97,7 +100,15 @@ const ageSchema = Int({
 
 **Options:**
 
-*   Same options as `Num`.
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
+*   **`minimum`:** Minimum allowed value.
+*   **`maximum`:** Maximum allowed value.
+*   **`exclusiveMinimum`:** (boolean) If `true`, the value must be strictly greater than `minimum`.
+*   **`exclusiveMaximum`:** (boolean) If `true`, the value must be strictly less than `maximum`.
+*   **`multipleOf`:** Value must be a multiple of this number.
 
 ### `Bool`: Booleans
 
@@ -118,7 +129,10 @@ const isActiveSchema = Bool({
 
 **Options:**
 
-*   All options from `Str` (except string-specific options).
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
 
 ### `DateTime`: Date and Time Strings
 
@@ -138,7 +152,12 @@ const createdAtSchema = DateTime({
 
 **Options:**
 
-*   All options from `Str`.
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
+*   **`minLength`:** Minimum string length.
+*   **`maxLength`:** Maximum string length.
 *   **`format`:** Defaults to "date-time" in OpenAPI.
 
 ### `DateOnly`: Date Strings
@@ -159,7 +178,12 @@ const birthDateSchema = DateOnly({
 
 **Options:**
 
-*   All options from `Str`.
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
+*   **`minLength`:** Minimum string length.
+*   **`maxLength`:** Maximum string length.
 *   **`format`:** Defaults to "date" in OpenAPI.
 
 ## Specialized String Parameter Types
@@ -185,7 +209,13 @@ const passwordSchema = Regex({
 
 **Options:**
 
-*   All options from `Str`.
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
+*   **`minLength`:** Minimum string length.
+*   **`maxLength`:** Maximum string length.
+*   **`format`:** OpenAPI format (e.g., "date", "date-time", "password").
 *   **`pattern`:** (RegExp) The regular expression pattern to match.
 *   **`patternError`:** (string, optional) Custom error message if the pattern doesn't match.
 
@@ -207,7 +237,12 @@ const emailSchema = Email({
 
 **Options:**
 
-*   All options from `Str`.
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
+*   **`minLength`:** Minimum string length.
+*   **`maxLength`:** Maximum string length.
 *   **`format`:** Defaults to "email" in OpenAPI.
 
 ### `Uuid`: UUID Strings
@@ -228,7 +263,12 @@ const userIdSchema = Uuid({
 
 **Options:**
 
-*   All options from `Str`.
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
+*   **`minLength`:** Minimum string length.
+*   **`maxLength`:** Maximum string length.
 *   **`format`:** Defaults to "uuid" in OpenAPI.
 
 ### `Hostname`: Hostname Strings
@@ -249,7 +289,12 @@ const websiteSchema = Hostname({
 
 **Options:**
 
-*   All options from `Str`.
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
+*   **`minLength`:** Minimum string length.
+*   **`maxLength`:** Maximum string length.
 *   **`format`:** Defaults to "hostname" in OpenAPI.
 
 ### `Ipv4`: IPv4 Address Strings
@@ -270,7 +315,12 @@ const ipAddressSchema = Ipv4({
 
 **Options:**
 
-*   All options from `Str`.
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
+*   **`minLength`:** Minimum string length.
+*   **`maxLength`:** Maximum string length.
 *   **`format`:** Defaults to "ipv4" in OpenAPI.
 
 ### `Ipv6`: IPv6 Address Strings
@@ -291,7 +341,12 @@ const ipv6AddressSchema = Ipv6({
 
 **Options:**
 
-*   All options from `Str`.
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
+*   **`minLength`:** Minimum string length.
+*   **`maxLength`:** Maximum string length.
 *   **`format`:** Defaults to "ipv6" in OpenAPI.
 
 ### `Ip`: IP Address Strings (v4 or v6)
@@ -312,10 +367,19 @@ const anyIpAddressSchema = Ip({
 
 **Options:**
 
-*   All options from `Str`.
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
+*   **`minLength`:** Minimum string length.
+*   **`maxLength`:** Maximum string length.
 *   **`format`:** Defaults to "ip" in OpenAPI.
 
-## `Enumeration`: Defining Allowed String Values (Enums)
+## Structural Parameter Types
+
+This section covers parameter types for defining complex data structures like enumerations, arrays, and objects.
+
+### `Enumeration`: Defining Allowed String Values (Enums)
 
 The `Enumeration` parameter type represents strings that must be one of a predefined set of allowed values (like enums in other languages). It's based on `z.enum()` from Zod.
 
@@ -335,13 +399,19 @@ const statusSchema = Enumeration({
 
 **Options:**
 
-*   All options from `Str`.
+*   **`description`:** Description for OpenAPI documentation.
+*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
+*   **`default`:** Default value for the parameter.
+*   **`example`:** Example value for OpenAPI documentation.
+*   **`minLength`:** Minimum string length (if applicable, e.g. if the enum values have min/max length constraints).
+*   **`maxLength`:** Maximum string length (if applicable).
+*   **`format`:** OpenAPI format.
 *   **`values`:** (`Array<string>` or `Record<string, any>`) An array of allowed string values or a record where keys are allowed values and values are for internal mapping (if needed).
 *   **`enumCaseSensitive`:** (boolean, default: `true`) Whether enum matching should be case-sensitive. If `false`, input values are converted to lowercase before matching.
 
-## `Arr`: Arrays of a Specific Type
+### `Arr`: Arrays of a Specific Type
 
-The `Arr` parameter type represents arrays where all elements must be of a specific type. It's based on `z.array()` from Zod.
+The `Arr` parameter type represents arrays where all elements must be of a specific type. It's based on `z.array()` from Zod. It allows you to define arrays whose elements conform to another Chanfana parameter type or a standard Zod schema.
 
 **Usage:**
 
@@ -360,16 +430,19 @@ const tagsSchema = Arr(Str(), {
 
 **Options:**
 
-*   All options from `Str` (applied to the array itself, not the array elements).
+*   **`description`:** Description for OpenAPI documentation (for the array itself).
+*   **`required`:** (boolean, default: `true`) Whether the array is required.
+*   **`default`:** Default value for the array.
+*   **`example`:** Example value for OpenAPI documentation (for the array).
 *   **`minItems`:** Minimum number of items in the array.
-    *   **`maxItems`:** Maximum number of items in the array.
-    *   **`uniqueItems`:** (boolean) If `true`, array elements must be unique.
+*   **`maxItems`:** Maximum number of items in the array.
+*   **`uniqueItems`:** (boolean) If `true`, array elements must be unique.
 
-The first argument to `Arr()` is the parameter type or Zod schema for the elements of the array (e.g., `Str()`, `Num()`, `z.string()`, `z.number()`, etc.).
+The first argument to `Arr()` is the parameter type (e.g., `Str()`, `Num()`) or a Zod schema (e.g., `z.string()`, `z.object({...})`) for the elements of the array.
 
-## `Obj`: Objects with Defined Fields
+### `Obj`: Objects with Defined Fields
 
-The `Obj` parameter type represents objects with a predefined structure (fields and their types). It's based on `z.object()` from Zod.
+The `Obj` parameter type represents objects with a predefined structure (fields and their types). It's based on `z.object()` from Zod. Each field within the object is defined using a Chanfana parameter type or a standard Zod schema.
 
 **Usage:**
 
@@ -390,9 +463,12 @@ const addressSchema = Obj({
 
 **Options:**
 
-*   All options from `Str` (applied to the object itself, not the object fields).
+*   **`description`:** Description for OpenAPI documentation (for the object itself).
+*   **`required`:** (boolean, default: `true`) Whether the object is required.
+*   **`default`:** Default value for the object.
+*   **`example`:** Example value for OpenAPI documentation (for the object).
 
-The first argument to `Obj()` is an object where keys are field names and values are parameter types or Zod schemas for each field.
+The first argument to `Obj()` is an object where keys are field names and values are Chanfana parameter types (e.g., `Str()`, `Num()`) or Zod schemas for each field.
 
 ## `convertParams`: Advanced Parameter Configuration
 
