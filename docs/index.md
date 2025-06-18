@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "chanfana"
-  image: images/logo-icon.png
+  image: assets/logo-icon.png
   tagline: OpenAPI 3 and 3.1 schema generator and validator for Hono, itty-router and more!
   actions:
     - theme: brand

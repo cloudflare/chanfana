@@ -1,35 +1,38 @@
-import { AutoRouter, error, json } from "itty-router";
-import { OpenAPIRoute, OpenAPIRouter, Query, Str } from "src/index.ts"; // Assuming 'chanfana' will resolve to 'src' or 'dist' based on test setup
+import { Router, json } from "itty-router";
+import { z } from "zod";
+import { OpenAPIRoute, contentJson, fromIttyRouter } from "../src";
 
-// Define a simple OpenAPI route
 export class HelloRoute extends OpenAPIRoute {
-  static schema = {
+  schema = {
     summary: "Say hello",
-    parameters: {
-      name: Query(Str, { description: "Your name", required: false, example: "World" }),
+    request: {
+      query: z.object({
+        name: z.string(),
+      }),
     },
     responses: {
       "200": {
         description: "Returns a greeting",
-        schema: {
-          greeting: new Str({ example: "Hello World" }),
-        },
+        ...contentJson(
+          z.object({
+            greatings: z.string(),
+          }),
+        ),
       },
     },
   };
 
-  async handle(request: Request, env: any, context: any, data: any) {
-    const name = data.params.name || "World";
-    return json({ greeting: `Hello ${name}` });
+  async handle(request: Request, env: any, context: any) {
+    const data = await this.getValidatedData<typeof this.schema>();
+    return json({ greeting: `Hello ${data.query.name}` });
   }
 }
 
-// Create a router using OpenAPIRouter (which wraps itty-router's AutoRouter by default)
-const router = OpenAPIRouter();
+// Create an itty-router router
+const router = Router();
 
-router.get("/hello", HelloRoute);
+// Initialize Chanfana for itty-router
+const openapi = fromIttyRouter(router);
+openapi.get("/hello", HelloRoute);
 
-// Standard worker fetch export
-export default {
-  fetch: router.fetch,
-};
+export default router;
