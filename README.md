@@ -47,23 +47,45 @@ npm i chanfana --save
 
 ## Command-Line Interface (CLI)
 
-Chanfana provides a CLI tool to extract the OpenAPI schema from your worker/server file.
+Chanfana provides a CLI tool to extract the OpenAPI schema from your Cloudflare Worker project. The `npx chanfana` command starts a local development server using `npx wrangler dev`, captures the server URL, fetches the OpenAPI schema from the `/openapi.json` endpoint, removes any paths marked with `x-ignore: true`, and writes the resulting schema to a file.
 
 **Usage:**
 
 ```bash
-npx chanfana -i <path-to-your-compiled-worker.js> -o <path-to-output-schema.json>
+npx chanfana [-o <path-to-output-schema.json>] [wrangler-options]
 ```
+
+**Options:**
+- `-o, --output <path>`: Specifies the output file path for the OpenAPI schema (optional, defaults to `./schema.json`).
+- `[wrangler-options]`: Additional options passed to `npx wrangler dev` (e.g., `--port 8788`, `--env dev`).
 
 **Example:**
 
-If your compiled worker entry point is `dist/worker.js`, you can extract its schema like this:
+To extract the schema and save it to `schema.json`:
 
 ```bash
-npx chanfana -i ./dist/worker.js -o ./schema.json
+npx chanfana
 ```
 
-This will generate an `schema.json` file in your project root. Make sure the input path points to the **compiled JavaScript file** that exports your router's `fetch` handler.
+To use a custom output file and port:
+
+```bash
+npx chanfana -o custom_schema.json --port 8788
+```
+
+This will:
+1. Run `npx wrangler dev` with any provided `wrangler` options in the current Worker project directory.
+2. Wait for the server to start and capture the first URL from the "ready on" message (e.g., `http://0.0.0.0:8788`).
+3. Fetch the OpenAPI schema from `<url>/openapi.json`.
+4. Remove any paths in the schema where any method (e.g., `get`, `post`) has `x-ignore: true`.
+5. Write the modified schema to `schema.json` (or the file specified with `-o`) in the current working directory.
+6. Terminate the development server and exit.
+
+**Notes:**
+- Ensure your Worker project is configured correctly with a `wrangler.toml` file and exposes an `/openapi.json` endpoint.
+- The output file path is relative to the current working directory. Parent directories must exist for nested paths (e.g., `output/schema.json`).
+- If the schema fetch fails or the server doesn't start within 60 seconds, buffered output and error details are logged.
+- The process is automatically cleaned up if interrupted (e.g., Ctrl+C) or if an error occurs.
 
 ## Minimal Hono Example
 
