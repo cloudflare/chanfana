@@ -60,6 +60,7 @@
     "@types/service-worker-mock": "^2.0.1",
     "hono": "4.6.16",
     "itty-router": "5.0.18",
+    "pkg-pr-new": "^0.0.51",
     "tsup": "8.3.5",
     "typescript": "5.7.3",
     "vitepress": "^1.6.3",
