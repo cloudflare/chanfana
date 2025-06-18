@@ -1,6 +1,6 @@
 # Welcome to Chanfana
 
-![Chanfana Logo](https://raw.githubusercontent.com/cloudflare/chanfana/refs/heads/main/docs/images/logo.png)
+![Chanfana Logo](/assets/logo.png)
 
 Chanfana is a powerful and lightweight TypeScript library designed to effortlessly bring the benefits of OpenAPI to your web APIs. Built with modern JavaScript runtimes in mind, especially Cloudflare Workers, Chanfana provides schema generation and validation for popular routers like [Hono](https://github.com/honojs/hono) and [itty-router](https://github.com/kwhitley/itty-router), and is adaptable to many more.
 
