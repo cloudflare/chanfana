@@ -122,4 +122,5 @@ dist
 .DS_Store
 docs/site
 .wrangler
-.vitepress/cache
+docs/.vitepress/cache
+tests/schema.json

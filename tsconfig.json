@@ -8,6 +8,7 @@
     "allowJs": true,
     "resolveJsonModule": true,
     "moduleDetection": "force",
+    "baseUrl": ".",
     /* Strictness */
     "strict": true,
     "noUncheckedIndexedAccess": true,
@@ -19,5 +20,5 @@
     "lib": ["es2022", "dom", "dom.iterable"],
     "types": ["@types/node", "@types/service-worker-mock", "@cloudflare/workers-types/experimental"]
   },
-  "include": ["src"]
+  "include": ["src", "tests"]
 }
