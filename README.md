@@ -68,10 +68,10 @@ To extract the schema and save it to `schema.json`:
 npx chanfana
 ```
 
-To use a custom output file and port:
+To use a custom output file and custom env:
 
 ```bash
-npx chanfana -o custom_schema.json --port 8788
+npx chanfana -o custom_schema.json -e production
 ```
 
 This will:
