@@ -5,15 +5,19 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "bin": {
+    "chanfana": "dist/extract-schema.js"
+  },
   "files": [
     "dist",
     "LICENSE",
     "README.md"
   ],
   "scripts": {
-    "build": "rm -rf dist/ && tsup src/index.ts --format cjs,esm --dts --config tsconfig.json --external Hono",
+    "build": "rm -rf dist/ && tsup src/index.ts src/extract-schema.ts --format cjs,esm --dts --config tsconfig.json --external Hono",
     "lint": "npx @biomejs/biome check src/ tests/ || (npx @biomejs/biome check --write src/ tests/; exit 1)",
     "test": "vitest run --root tests",
+    "test:cli": "vitest run --root tests --config vitest.config.node.ts",
     "docs:deploy": "npm run docs:build && wrangler pages deploy .vitepress/dist/ --project-name chanfana --branch main",
     "docs:dev": "vitepress dev",
     "docs:build": "vitepress build && cp .vitepress/_redirects .vitepress/dist/",
@@ -71,6 +75,7 @@
     "@asteasolutions/zod-to-openapi": "^7.2.0",
     "js-yaml": "^4.1.0",
     "openapi3-ts": "^4.4.0",
+    "yargs-parser": "^22.0.0",
     "zod": "^3.23.8"
   }
 }

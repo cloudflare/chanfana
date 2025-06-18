@@ -45,6 +45,26 @@ npm create cloudflare@latest -- --type openapi
 npm i chanfana --save
 ```
 
+## Command-Line Interface (CLI)
+
+Chanfana provides a CLI tool to extract the OpenAPI schema from your worker/server file.
+
+**Usage:**
+
+```bash
+npx chanfana -i <path-to-your-compiled-worker.js> -o <path-to-output-schema.json>
+```
+
+**Example:**
+
+If your compiled worker entry point is `dist/worker.js`, you can extract its schema like this:
+
+```bash
+npx chanfana -i ./dist/worker.js -o ./schema.json
+```
+
+This will generate an `schema.json` file in your project root. Make sure the input path points to the **compiled JavaScript file** that exports your router's `fetch` handler.
+
 ## Minimal Hono Example
 
 ```ts
