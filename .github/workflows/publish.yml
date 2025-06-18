@@ -5,11 +5,15 @@ on:
     tags:
       - 'v*'
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
-
 jobs:
   publish:
+    if: ${{ github.repository_owner == 'cloudflare' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: false
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
