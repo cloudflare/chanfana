@@ -27,10 +27,10 @@ The key features are:
 
 - OpenAPI 3 and 3.1 schema generator and validator
 - Fully written in typescript
-- [Class-based endpoints](https://chanfana.pages.dev/user-guide/first-steps/)
-- [Query](https://chanfana.pages.dev/user-guide/query-parameters/), [Path](https://chanfana.pages.dev/user-guide/path-parameters/), [Headers](https://chanfana.pages.dev/user-guide/header-parameters/) and [Body](https://chanfana.pages.dev/user-guide/request-body/) typescript inference
-- Extend existing [Hono](https://chanfana.pages.dev/routers/hono/), [itty-router](https://chanfana.pages.dev/routers/itty-router/), etc application, without touching old routes
-- CLI to extract the schema.json from your code (npx chanfana)
+- [Class-based endpoints](https://chanfana.pages.dev/endpoints/defining-endpoints)
+- Query, Path, Headers, and Body typescript inference, see [Parameters](https://chanfana.pages.dev/endpoints/parameters) and [Request Validation](https://chanfana.pages.dev/endpoints/request-validation)
+- Extend existing [Hono](https://chanfana.pages.dev/router-adapters), [itty-router](https://chanfana.pages.dev/router-adapters), etc application, without touching old routes
+- CLI to extract the schema.json from your code (npx chanfana) - see [CLI Documentation](https://chanfana.pages.dev/cli)
 
 ## Getting started
 
@@ -48,45 +48,15 @@ npm i chanfana --save
 
 ## Command-Line Interface (CLI)
 
-Chanfana provides a CLI tool to extract the OpenAPI schema from your Cloudflare Worker project. The `npx chanfana` command starts a local development server using `npx wrangler dev`, captures the server URL, fetches the OpenAPI schema from the `/openapi.json` endpoint, removes any paths marked with `x-ignore: true`, and writes the resulting schema to a file.
+Chanfana includes a CLI tool to help you extract the OpenAPI schema from your Cloudflare Worker project. This is useful for generating a static schema file, for example, in CI/CD pipelines.
 
-**Usage:**
-
-```bash
-npx chanfana [-o <path-to-output-schema.json>] [wrangler-options]
-```
-
-**Options:**
-- `-o, --output <path>`: Specifies the output file path for the OpenAPI schema (optional, defaults to `./schema.json`).
-- `[wrangler-options]`: Additional options passed to `npx wrangler dev` (e.g., `--port 8788`, `--env dev`).
-
-**Example:**
-
-To extract the schema and save it to `schema.json`:
-
+The basic command is:
 ```bash
 npx chanfana
 ```
+This will start your worker using `wrangler dev`, fetch the schema from `/openapi.json`, and save it to `schema.json`.
 
-To use a custom output file and custom env:
-
-```bash
-npx chanfana -o custom_schema.json -e production
-```
-
-This will:
-1. Run `npx wrangler dev` with any provided `wrangler` options in the current Worker project directory.
-2. Wait for the server to start and capture the first URL from the "ready on" message (e.g., `http://0.0.0.0:8788`).
-3. Fetch the OpenAPI schema from `<url>/openapi.json`.
-4. Remove any paths in the schema where any method (e.g., `get`, `post`) has `x-ignore: true`.
-5. Write the modified schema to `schema.json` (or the file specified with `-o`) in the current working directory.
-6. Terminate the development server and exit.
-
-**Notes:**
-- Ensure your Worker project is configured correctly with a `wrangler.toml` file and exposes an `/openapi.json` endpoint.
-- The output file path is relative to the current working directory. Parent directories must exist for nested paths (e.g., `output/schema.json`).
-- If the schema fetch fails or the server doesn't start within 60 seconds, buffered output and error details are logged.
-- The process is automatically cleaned up if interrupted (e.g., Ctrl+C) or if an error occurs.
+For more details on options and usage, please refer to the [**CLI Documentation**](https://chanfana.pages.dev/cli).
 
 ## Minimal Hono Example
 

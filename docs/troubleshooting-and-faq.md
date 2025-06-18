@@ -62,7 +62,6 @@ This section provides solutions to common issues you might encounter while using
                 tableName: 'my_table',
             },
         };
-         { /* ... */ };
         // ...
     }
     ```

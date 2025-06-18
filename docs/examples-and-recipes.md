@@ -620,9 +620,11 @@ export class PutMetadata extends OpenAPIRoute {
     operationId: 'post-bucket-put-object-metadata',
     tags: ['Buckets'],
     summary: 'Update object metadata',
-    parameters: {
-      bucket: Path(String),
-      key: Path(z.string().describe('base64 encoded file key')),
+    request: {
+      params: z.object({
+        bucket: z.string(), // Assuming bucket is a string
+        key: z.string().describe('base64 encoded file key'),
+      }),
     },
     requestBody: z.object({
       customMetadata: z.record(z.string(), z.any())

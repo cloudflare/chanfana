@@ -61,7 +61,7 @@ export default app;
 
 **Explanation:**
 
-1.  **Import `fromHono`:** Import the `fromHono` function from `chanfana/adapters/hono`.
+1.  **Import `fromHono`:** Import the `fromHono` function (and other necessary components like `OpenAPIRoute`) from the `chanfana` package.
 2.  **Create a Hono App:** Create a standard Hono application instance using `new Hono()`.
 3.  **Initialize Chanfana with `fromHono`:** Call `fromHono(app, options)` to initialize Chanfana for your Hono app.
     *   The first argument is your Hono application instance (`app`).
@@ -169,7 +169,7 @@ export const fetch = router.handle; // Export the fetch handler
 
 **Explanation:**
 
-1.  **Import `fromIttyRouter`:** Import the `fromIttyRouter` function from `chanfana/adapters/ittyRouter`.
+1.  **Import `fromIttyRouter`:** Import the `fromIttyRouter` function (and other necessary components like `OpenAPIRoute`) from the `chanfana` package.
 2.  **Create an Itty Router Instance:** Create an itty-router instance using `Router()`.
 3.  **Initialize Chanfana with `fromIttyRouter`:** Call `fromIttyRouter(router, options)` to initialize Chanfana for your itty-router instance.
     *   The first argument is your itty-router instance (`router`).

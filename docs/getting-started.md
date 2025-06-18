@@ -25,6 +25,12 @@ npm install chanfana --save
 yarn add chanfana
 ```
 
+## Command Line Interface (CLI)
+
+Chanfana also comes with a handy Command Line Interface (CLI) tool that can help you extract your OpenAPI schema directly from your running Cloudflare Worker project. This can be useful for CI/CD pipelines or for quickly generating a static schema file.
+
+Learn more about it in the [**CLI Documentation**](./cli.md).
+
 ## Quick Start with Hono
 
 Let's create a simple "Hello, World!" API endpoint using Hono and Chanfana.
@@ -49,7 +55,7 @@ Let's create a simple "Hello, World!" API endpoint using Hono and Chanfana.
 
     ```typescript
     import { Hono, type Context } from 'hono';
-    import { fromHono, OpenAPIRoute } from 'chanfana';
+    import { fromHono, OpenAPIRoute, contentJson } from 'chanfana';
     import { z } from 'zod';
 
     export type Env = {
@@ -63,13 +69,9 @@ Let's create a simple "Hello, World!" API endpoint using Hono and Chanfana.
     class HelloEndpoint extends OpenAPIRoute {
         schema = {
             responses: {
-                200: {
+                "200": {
                     description: 'Successful response',
-                    content: {
-                        'application/json': {
-                            schema: z.object({ message: z.string() }),
-                        },
-                    },
+                    content: contentJson(z.object({ message: z.string() })),
                 },
             },
         };
@@ -146,20 +148,16 @@ Now, let's do the same with itty-router.
 
     ```typescript
     import { Router } from 'itty-router';
-    import { fromIttyRouter, OpenAPIRoute } from 'chanfana';
+    import { fromIttyRouter, OpenAPIRoute, contentJson } from 'chanfana';
     import { z } from 'zod';
 
     // Define a simple endpoint class
     class HelloEndpoint extends OpenAPIRoute {
         schema = {
             responses: {
-                200: {
+                "200": {
                     description: 'Successful response',
-                    content: {
-                        'application/json': {
-                            schema: z.object({ message: z.string() }),
-                        },
-                    },
+                    content: contentJson(z.object({ message: z.string() })),
                 },
             },
         };

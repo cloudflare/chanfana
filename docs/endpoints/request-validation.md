@@ -212,7 +212,12 @@ class AuthenticatedEndpoint extends OpenAPIRoute {
 
     async handle(c: Context) {
         const data = await this.getValidatedData<typeof this.schema>();
-        const apiKey = data.headers['X-API-Key']; // Type-safe access to validated header
+        // Header names are normalized to lowercase by many HTTP clients and frameworks.
+        // Chanfana provides access to them as defined in the schema,
+        // but it's good practice to be aware of potential case-insensitivity
+        // or normalization that might occur before reaching your application.
+        // For consistent access, you might prefer to use lowercase: data.headers['x-api-key']
+        const apiKey = data.headers['X-API-Key']; // Access as defined in schema
 
         // ... logic to authenticate user based on apiKey ...
         return { message: 'Authenticated request' };
@@ -233,7 +238,7 @@ In this example:
 
 ### Header Parameter Type Inference
 
-Type inference also applies to headers. `data.headers` will be an object with properties corresponding to your header names (in lowercase), and their types will be inferred from your Zod schema.
+Type inference also applies to headers. `data.headers` will be an object with properties corresponding to your header names as defined in your Zod schema. Their types will be inferred from the schema. Note that while HTTP header names are case-insensitive (RFC 7230), JavaScript object property names are case-sensitive. Chanfana ensures that the headers you define in your schema are correctly validated and made available. For consistency, it's often recommended to define and access header names using a consistent casing (e.g., all lowercase or specific canonical form like 'X-API-Key') in your schemas.
 
 ---
 
