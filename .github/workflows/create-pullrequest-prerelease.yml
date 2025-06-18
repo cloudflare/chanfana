@@ -1,5 +1,6 @@
 name: Create Pull Request Prerelease
 on:
+  pull_request: {}
   push:
     branches:
       - "**"
