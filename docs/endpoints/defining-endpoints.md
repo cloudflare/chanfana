@@ -111,7 +111,7 @@ class AnotherEndpoint extends OpenAPIRoute {
         responses: {
             "200": {
                 description: 'Successful operation',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     status: z.string().default("success"),
                     data: z.object({ id: z.number() }),
                 })),
@@ -119,7 +119,7 @@ class AnotherEndpoint extends OpenAPIRoute {
             ...InputValidationException.schema(),
             "500": {
                 description: 'Internal Server Error',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     status: z.string().default("error"),
                     message: z.string(),
                 })),
@@ -169,7 +169,7 @@ class UserEndpoint extends OpenAPIRoute {
         responses: {
             "200": {
                 description: 'User details retrieved',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     id: z.string(),
                     name: z.string(),
                     email: z.string(),
@@ -225,7 +225,7 @@ Let's put it all together with a simple greeting endpoint that takes a name as a
 
 ```typescript
 import { Hono, type Context } from 'hono';
-import { fromHono, OpenAPIRoute } from 'chanfana';
+import { fromHono, OpenAPIRoute, contentJson } from 'chanfana';
 import { z } from 'zod';
 
 export type Env = {
@@ -245,7 +245,7 @@ class GreetingEndpoint extends OpenAPIRoute {
         responses: {
             "200": {
                 description: 'Greeting message',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     greeting: z.string(),
                 })),
             },

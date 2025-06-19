@@ -34,7 +34,7 @@ class CreateResourceEndpoint extends OpenAPIRoute {
         responses: {
             "201": {
                 description: 'Resource created successfully',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     id: z.string(),
                     createdAt: z.string().datetime(),
                 })),
@@ -89,7 +89,7 @@ class GetItemEndpoint extends OpenAPIRoute {
         responses: {
             "200": {
                 description: 'Item details retrieved',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     id: z.string(),
                     name: z.string(),
                 })),
@@ -98,13 +98,13 @@ class GetItemEndpoint extends OpenAPIRoute {
             ...NotFoundException.schema(),
             "500": {
                 description: 'Internal Server Error',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     error: z.string(),
                 })),
             },
         },
     };
-    
+
     getItemFromDatabase(itemId: string) {
         // ... your database lookup logic ...
         // Simulate item not found for certain IDs
@@ -151,7 +151,7 @@ In the examples above, we've already seen how to use `contentJson` to define res
 responses: {
     "200": {
         description: 'Successful response with user data',
-        content: contentJson(z.object({
+        ...contentJson(z.object({
             id: z.string(),
             username: z.string(),
             email: z.string(),
@@ -191,7 +191,7 @@ class ProductEndpoint extends OpenAPIRoute {
         responses: {
             "200": {
                 description: 'Product details retrieved',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     id: z.string(),
                     name: z.string(),
                     description: z.string().optional(),
@@ -203,13 +203,13 @@ class ProductEndpoint extends OpenAPIRoute {
             ...NotFoundException.schema(),
             "500": {
                 description: 'Internal Server Error',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     error: z.string(),
                 })),
             },
         },
     };
-    
+
     getProductFromDatabase(productId: string) {
         // ... your database lookup logic ...
         // Simulate product data

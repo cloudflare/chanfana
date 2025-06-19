@@ -71,7 +71,7 @@ Let's create a simple "Hello, World!" API endpoint using Hono and Chanfana.
             responses: {
                 "200": {
                     description: 'Successful response',
-                    content: contentJson(z.object({ message: z.string() })),
+                    ...contentJson(z.object({ message: z.string() })),
                 },
             },
         };
@@ -157,7 +157,7 @@ Now, let's do the same with itty-router.
             responses: {
                 "200": {
                     description: 'Successful response',
-                    content: contentJson(z.object({ message: z.string() })),
+                    ...contentJson(z.object({ message: z.string() })),
                 },
             },
         };
