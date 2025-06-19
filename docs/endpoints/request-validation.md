@@ -6,21 +6,21 @@ Chanfana's automatic request validation is a key feature that ensures your API r
 
 Request body validation is crucial for `POST`, `PUT`, and `PATCH` requests where clients send data to your API in the request body. Chanfana primarily supports JSON request bodies and uses Zod schemas to define their structure.
 
-### Using `...contentJson` for JSON Bodies
+### Using `contentJson` for JSON Bodies
 
-The `...contentJson` helper function simplifies defining JSON request bodies in your `schema.request.body`. It automatically sets the `content-type` to `application/json` and wraps your Zod schema appropriately for OpenAPI.
+The `contentJson` helper function simplifies defining JSON request bodies in your `schema.request.body`. It automatically sets the `content-type` to `application/json` and wraps your Zod schema appropriately for OpenAPI.
 
 **Example: Validating a User Creation Body**
 
 ```typescript
-import { OpenAPIRoute, ...contentJson } from 'chanfana';
+import { OpenAPIRoute, contentJson } from 'chanfana';
 import { z } from 'zod';
 import { type Context } from 'hono';
 
 class CreateUserEndpoint extends OpenAPIRoute {
     schema = {
         request: {
-            body: ...contentJson(z.object({
+            body: contentJson(z.object({
                 username: z.string().min(3).max(20),
                 password: z.string().min(8),
                 email: z.string().email(),
@@ -45,7 +45,7 @@ class CreateUserEndpoint extends OpenAPIRoute {
 
 In this example:
 
-*   We use `...contentJson` to wrap a Zod object schema that defines the expected structure of the JSON request body.
+*   We use `contentJson` to wrap a Zod object schema that defines the expected structure of the JSON request body.
 *   The schema specifies fields like `username`, `password`, `email`, `fullName`, and `age` with their respective types and validation rules (e.g., `min`, `max`, `email`, `int`, `positive`, `optional`).
 *   In the `handle` method, `this.getValidatedData<typeof this.schema>().body` will be automatically typed as:
 

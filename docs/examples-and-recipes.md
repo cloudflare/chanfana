@@ -38,7 +38,7 @@ Let's build a complete example of a simple Task Management API using Hono, Chanf
 
     ```typescript
     import { Hono } from 'hono';
-    import { fromHono, D1CreateEndpoint, D1ReadEndpoint, D1UpdateEndpoint, D1DeleteEndpoint, D1ListEndpoint, ...contentJson } from 'chanfana';
+    import { fromHono, D1CreateEndpoint, D1ReadEndpoint, D1UpdateEndpoint, D1DeleteEndpoint, D1ListEndpoint, contentJson } from 'chanfana';
     import { z } from 'zod';
 
     // Task Model
@@ -477,7 +477,7 @@ export class ToDoList extends OpenAPIRoute {
 }
 ```
 
-### Describing multiple ...content types:
+### Describing multiple content types:
 
 ```ts
 import { OpenAPIRoute, Str } from 'chanfana'

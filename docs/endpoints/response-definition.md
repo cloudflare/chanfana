@@ -137,21 +137,21 @@ In this example, we define responses for:
 
 ## Defining Response Bodies
 
-For each response status code, you can define a response body using the `content` property. Similar to request bodies, you'll often use `...contentJson` for JSON response bodies.
+For each response status code, you can define a response body using the `content` property. Similar to request bodies, you'll often use `contentJson` for JSON response bodies.
 
-### Using `...contentJson` for JSON Responses
+### Using `contentJson` for JSON Responses
 
-`...contentJson` simplifies defining JSON response bodies. It sets the `content-type` to `application/json` and wraps your Zod schema for OpenAPI.
+`contentJson` simplifies defining JSON response bodies. It sets the `content-type` to `application/json` and wraps your Zod schema for OpenAPI.
 
 **Example: Defining Response Body Schema with Zod**
 
-In the examples above, we've already seen how to use `...contentJson` to define response bodies. Here's a recap:
+In the examples above, we've already seen how to use `contentJson` to define response bodies. Here's a recap:
 
 ```typescript
 responses: {
     "200": {
         description: 'Successful response with user data',
-        ...contentJson(z.object({ // Corrected: Spread operator added
+        ...contentJson(z.object({
             id: z.string(),
             username: z.string(),
             email: z.string(),
