@@ -64,9 +64,9 @@ The `schema` property in your `OpenAPIRoute` class is crucial for defining the c
 *   **`responses`:** Defines the possible responses your API endpoint can return. For each response, you specify:
     *   `statusCode`: The HTTP status code (e.g., "200", "400", "500").
     *   `description`: A human-readable description of the response.
-    *   `...content`: The response body content, including the media type (e.g., "application/json") and the schema of the response body.
+    *   `content`: The response body content, including the media type (e.g., "application/json") and the schema of the response body.
 
-Chanfana uses Zod schemas to define the structure of both requests and responses. Zod is a TypeScript-first schema declaration and validation library that is highly expressive and type-safe. Chanfana provides helper functions like `...contentJson` to simplify defining JSON request and response bodies.
+Chanfana uses Zod schemas to define the structure of both requests and responses. Zod is a TypeScript-first schema declaration and validation library that is highly expressive and type-safe. Chanfana provides helper functions like `contentJson` to simplify defining JSON request and response bodies.
 
 ## Data Validation: Protecting Your API
 

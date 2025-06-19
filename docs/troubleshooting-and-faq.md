@@ -106,15 +106,15 @@ This section provides solutions to common issues you might encounter while using
 
 **A:** Chanfana itself does not provide built-in authentication or authorization mechanisms. However, it is designed to work seamlessly with middleware and custom logic for implementing authentication and authorization in your API endpoints. Refer to the [Examples and Recipes](./examples-and-recipes.md) section for a basic example of API key authentication.
 
-**Q: How can I handle different content types (e.g., XML, plain text) in request and responses?**
+**Q: How can I handle different ...content types (e.g., XML, plain text) in request and responses?**
 
-**A:** Chanfana primarily focuses on JSON APIs and provides `...contentJson` for simplifying JSON content handling. For handling other content types like XML or plain text, you might need to:
+**A:** Chanfana primarily focuses on JSON APIs and provides `...contentJson` for simplifying JSON ...content handling. For handling other ...content types like XML or plain text, you might need to:
 
 *   Manually define OpenAPI `content` objects in your schema without using `...contentJson`.
 *   Use Zod schemas that are appropriate for the data format (e.g., `z.string()` for plain text).
-*   Handle request parsing and response serialization for non-JSON content types within your endpoint `handle` methods using router-specific or Fetch API methods.
+*   Handle request parsing and response serialization for non-JSON ...content types within your endpoint `handle` methods using router-specific or Fetch API methods.
 
-*(Future versions of Chanfana might introduce more utilities for handling different content types.)*
+*(Future versions of Chanfana might introduce more utilities for handling different ...content types.)*
 
 ## Debugging Tips
 

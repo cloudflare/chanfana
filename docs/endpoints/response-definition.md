@@ -24,7 +24,7 @@ These status codes indicate that the request was successfully processed. Common 
 **Example: Success Responses**
 
 ```typescript
-import { OpenAPIRoute, ...contentJson } from 'chanfana';
+import { OpenAPIRoute, contentJson } from 'chanfana'; // Corrected: No spread here
 import { z } from 'zod';
 import { type Context } from 'hono';
 
@@ -34,7 +34,7 @@ class CreateResourceEndpoint extends OpenAPIRoute {
         responses: {
             "201": {
                 description: 'Resource created successfully',
-                ...contentJson(z.object({
+                ...contentJson(z.object({ // Corrected: Spread operator added
                     id: z.string(),
                     createdAt: z.string().datetime(),
                 })),
@@ -77,7 +77,7 @@ These status codes indicate that an error occurred during request processing. It
 **Example: Error Responses**
 
 ```typescript
-import { OpenAPIRoute, ...contentJson, InputValidationException, NotFoundException } from 'chanfana';
+import { OpenAPIRoute, contentJson, InputValidationException, NotFoundException } from 'chanfana'; // Corrected: No spread for contentJson in import
 import { z } from 'zod';
 import { type Context } from 'hono';
 
@@ -89,7 +89,7 @@ class GetItemEndpoint extends OpenAPIRoute {
         responses: {
             "200": {
                 description: 'Item details retrieved',
-                ...contentJson(z.object({
+                ...contentJson(z.object({ // Corrected: Spread operator added
                     id: z.string(),
                     name: z.string(),
                 })),
@@ -98,7 +98,7 @@ class GetItemEndpoint extends OpenAPIRoute {
             ...NotFoundException.schema(),
             "500": {
                 description: 'Internal Server Error',
-                ...contentJson(z.object({
+                ...contentJson(z.object({ // Corrected: Spread operator added
                     error: z.string(),
                 })),
             },
@@ -151,7 +151,7 @@ In the examples above, we've already seen how to use `...contentJson` to define 
 responses: {
     "200": {
         description: 'Successful response with user data',
-        ...contentJson(z.object({
+        ...contentJson(z.object({ // Corrected: Spread operator added
             id: z.string(),
             username: z.string(),
             email: z.string(),
@@ -171,7 +171,7 @@ Let's look at a complete example that defines both request and response schemas 
 
 ```typescript
 import { Hono, type Context } from 'hono';
-import { fromHono, OpenAPIRoute, ...contentJson, InputValidationException, NotFoundException } from 'chanfana';
+import { fromHono, OpenAPIRoute, contentJson, InputValidationException, NotFoundException } from 'chanfana'; // Corrected: No spread for contentJson in import
 import { z } from 'zod';
 
 export type Env = {
@@ -191,7 +191,7 @@ class ProductEndpoint extends OpenAPIRoute {
         responses: {
             "200": {
                 description: 'Product details retrieved',
-                ...contentJson(z.object({
+                ...contentJson(z.object({ // Corrected: Spread operator added
                     id: z.string(),
                     name: z.string(),
                     description: z.string().optional(),
@@ -203,7 +203,7 @@ class ProductEndpoint extends OpenAPIRoute {
             ...NotFoundException.schema(),
             "500": {
                 description: 'Internal Server Error',
-                ...contentJson(z.object({
+                ...contentJson(z.object({ // Corrected: Spread operator added
                     error: z.string(),
                 })),
             },
