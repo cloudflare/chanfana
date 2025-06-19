@@ -50,7 +50,7 @@ The `schema` property is where you define the OpenAPI contract for your endpoint
 
 The `request` property is an optional object that defines the structure of the incoming request. It can contain the following properties, each being a Zod schema:
 
-*   **`body`:**  Schema for the request body. Typically used for `POST`, `PUT`, and `PATCH` requests. You'll often use `contentJson` to define JSON request bodies.
+*   **`body`:**  Schema for the request body. Typically used for `POST`, `PUT`, and `PATCH` requests. You'll often use `...contentJson` to define JSON request bodies.
 *   **`query`:** Schema for query parameters in the URL. Use `z.object({})` to define the structure of query parameters.
 *   **`params`:** Schema for path parameters in the URL path. Use `z.object({})` to define the structure of path parameters.
 *   **`headers`:** Schema for HTTP headers. Use `z.object({})` to define the structure of headers.
@@ -58,14 +58,14 @@ The `request` property is an optional object that defines the structure of the i
 **Example: Request Schema with Body and Query Parameters**
 
 ```typescript
-import { OpenAPIRoute, contentJson } from 'chanfana';
+import { OpenAPIRoute, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 import { type Context } from 'hono';
 
 class ExampleEndpoint extends OpenAPIRoute {
     schema = {
         request: {
-            body: contentJson(z.object({
+            body: ...contentJson(z.object({
                 name: z.string().min(3),
                 email: z.string().email(),
             })),
@@ -97,12 +97,12 @@ The `responses` property is a **required** object that defines the possible resp
 Each response definition should include:
 
 *   **`description`:** A human-readable description of the response.
-*   **`content`:** (Optional) Defines the response body content. You'll often use `contentJson` to define JSON response bodies.
+*   **`content`:** (Optional) Defines the response body content. You'll often use `...contentJson` to define JSON response bodies.
 
 **Example: Response Schema with Success and Error Responses**
 
 ```typescript
-import { OpenAPIRoute, contentJson, InputValidationException } from 'chanfana';
+import { OpenAPIRoute, ...contentJson, InputValidationException } from 'chanfana';
 import { z } from 'zod';
 import { type Context } from 'hono';
 
@@ -111,7 +111,7 @@ class AnotherEndpoint extends OpenAPIRoute {
         responses: {
             "200": {
                 description: 'Successful operation',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     status: z.string().default("success"),
                     data: z.object({ id: z.number() }),
                 })),
@@ -119,7 +119,7 @@ class AnotherEndpoint extends OpenAPIRoute {
             ...InputValidationException.schema(),
             "500": {
                 description: 'Internal Server Error',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     status: z.string().default("error"),
                     message: z.string(),
                 })),
@@ -155,7 +155,7 @@ The `handle` method is where you write the core logic of your API endpoint. It's
 **Example: `handle` Method Logic**
 
 ```typescript
-import { OpenAPIRoute, contentJson } from 'chanfana';
+import { OpenAPIRoute, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 import { type Context } from 'hono';
 
@@ -169,7 +169,7 @@ class UserEndpoint extends OpenAPIRoute {
         responses: {
             "200": {
                 description: 'User details retrieved',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     id: z.string(),
                     name: z.string(),
                     email: z.string(),
@@ -245,7 +245,7 @@ class GreetingEndpoint extends OpenAPIRoute {
         responses: {
             "200": {
                 description: 'Greeting message',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     greeting: z.string(),
                 })),
             },

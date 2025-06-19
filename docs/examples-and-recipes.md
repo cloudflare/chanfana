@@ -38,7 +38,7 @@ Let's build a complete example of a simple Task Management API using Hono, Chanf
 
     ```typescript
     import { Hono } from 'hono';
-    import { fromHono, D1CreateEndpoint, D1ReadEndpoint, D1UpdateEndpoint, D1DeleteEndpoint, D1ListEndpoint, contentJson } from 'chanfana';
+    import { fromHono, D1CreateEndpoint, D1ReadEndpoint, D1UpdateEndpoint, D1DeleteEndpoint, D1ListEndpoint, ...contentJson } from 'chanfana';
     import { z } from 'zod';
 
     // Task Model
@@ -247,7 +247,7 @@ class UploadFileEndpoint extends OpenAPIRoute {
             // OpenAPI schema for multipart/form-data request (example - adjust as needed)
             body: {
                 description: "File upload",
-                content: {
+                ...content: {
                     "multipart/form-data": {
                         schema: {
                             type: "object",
@@ -462,7 +462,7 @@ export class ToDoList extends OpenAPIRoute {
     responses: {
       '200': {
         description: 'PDF response',
-        content: {
+        ...content: {
           'application/pdf': {
             schema: Str({ format: 'binary' }),
           },
@@ -477,7 +477,7 @@ export class ToDoList extends OpenAPIRoute {
 }
 ```
 
-### Describing multiple content types:
+### Describing multiple ...content types:
 
 ```ts
 import { OpenAPIRoute, Str } from 'chanfana'
@@ -489,7 +489,7 @@ export class ToDoList extends OpenAPIRoute {
     responses: {
       '200': {
         description: 'Successful response',
-        content: {
+        ...content: {
           'application/json': {
             schema: z.object({
               title: z.string()
@@ -522,7 +522,7 @@ export class ToDoList extends OpenAPIRoute {
     responses: {
       200: {
         description: 'Object with user data.',
-        content: {
+        ...content: {
           'application/json': {
             schema: z.object({
               series: z.object({
@@ -558,7 +558,7 @@ export class ToDoList extends OpenAPIRoute {
     responses: {
       200: {
         description: 'Object with user data.',
-        content: {
+        ...content: {
           'application/json': {
             schema: z.object({
               series: z.object({
@@ -675,7 +675,7 @@ Inside the endpoint schema, the reusable parameter is referenced by the name:
       "summary": "Update object metadata",
       "parameters": [],
       "requestBody": {
-        "content": {
+        "...content": {
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/Object metadata"

@@ -24,7 +24,7 @@ These status codes indicate that the request was successfully processed. Common 
 **Example: Success Responses**
 
 ```typescript
-import { OpenAPIRoute, contentJson } from 'chanfana';
+import { OpenAPIRoute, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 import { type Context } from 'hono';
 
@@ -34,7 +34,7 @@ class CreateResourceEndpoint extends OpenAPIRoute {
         responses: {
             "201": {
                 description: 'Resource created successfully',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     id: z.string(),
                     createdAt: z.string().datetime(),
                 })),
@@ -77,7 +77,7 @@ These status codes indicate that an error occurred during request processing. It
 **Example: Error Responses**
 
 ```typescript
-import { OpenAPIRoute, contentJson, InputValidationException, NotFoundException } from 'chanfana';
+import { OpenAPIRoute, ...contentJson, InputValidationException, NotFoundException } from 'chanfana';
 import { z } from 'zod';
 import { type Context } from 'hono';
 
@@ -89,7 +89,7 @@ class GetItemEndpoint extends OpenAPIRoute {
         responses: {
             "200": {
                 description: 'Item details retrieved',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     id: z.string(),
                     name: z.string(),
                 })),
@@ -98,7 +98,7 @@ class GetItemEndpoint extends OpenAPIRoute {
             ...NotFoundException.schema(),
             "500": {
                 description: 'Internal Server Error',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     error: z.string(),
                 })),
             },
@@ -137,21 +137,21 @@ In this example, we define responses for:
 
 ## Defining Response Bodies
 
-For each response status code, you can define a response body using the `content` property. Similar to request bodies, you'll often use `contentJson` for JSON response bodies.
+For each response status code, you can define a response body using the `content` property. Similar to request bodies, you'll often use `...contentJson` for JSON response bodies.
 
-### Using `contentJson` for JSON Responses
+### Using `...contentJson` for JSON Responses
 
-`contentJson` simplifies defining JSON response bodies. It sets the `content-type` to `application/json` and wraps your Zod schema for OpenAPI.
+`...contentJson` simplifies defining JSON response bodies. It sets the `content-type` to `application/json` and wraps your Zod schema for OpenAPI.
 
 **Example: Defining Response Body Schema with Zod**
 
-In the examples above, we've already seen how to use `contentJson` to define response bodies. Here's a recap:
+In the examples above, we've already seen how to use `...contentJson` to define response bodies. Here's a recap:
 
 ```typescript
 responses: {
     "200": {
         description: 'Successful response with user data',
-        content: contentJson(z.object({
+        ...contentJson(z.object({
             id: z.string(),
             username: z.string(),
             email: z.string(),
@@ -171,7 +171,7 @@ Let's look at a complete example that defines both request and response schemas 
 
 ```typescript
 import { Hono, type Context } from 'hono';
-import { fromHono, OpenAPIRoute, contentJson, InputValidationException, NotFoundException } from 'chanfana';
+import { fromHono, OpenAPIRoute, ...contentJson, InputValidationException, NotFoundException } from 'chanfana';
 import { z } from 'zod';
 
 export type Env = {
@@ -191,7 +191,7 @@ class ProductEndpoint extends OpenAPIRoute {
         responses: {
             "200": {
                 description: 'Product details retrieved',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     id: z.string(),
                     name: z.string(),
                     description: z.string().optional(),
@@ -203,7 +203,7 @@ class ProductEndpoint extends OpenAPIRoute {
             ...NotFoundException.schema(),
             "500": {
                 description: 'Internal Server Error',
-                content: contentJson(z.object({
+                ...contentJson(z.object({
                     error: z.string(),
                 })),
             },

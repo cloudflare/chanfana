@@ -61,7 +61,7 @@ Let's revisit the nested routes example from the bug report to demonstrate how t
 
 ```typescript
 import { Hono } from 'hono';
-import { fromHono, ReadEndpoint, ListEndpoint, contentJson } from 'chanfana';
+import { fromHono, ReadEndpoint, ListEndpoint, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 
 // Define User and UserPost Models and Metas
@@ -133,7 +133,7 @@ By using `pathParameters`, you ensure correct primary key validation in nested r
 
 ```typescript
 import { Hono } from 'hono';
-import { fromHono, CreateEndpoint, contentJson } from 'chanfana';
+import { fromHono, CreateEndpoint, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 
 // Define the Product Model
@@ -189,7 +189,7 @@ In this example:
 
 ```typescript
 import { Hono } from 'hono';
-import { fromHono, ReadEndpoint, contentJson } from 'chanfana';
+import { fromHono, ReadEndpoint, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 
 // (ProductModel and productMeta are assumed to be defined as in the CreateEndpoint example)
@@ -228,7 +228,7 @@ In this example:
 
 ```typescript
 import { Hono } from 'hono';
-import { fromHono, UpdateEndpoint, contentJson } from 'chanfana';
+import { fromHono, UpdateEndpoint, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 
 // (ProductModel and productMeta are assumed to be defined as in the CreateEndpoint example)
@@ -323,7 +323,7 @@ In this example:
 
 ```typescript
 import { Hono } from 'hono';
-import { fromHono, ListEndpoint, contentJson } from 'chanfana';
+import { fromHono, ListEndpoint, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 
 // (ProductModel and productMeta are assumed to be defined as in the CreateEndpoint example)

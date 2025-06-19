@@ -55,7 +55,7 @@ Let's create a simple "Hello, World!" API endpoint using Hono and Chanfana.
 
     ```typescript
     import { Hono, type Context } from 'hono';
-    import { fromHono, OpenAPIRoute, contentJson } from 'chanfana';
+    import { fromHono, OpenAPIRoute, ...contentJson } from 'chanfana';
     import { z } from 'zod';
 
     export type Env = {
@@ -71,7 +71,7 @@ Let's create a simple "Hello, World!" API endpoint using Hono and Chanfana.
             responses: {
                 "200": {
                     description: 'Successful response',
-                    content: contentJson(z.object({ message: z.string() })),
+                    ...contentJson(z.object({ message: z.string() })),
                 },
             },
         };
@@ -148,7 +148,7 @@ Now, let's do the same with itty-router.
 
     ```typescript
     import { Router } from 'itty-router';
-    import { fromIttyRouter, OpenAPIRoute, contentJson } from 'chanfana';
+    import { fromIttyRouter, OpenAPIRoute, ...contentJson } from 'chanfana';
     import { z } from 'zod';
 
     // Define a simple endpoint class
@@ -157,7 +157,7 @@ Now, let's do the same with itty-router.
             responses: {
                 "200": {
                     description: 'Successful response',
-                    content: contentJson(z.object({ message: z.string() })),
+                    ...contentJson(z.object({ message: z.string() })),
                 },
             },
         };

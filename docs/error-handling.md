@@ -83,14 +83,14 @@ Chanfana provides several pre-built exception classes that extend `ApiException`
 **Example: Throwing `InputValidationException`**
 
 ```typescript
-import { InputValidationException, OpenAPIRoute, contentJson } from 'chanfana';
+import { InputValidationException, OpenAPIRoute, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 import { type Context } from 'hono';
 
 class CreateUserEndpoint extends OpenAPIRoute {
     schema = {
         request: {
-            body: contentJson(z.object({
+            body: ...contentJson(z.object({
                 username: z.string().min(3),
                 email: z.string().email(),
             })),
@@ -152,7 +152,7 @@ In this example, if the `checkUsernameExists` function returns `true`, we throw 
 **Example: Throwing `NotFoundException`**
 
 ```typescript
-import { NotFoundException, OpenAPIRoute, contentJson } from 'chanfana';
+import { NotFoundException, OpenAPIRoute, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 import { type Context } from 'hono';
 
@@ -216,14 +216,14 @@ If `getProductFromDatabase` returns `null`, a `NotFoundException` is thrown. Cha
 **Example: Using `MultiException` for Multiple Validation Errors**
 
 ```typescript
-import { MultiException, InputValidationException, OpenAPIRoute, contentJson } from 'chanfana';
+import { MultiException, InputValidationException, OpenAPIRoute, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 import { type Context } from 'hono';
 
 class ValidateMultipleFieldsEndpoint extends OpenAPIRoute {
     schema = {
         request: {
-            body: contentJson(z.object({
+            body: ...contentJson(z.object({
                 field1: z.string().min(5),
                 field2: z.number().positive(),
                 field3: z.boolean(),
@@ -285,7 +285,7 @@ You can create your own custom exception classes by extending `ApiException`. Th
 **Example: Creating a Custom `AuthenticationException`**
 
 ```typescript
-import { ApiException, contentJson } from 'chanfana';
+import { ApiException, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 import { type Context } from 'hono';
 

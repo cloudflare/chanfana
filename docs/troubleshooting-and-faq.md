@@ -108,9 +108,9 @@ This section provides solutions to common issues you might encounter while using
 
 **Q: How can I handle different content types (e.g., XML, plain text) in request and responses?**
 
-**A:** Chanfana primarily focuses on JSON APIs and provides `contentJson` for simplifying JSON content handling. For handling other content types like XML or plain text, you might need to:
+**A:** Chanfana primarily focuses on JSON APIs and provides `...contentJson` for simplifying JSON content handling. For handling other content types like XML or plain text, you might need to:
 
-*   Manually define OpenAPI `content` objects in your schema without using `contentJson`.
+*   Manually define OpenAPI `content` objects in your schema without using `...contentJson`.
 *   Use Zod schemas that are appropriate for the data format (e.g., `z.string()` for plain text).
 *   Handle request parsing and response serialization for non-JSON content types within your endpoint `handle` methods using router-specific or Fetch API methods.
 

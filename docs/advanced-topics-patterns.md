@@ -160,7 +160,7 @@ In some cases, you might need to transform or format your API response data befo
 
 ```typescript
 import { Hono } from 'hono';
-import { fromHono, ListEndpoint, contentJson } from 'chanfana';
+import { fromHono, ListEndpoint, ...contentJson } from 'chanfana';
 import { z } from 'zod';
 
 // Define Product Model
