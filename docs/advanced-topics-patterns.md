@@ -11,7 +11,6 @@ For large APIs with many endpoints, organizing your routes into nested routers c
 ```typescript
 import { Hono, type Context } from 'hono';
 import { fromHono, OpenAPIRoute } from 'chanfana';
-import { z } from 'zod';
 
 export type Env = {
     // Example bindings, use your own
@@ -21,54 +20,54 @@ export type Env = {
 export type AppContext = Context<{ Bindings: Env }>
 
 // User Routes (nested router)
-const userRoutes = new Hono();
+const userRoutes = fromHono(new Hono());
 
 class ListUsersEndpoint extends OpenAPIRoute {
-    schema = { 
-      responses: { 
-        "200": { 
-          description: 'List users' 
-        } 
-      } 
+    schema = {
+      responses: {
+        "200": {
+          description: 'List users'
+        }
+      }
     };
-    
-    async handle(c: AppContext) { 
-      return { 
-        message: 'List users' 
-      }; 
+
+    async handle(c: AppContext) {
+      return {
+        message: 'List users'
+      };
     }
 }
 userRoutes.get('/', ListUsersEndpoint);
 
 class GetUserEndpoint extends OpenAPIRoute {
-    schema = { 
-      responses: { 
-        "200": { 
-          description: 'Get user' 
-        } 
-      } 
+    schema = {
+      responses: {
+        "200": {
+          description: 'Get user'
+        }
+      }
     };
-    
-    async handle(c: AppContext) { 
-      return { message: 'Get user' }; 
+
+    async handle(c: AppContext) {
+      return { message: 'Get user' };
     }
 }
 userRoutes.get('/:userId', GetUserEndpoint);
 
 // Product Routes (nested router)
-const productRoutes = new Hono();
+const productRoutes = fromHono(new Hono());
 
 class ListProductsEndpoint extends OpenAPIRoute {
-    schema = { 
-      responses: { 
-        "200": { 
-          description: 'List products' 
-        } 
-      } 
+    schema = {
+      responses: {
+        "200": {
+          description: 'List products'
+        }
+      }
     };
-    
-    async handle(c: AppContext) { 
-      return { message: 'List products' }; 
+
+    async handle(c: AppContext) {
+      return { message: 'List products' };
     }
 }
 productRoutes.get('/', ListProductsEndpoint);
