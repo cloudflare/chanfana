@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 
 const READY_KEYWORD = "ready on";
 const URL_REGEX = /ready on\s+(https?:\/\/[\w\.-]+:\d+)/i;
@@ -10,6 +10,23 @@ const URL_REGEX = /ready on\s+(https?:\/\/[\w\.-]+:\d+)/i;
 let outputFile = "schema.json";
 const wranglerArgs: string[] = ["wrangler", "dev"];
 const args = process.argv.slice(2);
+
+if (args.includes("--help") || args.includes("-h")) {
+  console.log(`
+Usage: npx chanfana [options]
+
+Options:
+  -o, --output <path>  Specify output file path (including optional directory)
+  -h, --help           Display this help message
+
+Examples:
+  npx chanfana -o output/schemas/public-api.json
+  npx chanfana --output schema.json
+  npx chanfana --help
+`);
+  process.exit(0);
+}
+
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "-o" || args[i] === "--output") {
     if (i + 1 >= args.length) {
@@ -23,13 +40,15 @@ for (let i = 0; i < args.length; i++) {
     }
     outputFile = filePath;
     i++;
-  } else {
+  } else if (typeof args[i] === "string") {
+    // Ensure args[i] is a defined string
     wranglerArgs.push(args[i] as string);
   }
 }
 
-// Resolve output file path relative to current working directory
+// Resolve output file path and ensure directory exists
 const resolvedOutputFile: string = join(process.cwd(), outputFile);
+const outputDir: string = dirname(resolvedOutputFile);
 
 // Spawn the 'npx wrangler dev' command with custom arguments
 const childProcess = spawn("npx", wranglerArgs, {
@@ -80,13 +99,14 @@ childProcess.stdout.on("data", async (data: Buffer) => {
           process.exit(1);
         }
 
-        const schema: any = await response.json();
+        const schema: { paths?: Record<string, Record<string, { "x-ignore"?: boolean }>> } = await response.json();
 
         // Remove paths with x-ignore: true
-        if (schema.paths) {
+        if (schema.paths && Object.keys(schema.paths).length > 0) {
           for (const path in schema.paths) {
             const pathObj = schema.paths[path];
             for (const method in pathObj) {
+              // @ts-ignore
               if (pathObj[method]["x-ignore"] === true) {
                 delete schema.paths[path];
                 break;
@@ -98,10 +118,13 @@ childProcess.stdout.on("data", async (data: Buffer) => {
         const schemaString = JSON.stringify(schema, null, 2);
 
         try {
+          // Create output directory if it doesn't exist
+          await mkdir(outputDir, { recursive: true });
           await writeFile(resolvedOutputFile, schemaString);
           console.log(`Schema written to ${resolvedOutputFile}`);
         } catch (err: unknown) {
-          console.error(`Error writing schema to ${resolvedOutputFile}: ${(err as Error).message}`);
+          const error = err as Error;
+          console.error(`Error writing schema to ${resolvedOutputFile}: ${error.message}`);
           console.error("Buffered output:", outputBuffer.join("\n"));
           childProcess.kill("SIGTERM");
           process.exit(1);
@@ -111,7 +134,8 @@ childProcess.stdout.on("data", async (data: Buffer) => {
         childProcess.kill("SIGTERM");
         process.exit(0);
       } catch (err: unknown) {
-        console.error(`Fetch error: ${(err as Error).message}`);
+        const error = err as Error;
+        console.error(`Fetch error: ${error.message}`);
         console.error("Buffered output:", outputBuffer.join("\n"));
         childProcess.kill("SIGTERM");
         process.exit(1);
@@ -152,7 +176,8 @@ process.on("SIGTERM", () => {
   process.exit(0);
 });
 process.on("uncaughtException", (err: unknown) => {
-  console.error("Uncaught Exception:", (err as Error).message);
+  const error = err as Error;
+  console.error("Uncaught Exception:", error.message);
   console.error("Buffered output:", outputBuffer.join("\n"));
   cleanup();
   process.exit(1);
