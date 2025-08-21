@@ -22,9 +22,17 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
   filterFields?: Array<string>;
   searchFields?: Array<string>;
   searchFieldName = "search";
-  optionFields = ["page", "per_page", "order_by", "order_by_direction"];
-  orderByFields = [];
-  defaultOrderBy?: string;
+  *** Begin Patch
+  *** Update File: src/endpoints/list.ts
+  @@
+  -  optionFields = ["page", "per_page", "order_by", "order_by_direction"];
+  -  orderByFields = [];
+  -  defaultOrderBy?;
+  +  optionFields = ["page", "per_page", "order_by", "order_by_direction"];
+  +  // Explicitly type orderByFields to avoid narrow never[] inference for subclasses
+  +  orderByFields: string[] = [];
+  +  defaultOrderBy?: string;
+  *** End Patch
 
   getSchema() {
     const parsedQueryParameters = this.meta.fields
