@@ -24,7 +24,6 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
   searchFieldName = "search";
   *** Begin Patch
   *** Update File: src/endpoints/list.ts
-  @@
   -  optionFields = ["page", "per_page", "order_by", "order_by_direction"];
   -  orderByFields = [];
   -  defaultOrderBy?;
