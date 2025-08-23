@@ -93,4 +93,4 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     }
   };
 }
-
+}
