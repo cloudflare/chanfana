@@ -78,10 +78,16 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     }
 
     const finalSql = `SELECT * FROM ${this.meta.model.tableName} ${where} ${orderBy} LIMIT ${limit} OFFSET ${offset}`;
-    this.logger?.debug?.('[D1ListEndpoint] SQL', finalSql, conditionsParams);
+    this.logger?.debug?.("[D1ListEndpoint] SQL", finalSql, conditionsParams);
 
-    const results = await this.getDBBinding().prepare(finalSql).bind(...conditionsParams).all();
-    const total_count = await this.getDBBinding().prepare(`SELECT count(*) as total FROM ${this.meta.model.tableName} ${where}`).bind(...conditionsParams).all();
+    const results = await this.getDBBinding()
+      .prepare(finalSql)
+      .bind(...conditionsParams)
+      .all();
+    const total_count = await this.getDBBinding()
+      .prepare(`SELECT count(*) as total FROM ${this.meta.model.tableName} ${where}`)
+      .bind(...conditionsParams)
+      .all();
 
     return {
       result: results.results,
@@ -89,8 +95,8 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
         count: results.results.length,
         page,
         per_page: perPage,
-        total_count: total_count.results[0]?.total
-      }
+        total_count: total_count.results[0]?.total,
+      },
     };
   }
 }
