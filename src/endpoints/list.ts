@@ -23,7 +23,8 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
   searchFields?: Array<string>;
   searchFieldName = "search";
   optionFields = ["page", "per_page", "order_by", "order_by_direction"];
-  orderByFields = [];
+  // Explicitly type orderByFields to avoid narrow never[] inference for subclasses
+  orderByFields: string[] = [];
   defaultOrderBy?: string;
 
   getSchema() {
