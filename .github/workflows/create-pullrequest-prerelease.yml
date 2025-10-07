@@ -27,4 +27,7 @@ jobs:
         run: npm pack
 
       - name: Upload packaged chanfana artifact
+        if: >
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main'))
         run: npx pkg-pr-new publish
