@@ -12,12 +12,14 @@ export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> ex
   }
 
   getSchema() {
+    const urlParams = this.meta.pathParameters ?? this.params.urlParams ?? [];
+
     const bodyParameters = this.meta.fields
       .pick((this.meta.model.primaryKeys || []).reduce((a, v) => ({ ...a, [v]: true }), {}))
-      .omit((this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}));
+      .omit(urlParams.reduce((a, v) => ({ ...a, [v]: true }), {}));
     const pathParameters = this.meta.fields
       .pick((this.meta.model.primaryKeys || []).reduce((a, v) => ({ ...a, [v]: true }), {}))
-      .pick((this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}));
+      .pick(urlParams.reduce((a, v) => ({ ...a, [v]: true }), {}));
 
     return {
       request: {
