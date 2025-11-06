@@ -1,6 +1,6 @@
 {
   "name": "chanfana",
-  "version": "3.0.0",
+  "version": "3.0.0-alpha.1",
   "description": "OpenAPI 3 and 3.1 schema generator and validator for Hono, itty-router and more!",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -8,7 +8,12 @@
   "bin": {
     "chanfana": "dist/cli.js"
   },
-  "files": ["dist", "docs/**/*.md", "LICENSE", "README.md"],
+  "files": [
+    "dist",
+    "docs/**/*.md",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "build": "rm -rf dist/ && tsup src/index.ts src/cli.ts --format cjs,esm --dts --config tsconfig.json --external Hono",
     "lint": "npx @biomejs/biome check || (npx @biomejs/biome check --write; exit 1)",
