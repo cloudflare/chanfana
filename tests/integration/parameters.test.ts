@@ -14,8 +14,8 @@ describe("queryParametersValidation", () => {
     );
 
     // sanity check some parameters
-    expect(findError(resp.errors, "p_number")).toEqual("Required");
-    expect(findError(resp.errors, "p_boolean")).toEqual("Required");
+    expect(findError(resp.errors, "p_number")).toEqual("Invalid input: expected number, received undefined");
+    expect(findError(resp.errors, "p_boolean")).toEqual("Invalid input: expected boolean, received undefined");
   });
 
   it("checkNumberInvalid", async () => {
@@ -23,7 +23,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_number")).toEqual("Expected number, received nan");
+    expect(findError(resp.errors, "p_number")).toEqual("Invalid input: expected number, received NaN");
   });
 
   it("checkNumberValidFloat", async () => {
@@ -55,7 +55,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_string")).toEqual("Expected string, received null");
+    expect(findError(resp.errors, "p_string")).toEqual("Invalid input: expected string, received null");
   });
 
   it("checkBooleanInvalid", async () => {
@@ -63,7 +63,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_boolean")).toEqual("Expected boolean, received string");
+    expect(findError(resp.errors, "p_boolean")).toEqual("Invalid input: expected boolean, received string");
   });
 
   it("checkBooleanValid", async () => {
@@ -87,9 +87,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_enumeration")).toEqual(
-      "Invalid enum value. Expected 'json' | 'csv', received 'sfDase'",
-    );
+    expect(findError(resp.errors, "p_enumeration")).toEqual('Invalid option: expected one of "json"|"csv"');
   });
 
   it("checkEnumerationSensitiveInvalidCase", async () => {
@@ -97,9 +95,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_enumeration")).toEqual(
-      "Invalid enum value. Expected 'json' | 'csv', received 'Csv'",
-    );
+    expect(findError(resp.errors, "p_enumeration")).toEqual('Invalid option: expected one of "json"|"csv"');
   });
 
   it("checkEnumerationSensitiveValid", async () => {
@@ -115,9 +111,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_enumeration_insensitive")).toEqual(
-      "Invalid enum value. Expected 'json' | 'csv', received 'sfdase'",
-    );
+    expect(findError(resp.errors, "p_enumeration_insensitive")).toEqual('Invalid option: expected one of "json"|"csv"');
   });
 
   it("checkEnumerationInsensitiveValidCase", async () => {
@@ -181,7 +175,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_dateonly")).toEqual("Invalid date");
+    expect(findError(resp.errors, "p_dateonly")).toEqual("Invalid input: expected date, received Date");
   });
 
   it("checkDateInvalid3", async () => {
@@ -189,7 +183,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_dateonly")).toEqual("Invalid date");
+    expect(findError(resp.errors, "p_dateonly")).toEqual("Invalid input: expected date, received Date");
   });
 
   it("checkDateValid", async () => {
@@ -221,7 +215,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_email")).toEqual("Invalid email");
+    expect(findError(resp.errors, "p_email")).toEqual("Invalid email address");
   });
 
   it("checkEmailInvalid2", async () => {
@@ -229,7 +223,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_email")).toEqual("Invalid email");
+    expect(findError(resp.errors, "p_email")).toEqual("Invalid email address");
   });
 
   it("checkEmailInvalid3", async () => {
@@ -237,7 +231,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_email")).toEqual("Invalid email");
+    expect(findError(resp.errors, "p_email")).toEqual("Invalid email address");
   });
 
   it("checkEmailValid", async () => {
@@ -253,7 +247,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_uuid")).toEqual("Invalid uuid");
+    expect(findError(resp.errors, "p_uuid")).toEqual("Invalid UUID");
   });
 
   it("checkUuidInvalid2", async () => {
@@ -261,7 +255,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_uuid")).toEqual("Invalid uuid");
+    expect(findError(resp.errors, "p_uuid")).toEqual("Invalid UUID");
   });
 
   it("checkUuidValid", async () => {
@@ -285,7 +279,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_hostname")).toEqual("Invalid");
+    expect(findError(resp.errors, "p_hostname")).toContain("Invalid string: must match pattern");
   });
 
   it("checkHostnameValid", async () => {
@@ -309,7 +303,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_ipv4")).toEqual("Invalid ip");
+    expect(findError(resp.errors, "p_ipv4")).toEqual("Invalid IPv4 address");
   });
 
   it("checkIpv4Invalid2", async () => {
@@ -317,7 +311,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_ipv4")).toEqual("Invalid ip");
+    expect(findError(resp.errors, "p_ipv4")).toEqual("Invalid IPv4 address");
   });
 
   it("checkIpv4Valid", async () => {
@@ -333,7 +327,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_ipv6")).toEqual("Invalid ip");
+    expect(findError(resp.errors, "p_ipv6")).toEqual("Invalid IPv6 address");
   });
 
   it("checkIpv6Invalid2", async () => {
@@ -341,7 +335,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_ipv6")).toEqual("Invalid ip");
+    expect(findError(resp.errors, "p_ipv6")).toEqual("Invalid IPv6 address");
   });
 
   it("checkIpv6Valid", async () => {
@@ -357,7 +351,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_array_dates")).toEqual("Invalid date");
+    expect(findError(resp.errors, "p_array_dates")).toEqual("Invalid ISO date");
   });
 
   it("checkDateArrayValid", async () => {
@@ -389,7 +383,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_optional")).toEqual("Expected number, received nan");
+    expect(findError(resp.errors, "p_optional")).toEqual("Invalid input: expected number, received NaN");
   });
 
   it("checkOptionalValid", async () => {
@@ -417,7 +411,7 @@ describe("bodyParametersValidation", () => {
     expect(request.status).toEqual(400);
 
     // the current body implementation only validates 1 field at time
-    expect(findError(resp.errors, "title")).toEqual("Required");
+    expect(findError(resp.errors, "title")).toEqual("Invalid input: expected string, received undefined");
   });
 
   it("requiredFieldTipe", async () => {
@@ -437,7 +431,7 @@ describe("bodyParametersValidation", () => {
     expect(request.status).toEqual(400);
 
     // the current body implementation only validates 1 field at time
-    expect(findError(resp.errors, "type")).toEqual("Required");
+    expect(findError(resp.errors, "type")).toEqual('Invalid option: expected one of "nextWeek"|"nextMonth"');
   });
 
   it("validRequest", async () => {
@@ -511,9 +505,8 @@ describe("bodyParametersValidation", () => {
         {
           code: "invalid_type",
           expected: "string",
-          message: "Expected string, received null",
+          message: "Invalid input: expected string, received null",
           path: ["headers", "p_hostname"],
-          received: "null",
         },
       ],
       result: {},

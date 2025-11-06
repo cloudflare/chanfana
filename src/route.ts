@@ -1,7 +1,8 @@
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
-import { type AnyZodObject, z } from "zod";
+import { z } from "zod";
 import { type ApiException, InputValidationException, MultiException } from "./exceptions";
 import { coerceInputs } from "./parameters";
+import type { AnyZodObject } from "./types";
 import type { OpenAPIRouteSchema, RouteOptions, ValidatedData } from "./types";
 import { jsonResp } from "./utils";
 extendZodWithOpenApi(z);
@@ -96,7 +97,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       resp = await this.handle(...args);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        return this.handleValidationError(e.errors);
+        return this.handleValidationError(e.issues);
       }
 
       throw e;

@@ -1,7 +1,8 @@
-import { type AnyZodObject, z } from "zod";
+import { z } from "zod";
 import { contentJson } from "../contentTypes";
 import { Enumeration, Str } from "../parameters";
 import { OpenAPIRoute } from "../route";
+import type { AnyZodObject } from "../types";
 import {
   type FilterCondition,
   type ListFilters,

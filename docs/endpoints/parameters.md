@@ -299,7 +299,7 @@ const websiteSchema = Hostname({
 
 ### `Ipv4`: IPv4 Address Strings
 
-The `Ipv4` parameter type represents strings that must be valid IPv4 addresses. It's based on `z.string().ip({ version: "v4" })` from Zod.
+The `Ipv4` parameter type represents strings that must be valid IPv4 addresses. It's based on `z.ipv4()` from Zod.
 
 **Usage:**
 
@@ -325,7 +325,7 @@ const ipAddressSchema = Ipv4({
 
 ### `Ipv6`: IPv6 Address Strings
 
-The `Ipv6` parameter type represents strings that must be valid IPv6 addresses. It's based on `z.string().ip({ version: "v6" })` from Zod.
+The `Ipv6` parameter type represents strings that must be valid IPv6 addresses. It's based on `z.ipv6()` from Zod.
 
 **Usage:**
 
@@ -351,7 +351,7 @@ const ipv6AddressSchema = Ipv6({
 
 ### `Ip`: IP Address Strings (v4 or v6)
 
-The `Ip` parameter type represents strings that must be valid IP addresses, either IPv4 or IPv6. It's based on `z.string().ip()` from Zod.
+The `Ip` parameter type represents strings that must be valid IP addresses, either IPv4 or IPv6. It's based on `z.union([z.ipv4(), z.ipv6()])` from Zod.
 
 **Usage:**
 

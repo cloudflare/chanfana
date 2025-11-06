@@ -1,6 +1,6 @@
 {
   "name": "chanfana",
-  "version": "2.8.3",
+  "version": "3.0.0",
   "description": "OpenAPI 3 and 3.1 schema generator and validator for Hono, itty-router and more!",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -56,22 +56,22 @@
     "@cloudflare/workers-types": "4.20250109.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "22.10.5",
-    "@types/service-worker-mock": "^2.0.1",
-    "hono": "4.6.16",
-    "itty-router": "5.0.18",
+    "@types/service-worker-mock": "^2.0.4",
+    "hono": "4.10.4",
+    "itty-router": "5.0.22",
     "pkg-pr-new": "^0.0.51",
-    "tsup": "8.3.5",
-    "typescript": "5.7.3",
-    "vitepress": "^1.6.3",
+    "tsup": "8.5.0",
+    "typescript": "5.9.3",
+    "vitepress": "^1.6.4",
     "vitest": "2.1.8",
     "vitest-openapi": "^1.0.3",
     "wrangler": "3.101.0"
   },
   "dependencies": {
-    "@asteasolutions/zod-to-openapi": "^7.2.0",
+    "@asteasolutions/zod-to-openapi": "^8.1.0",
     "js-yaml": "^4.1.0",
-    "openapi3-ts": "^4.4.0",
+    "openapi3-ts": "^4.5.0",
     "yargs-parser": "^22.0.0",
-    "zod": "^3.23.8"
+    "zod": "^4.1.12"
   }
 }
