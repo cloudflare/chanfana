@@ -41,7 +41,7 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
     return { conditions, conditionsParams };
   }
 
-  async getObject(filters: UpdateFilters): Promise<object | null> {
+  async getObject(filters: UpdateFilters): Promise<Record<string, unknown> | null> {
     const safeFilters = this.getSafeFilters(filters);
 
     const oldObj = await this.getDBBinding()

@@ -1,4 +1,5 @@
-import type { AnyZodObject, z } from "zod";
+import type { z } from "zod";
+import type { AnyZodObject } from "../types";
 import type { SetRequired } from "../types";
 
 export type FilterCondition = {

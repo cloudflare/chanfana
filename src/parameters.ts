@@ -1,7 +1,13 @@
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
-import type { EnumerationParameterType, ParameterType, RegexParameterType, RouteParameter } from "./types";
-import { isSpecificZodType, legacyTypeIntoZod } from "./zod/utils";
+import type {
+  AnyZodObject,
+  EnumerationParameterType,
+  ParameterType,
+  RegexParameterType,
+  RouteParameter,
+} from "./types";
+import { legacyTypeIntoZod } from "./zod/utils";
 
 extendZodWithOpenApi(z);
 export function convertParams<M = z.ZodType>(field: any, params: any): M {
@@ -95,15 +101,15 @@ export function Hostname(params?: ParameterType): z.ZodString {
 }
 
 export function Ipv4(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.string().ip({ version: "v4" }), params);
+  return convertParams<z.ZodString>(z.ipv4(), params);
 }
 
 export function Ipv6(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.string().ip({ version: "v6" }), params);
+  return convertParams<z.ZodString>(z.ipv6(), params);
 }
 
-export function Ip(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.string().ip(), params);
+export function Ip(params?: ParameterType): z.ZodString | z.ZodUnion<[z.ZodString, z.ZodString]> {
+  return convertParams<z.ZodString | z.ZodUnion<[z.ZodString, z.ZodString]>>(z.union([z.ipv4(), z.ipv6()]), params);
 }
 
 export function DateOnly(params?: ParameterType): z.ZodString {
@@ -152,6 +158,23 @@ export function Enumeration(params: EnumerationParameterType): z.ZodEnum<any> {
   return result;
 }
 
+// Helper function to unwrap optional/nullable types and check instanceof
+function unwrapAndCheck(schema: any, ZodClass: any): boolean {
+  let current = schema;
+  // Check first before unwrapping (important for arrays which also have .unwrap())
+  if (current instanceof ZodClass) {
+    return true;
+  }
+  // Unwrap optional/nullable/default wrappers
+  while (current && typeof current.unwrap === "function") {
+    current = current.unwrap();
+    if (current instanceof ZodClass) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // This should only be used for query, params, headers and cookies
 export function coerceInputs(data: Record<string, any>, schema?: RouteParameter): Record<string, any> | null {
   // For older node versions, searchParams is just an object without the size property
@@ -177,8 +200,8 @@ export function coerceInputs(data: Record<string, any>, schema?: RouteParameter)
     }
 
     let innerType;
-    if (schema && (schema as z.AnyZodObject).shape && (schema as z.AnyZodObject).shape[key]) {
-      innerType = (schema as z.AnyZodObject).shape[key];
+    if (schema && (schema as AnyZodObject).shape && (schema as AnyZodObject).shape[key]) {
+      innerType = (schema as AnyZodObject).shape[key];
     } else if (schema) {
       // Fallback for Zod effects
       innerType = schema;
@@ -186,18 +209,18 @@ export function coerceInputs(data: Record<string, any>, schema?: RouteParameter)
 
     // Soft transform query strings into arrays
     if (innerType) {
-      if (isSpecificZodType(innerType, "ZodArray") && !Array.isArray(params[key])) {
+      if (unwrapAndCheck(innerType, z.ZodArray) && !Array.isArray(params[key])) {
         params[key] = [params[key]];
-      } else if (isSpecificZodType(innerType, "ZodBoolean")) {
+      } else if (unwrapAndCheck(innerType, z.ZodBoolean)) {
         const _val = (params[key] as string).toLowerCase().trim();
         if (_val === "true" || _val === "false") {
           params[key] = _val === "true";
         }
-      } else if (isSpecificZodType(innerType, "ZodNumber") || innerType instanceof z.ZodNumber) {
+      } else if (unwrapAndCheck(innerType, z.ZodNumber)) {
         params[key] = Number.parseFloat(params[key]);
-      } else if (isSpecificZodType(innerType, "ZodBigInt") || innerType instanceof z.ZodBigInt) {
+      } else if (unwrapAndCheck(innerType, z.ZodBigInt)) {
         params[key] = Number.parseInt(params[key]);
-      } else if (isSpecificZodType(innerType, "ZodDate") || innerType instanceof z.ZodDate) {
+      } else if (unwrapAndCheck(innerType, z.ZodDate)) {
         params[key] = new Date(params[key]);
       }
     }
