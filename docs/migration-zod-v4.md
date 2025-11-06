@@ -62,14 +62,19 @@ const anyIpSchema = Ip({ description: 'IPv4 or IPv6 address' });
 
 ## Removed Exports
 
-The following internal utility functions have been removed from the public API as they relied on Zod's internal APIs:
+The following items have been removed from the public API:
 
+**Utility Functions** (relied on Zod's internal APIs):
 - `isAnyZodType()`
 - `isSpecificZodType()`
 
-If you were using these functions, you should use Zod v4's public APIs instead:
+**Type Aliases** (unnecessary abstraction over Zod v4 types):
+- `ZodEffects<T, Output, Input>` - Use `ZodPipe<T, any>` from Zod directly instead
+
+If you were using these, you should use Zod v4's public APIs instead:
 
 ```typescript
+// isAnyZodType replacement
 // Before
 import { isAnyZodType } from 'chanfana';
 if (isAnyZodType(schema)) { ... }
@@ -77,7 +82,18 @@ if (isAnyZodType(schema)) { ... }
 // After
 import { z } from 'zod';
 if (schema instanceof z.ZodType) { ... }
+
+// ZodEffects replacement
+// Before
+import type { ZodEffects } from 'chanfana';
+type MyParam = ZodEffects<SomeSchema, Output, Input>;
+
+// After
+import type { ZodPipe } from 'zod';
+type MyParam = ZodPipe<SomeSchema, any>;
 ```
+
+**Note:** `AnyZodObject` remains exported as it's a commonly used type in the public API.
 
 ## Migration Steps
 

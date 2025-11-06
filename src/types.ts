@@ -3,10 +3,8 @@ import type { HeadersObject as HeadersObject30, LinksObject as LinksObject30, Op
 import type { HeadersObject as HeadersObject31, LinksObject as LinksObject31 } from "openapi3-ts/oas31";
 import type { ZodObject, ZodPipe, ZodType, z } from "zod";
 
-// Type aliases for compatibility with Zod v4
+// Type alias for compatibility with Zod v4
 export type AnyZodObject = ZodObject<any, any>;
-// ZodEffects was removed in v4, replaced with ZodPipe for transformations
-export type ZodEffects<T extends ZodType, Output, Input> = ZodPipe<T, any>;
 
 export type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 
@@ -66,7 +64,7 @@ export interface ResponseConfig {
   links?: LinksObject;
   content?: ZodContentObject;
 }
-export type RouteParameter = AnyZodObject | ZodEffects<AnyZodObject, unknown, unknown> | undefined;
+export type RouteParameter = AnyZodObject | ZodPipe<AnyZodObject, any> | undefined;
 
 export interface RouterOptions {
   base?: string;
