@@ -43,6 +43,70 @@ Zod v4 improved error messages to be more descriptive and consistent. If your ap
 
 The `received` field may no longer be present in some error objects. If your code relies on this field, you should update it to handle cases where it's absent.
 
+## Changes Required for Custom Zod Schemas
+
+If you're using Zod directly in your schemas (not through chanfana's parameter helpers), you'll need to update deprecated string format methods:
+
+### String Format Methods (BREAKING)
+
+Zod v4 moved string format validations to top-level functions for better tree-shakeability:
+
+```typescript
+// Before (Zod v3)
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string().email(),
+  userId: z.string().uuid(),
+  createdAt: z.string().datetime(),
+  website: z.string().url(),
+  birthDate: z.date(), // For date-only strings like "2024-01-20"
+});
+
+// After (Zod v4)
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.email(),              // Top-level function
+  userId: z.uuid(),              // Top-level function
+  createdAt: z.iso.datetime(),   // Under z.iso namespace
+  website: z.url(),              // Top-level function
+  birthDate: z.iso.date(),       // Under z.iso namespace for YYYY-MM-DD strings
+});
+```
+
+**Common replacements:**
+- `z.string().email()` → `z.email()`
+- `z.string().uuid()` → `z.uuid()`
+- `z.string().url()` → `z.url()`
+- `z.string().datetime()` → `z.iso.datetime()`
+- `z.date()` (for date strings) → `z.iso.date()`
+- `z.string().ipv4()` → `z.ipv4()`
+- `z.string().ipv6()` → `z.ipv6()`
+
+**Note:** If you're using chanfana's parameter helpers like `Email()`, `Uuid()`, `DateTime()`, `DateOnly()`, etc., these have already been updated internally and require no changes from you.
+
+### Native Enums (BREAKING)
+
+Zod v4 consolidated enum handling. If you're using `z.nativeEnum()`, switch to `z.enum()`:
+
+```typescript
+// Before (Zod v3)
+enum Status {
+  Active = 'active',
+  Inactive = 'inactive',
+}
+
+const schema = z.object({
+  status: z.nativeEnum(Status),
+});
+
+// After (Zod v4)
+const schema = z.object({
+  status: z.enum(Status), // Or use array: z.enum(['active', 'inactive'])
+});
+```
+
 ## Non-Breaking Changes
 
 ### IP Validation (Internal Only)
@@ -116,11 +180,23 @@ Then run:
 npm install
 ```
 
-### 2. Update Error Message Handling (If Applicable)
+### 2. Update Deprecated Zod Methods (If Using Custom Schemas)
+
+If you're using Zod directly in your schemas, search for and replace deprecated string format methods:
+
+```bash
+# Search for patterns that need updating
+grep -r "z\.string()\.\.email\|uuid\|datetime\|url" .
+grep -r "z\.nativeEnum" .
+```
+
+Update according to the "Changes Required for Custom Zod Schemas" section above.
+
+### 3. Update Error Message Handling (If Applicable)
 
 If your code depends on specific error message formats (e.g., for testing or client-side validation display), update those expectations to match the new Zod v4 formats shown above.
 
-### 3. Test Your Application
+### 4. Test Your Application
 
 Run your test suite to catch any issues:
 

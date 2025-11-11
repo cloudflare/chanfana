@@ -21,10 +21,7 @@ class ToDoGet extends OpenAPIRoute {
             schema: z.object({
               title: z.string(),
               description: z.string(), //.optional(),
-              type: z.nativeEnum({
-                nextWeek: "nextWeek",
-                nextMonth: "nextMonth",
-              }),
+              type: z.enum(["nextWeek", "nextMonth"]),
             }),
           },
         },

@@ -15,7 +15,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "rm -rf dist/ && tsup src/index.ts src/cli.ts --format cjs,esm --dts --config tsconfig.json --external Hono",
+    "build": "rm -rf dist/ && tsc && tsup src/index.ts src/cli.ts --format cjs,esm --dts --config tsconfig.json --external Hono",
     "lint": "npx @biomejs/biome check || (npx @biomejs/biome check --write; exit 1)",
     "test": "vitest run --root tests",
     "docs:deploy": "npm run docs:build && wrangler pages deploy docs/.vitepress/dist/ --project-name chanfana --branch main",
@@ -57,20 +57,20 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@cloudflare/vitest-pool-workers": "^0.6.0",
-    "@cloudflare/workers-types": "4.20250109.0",
+    "@cloudflare/vitest-pool-workers": "^0.10.5",
+    "@cloudflare/workers-types": "4.20251111.0",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "22.10.5",
+    "@types/node": "24.10.0",
     "@types/service-worker-mock": "^2.0.4",
     "hono": "4.10.4",
     "itty-router": "5.0.22",
-    "pkg-pr-new": "^0.0.51",
+    "pkg-pr-new": "^0.0.60",
     "tsup": "8.5.0",
     "typescript": "5.9.3",
     "vitepress": "^1.6.4",
-    "vitest": "2.1.8",
+    "vitest": "^3.2.4",
     "vitest-openapi": "^1.0.3",
-    "wrangler": "3.101.0"
+    "wrangler": "4.46.0"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.1.0",

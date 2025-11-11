@@ -27,7 +27,7 @@ export class ToDoList extends OpenAPIRoute {
     summary: "List all ToDos",
     request: {
       query: z.object({
-        p_array_dates: z.string().date().array(),
+        p_array_dates: z.iso.date().array(),
         p_number: z.number(),
         p_string: z.string(),
         p_boolean: z.boolean(),

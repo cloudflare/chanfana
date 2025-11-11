@@ -175,7 +175,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_dateonly")).toEqual("Invalid input: expected date, received Date");
+    expect(findError(resp.errors, "p_dateonly")).toEqual("Invalid ISO date");
   });
 
   it("checkDateInvalid3", async () => {
@@ -183,7 +183,7 @@ describe("queryParametersValidation", () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: `/todos${qs}` }));
     const resp = await request.json();
 
-    expect(findError(resp.errors, "p_dateonly")).toEqual("Invalid input: expected date, received Date");
+    expect(findError(resp.errors, "p_dateonly")).toEqual("Invalid ISO date");
   });
 
   it("checkDateValid", async () => {

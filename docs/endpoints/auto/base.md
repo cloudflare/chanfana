@@ -181,6 +181,39 @@ In this example:
 
 `CreateEndpoint` automatically generates the OpenAPI schema for the request body (based on `productMeta.model.schema`) and the successful response (200 OK, returning the created object). It also handles validation of the request body.
 
+### Lifecycle Hooks in CreateEndpoint
+
+`CreateEndpoint` (and other auto endpoints) support lifecycle hooks for pre- and post-processing. You can override the `before` and `after` methods to add custom logic:
+
+```typescript
+class CreateUser extends CreateEndpoint {
+    _meta = userMeta;
+
+    async before(data: z.infer<typeof UserModel>): Promise<z.infer<typeof UserModel>> {
+        // Pre-processing: hash password, set defaults, validate business rules
+        return {
+            ...data,
+            passwordHash: await hashPassword(data.password),
+            createdAt: new Date().toISOString(),
+        };
+    }
+
+    async after(data: z.infer<typeof UserModel>): Promise<z.infer<typeof UserModel>> {
+        // Post-processing: send welcome email, log audit trail, etc.
+        await sendWelcomeEmail(data.email);
+        await auditLog.record('user_created', data.id);
+        return data;
+    }
+
+    async create(data: z.infer<typeof UserModel>) {
+        // Save to database
+        return await db.users.insert(data);
+    }
+}
+```
+
+The `before` hook runs before the `create` method, allowing you to transform or validate the input data. The `after` hook runs after creation, useful for side effects like sending notifications or logging.
+
 ## `ReadEndpoint`: Efficient Resource Retrieval
 
 `ReadEndpoint` is used to retrieve a single resource based on its primary key(s). It handles `GET` requests with path parameters corresponding to the primary keys.
@@ -219,6 +252,62 @@ In this example:
 *   The `GET /products/:productId` route is registered with `GetProduct`.
 
 `ReadEndpoint` automatically generates the OpenAPI schema for the path parameter `productId` and the successful response (200 OK, returning the product object). It also handles validation of the path parameter.
+
+### Using Serializers to Transform Output
+
+The `serializer` and `serializerSchema` properties in your `Meta` object allow you to transform data before sending it in responses. This is particularly useful for removing sensitive fields or reformatting data:
+
+```typescript
+import { Hono } from 'hono';
+import { fromHono, ReadEndpoint } from 'chanfana';
+import { z } from 'zod';
+
+// Internal model with sensitive fields
+const UserInternalModel = z.object({
+    id: z.string().uuid(),
+    username: z.string(),
+    email: z.string().email(),
+    passwordHash: z.string(),    // Sensitive field
+    apiKey: z.string(),           // Sensitive field
+    role: z.string(),
+});
+
+// Public model for API responses
+const UserPublicModel = z.object({
+    id: z.string().uuid(),
+    username: z.string(),
+    email: z.string().email(),
+    role: z.string(),
+});
+
+const secureMeta = {
+    model: {
+        schema: UserInternalModel,
+        primaryKeys: ['id'],
+        tableName: 'users',
+        // Serializer removes sensitive fields
+        serializer: (user: any) => {
+            const { passwordHash, apiKey, ...publicData } = user;
+            return publicData;
+        },
+        // Schema documents the public API response
+        serializerSchema: UserPublicModel,
+    },
+};
+
+class GetUser extends ReadEndpoint {
+    _meta = secureMeta;
+
+    async fetch(filters: any) {
+        const userId = filters.filters[0].value;
+        // Fetch user with all internal fields
+        const user = await db.users.findById(userId);
+        return user; // Serializer will automatically remove sensitive fields
+    }
+}
+```
+
+The `serializer` function is automatically called before sending the response, ensuring sensitive data never leaves your API. The `serializerSchema` ensures your OpenAPI documentation accurately reflects what clients will receive.
 
 ## `UpdateEndpoint`: Simplifying Resource Updates
 
@@ -331,9 +420,20 @@ import { z } from 'zod';
 class ListProducts extends ListEndpoint {
     _meta = productMeta;
 
-    filterFields = ['category', 'minPrice', 'maxPrice']; // Fields available for filtering
-    orderByFields = ['name', 'price', 'createdAt'];     // Fields available for ordering
-    defaultOrderBy = 'name';                             // Default sort field
+    // Exact match filtering on these fields
+    filterFields = ['category', 'minPrice', 'maxPrice'];
+    
+    // Full-text search across these fields (uses LIKE operator)
+    searchFields = ['name', 'description'];
+    
+    // Available fields for sorting
+    orderByFields = ['name', 'price', 'createdAt'];
+    
+    // Default sort field if none specified
+    defaultOrderBy = 'name';
+    
+    // Optional: customize the search query parameter name (defaults to 'search')
+    // searchFieldName = 'q';
 
     async list(filters: any) {
         const options = filters.options;
@@ -359,19 +459,42 @@ export default app;
 In this example:
 
 *   `ListProducts` extends `ListEndpoint` and uses `productMeta`.
-*   `filterFields`, `orderByFields`, and `defaultOrderBy` are configured to enable filtering and sorting.
+*   **`filterFields`:** Defines fields available for exact-match filtering (e.g., `?category=electronics`)
+*   **`searchFields`:** Enables full-text search across specified fields (e.g., `?search=laptop`)
+*   **`orderByFields`:** Fields available for sorting (e.g., `?order_by=price&order_by_direction=desc`)
+*   **`defaultOrderBy`:** Default sort field when none is specified
 *   `list` (overridden) simulates fetching a list of products based on the provided `filters` (including pagination and filter conditions).
 *   The `GET /products` route is registered with `ListProducts`.
 
-`ListEndpoint` automatically generates OpenAPI schemas for pagination parameters (`page`, `per_page`), filtering parameters (based on `filterFields`), ordering parameters (`order_by`, `order_by_direction`), and the successful response (200 OK, returning a list of products and result metadata).
+`ListEndpoint` automatically generates OpenAPI schemas for:
+- **Pagination parameters:** `page` (default: 1), `per_page` (default: 20, max: 100)
+- **Filtering parameters:** Based on `filterFields` for exact matching
+- **Search parameter:** `search` (or custom name via `searchFieldName`) for full-text search
+- **Ordering parameters:** `order_by`, `order_by_direction` (based on `orderByFields`)
+- **Response schema:** 200 OK, returning a list of products
+
+**Example API calls:**
+```
+GET /products?page=2&per_page=10                          # Pagination
+GET /products?category=electronics                         # Filter by category
+GET /products?search=laptop                                # Search in name and description
+GET /products?order_by=price&order_by_direction=desc      # Sort by price descending
+GET /products?category=electronics&search=gaming&order_by=name  # Combine filters
+```
 
 ## Customizing Auto Endpoints
 
 You can customize auto endpoints by:
 
-*   **Overriding lifecycle methods:** Methods like `create`, `read`, `update`, `delete`, `list`, `before`, and `after` can be overridden to implement your specific business logic, data access, and pre/post-processing steps.
-*   **Setting `filterFields`, `orderByFields`, `defaultOrderBy` (for `ListEndpoint`):**  Configure filtering and sorting capabilities for list endpoints.
-*   **Using `pathParameters` in `Meta`:** Explicitly define path parameters, especially for nested routes.
+*   **Overriding lifecycle methods:** Methods like `create`, `fetch`, `update`, `delete`, `list`, `before`, and `after` can be overridden to implement your specific business logic, data access, and pre/post-processing steps.
+*   **Configuring `ListEndpoint` properties:**
+    *   `filterFields` - Fields available for exact-match filtering
+    *   `searchFields` - Fields available for full-text search
+    *   `orderByFields` - Fields available for sorting
+    *   `defaultOrderBy` - Default sort field when none specified
+    *   `searchFieldName` - Customize the search query parameter name (defaults to `'search'`)
+*   **Using `serializer` and `serializerSchema` in `Meta`:** Transform output data and hide sensitive fields before sending responses.
+*   **Using `pathParameters` in `Meta`:** Explicitly define path parameters, especially for nested routes with composite primary keys.
 *   **Extending auto endpoint classes:** You can create your own custom base endpoint classes that extend `CreateEndpoint`, `ReadEndpoint`, etc., to add reusable logic or modify default behavior.
 
 ## When to Use Auto Endpoints

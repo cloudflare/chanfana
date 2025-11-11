@@ -162,7 +162,7 @@ const createdAtSchema = DateTime({
 
 ### `DateOnly`: Date Strings
 
-The `DateOnly` parameter type represents date strings in YYYY-MM-DD format (e.g., "2024-01-20"). It's based on `z.date()` from Zod, which is then formatted as a string.
+The `DateOnly` parameter type represents date strings in YYYY-MM-DD format (e.g., "2024-01-20"). It's based on `z.iso.date()` from Zod v4, which validates ISO 8601 date strings.
 
 **Usage:**
 

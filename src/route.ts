@@ -100,6 +100,20 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
         return this.handleValidationError(e.issues);
       }
 
+      // Handle ApiException
+      if ((e as ApiException).buildResponse) {
+        const apiError = e as ApiException;
+        return jsonResp(
+          {
+            success: false,
+            errors: apiError.buildResponse(),
+          },
+          {
+            status: apiError.status,
+          },
+        );
+      }
+
       throw e;
     }
 
@@ -159,10 +173,12 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       }
     }
 
-    let validationSchema: any = z.object(rawSchema);
+    let validationSchema: any;
 
     if (this.params?.raiseUnknownParameters === undefined || this.params?.raiseUnknownParameters === true) {
-      validationSchema = validationSchema.strict();
+      validationSchema = z.strictObject(rawSchema);
+    } else {
+      validationSchema = z.object(rawSchema);
     }
 
     return await validationSchema.parseAsync(unvalidatedData);

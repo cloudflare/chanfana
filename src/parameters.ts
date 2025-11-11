@@ -64,8 +64,8 @@ export function Str(params?: ParameterType): z.ZodString {
 
 export function DateTime(params?: ParameterType): z.ZodString {
   return convertParams<z.ZodString>(
-    z.string().datetime({
-      message: "Must be in the following format: YYYY-mm-ddTHH:MM:ssZ",
+    z.iso.datetime({
+      error: "Must be in the following format: YYYY-mm-ddTHH:MM:ssZ",
     }),
     params,
   );
@@ -82,11 +82,11 @@ export function Regex(params: RegexParameterType): z.ZodString {
 }
 
 export function Email(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.string().email(), params);
+  return convertParams<z.ZodString>(z.email(), params);
 }
 
 export function Uuid(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.string().uuid(), params);
+  return convertParams<z.ZodString>(z.uuid(), params);
 }
 
 export function Hostname(params?: ParameterType): z.ZodString {
@@ -113,7 +113,7 @@ export function Ip(params?: ParameterType): z.ZodString | z.ZodUnion<[z.ZodStrin
 }
 
 export function DateOnly(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.date(), params);
+  return convertParams<z.ZodString>(z.iso.date(), params);
 }
 
 export function Bool(params?: ParameterType): z.ZodBoolean {

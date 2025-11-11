@@ -153,7 +153,7 @@ type GetPartBody<T extends RequestTypes, P extends keyof T> = T[P] extends ZodRe
 
 type GetBody<T extends ZodRequestBody | undefined> = T extends NonNullable<T>
   ? T["content"]["application/json"] extends NonNullable<T["content"]["application/json"]>
-    ? T["content"]["application/json"]["schema"] extends z.ZodTypeAny
+    ? T["content"]["application/json"]["schema"] extends z.ZodType
       ? z.output<T["content"]["application/json"]["schema"]>
       : undefined
     : undefined
