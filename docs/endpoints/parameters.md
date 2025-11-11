@@ -136,7 +136,7 @@ const isActiveSchema = Bool({
 
 ### `DateTime`: Date and Time Strings
 
-The `DateTime` parameter type represents date and time strings in ISO 8601 format (e.g., "2024-01-20T10:30:00Z"). It's based on `z.string().datetime()` from Zod.
+The `DateTime` parameter type represents date and time strings in ISO 8601 format (e.g., "2024-01-20T10:30:00Z"). It's based on `z.iso.datetime()` from Zod v4.
 
 **Usage:**
 
@@ -221,7 +221,7 @@ const passwordSchema = Regex({
 
 ### `Email`: Email Address Strings
 
-The `Email` parameter type represents strings that must be valid email addresses. It's based on `z.string().email()` from Zod.
+The `Email` parameter type represents strings that must be valid email addresses. It's based on `z.email()` from Zod v4.
 
 **Usage:**
 
@@ -247,7 +247,7 @@ const emailSchema = Email({
 
 ### `Uuid`: UUID Strings
 
-The `Uuid` parameter type represents strings that must be valid UUIDs (Universally Unique Identifiers). It's based on `z.string().uuid()` from Zod.
+The `Uuid` parameter type represents strings that must be valid UUIDs (Universally Unique Identifiers). It's based on `z.uuid()` from Zod v4.
 
 **Usage:**
 

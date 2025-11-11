@@ -66,7 +66,7 @@ import { z } from 'zod';
 
 // Define User and UserPost Models and Metas
 const UserSchema = z.object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     username: z.string(),
 });
 const userMeta = {
@@ -74,8 +74,8 @@ const userMeta = {
 };
 
 const UserPostSchema = z.object({
-    userId: z.string().uuid(),
-    id: z.string().uuid(),
+    userId: z.uuid(),
+    id: z.uuid(),
     title: z.string(),
     content: z.string(),
 });
@@ -138,11 +138,11 @@ import { z } from 'zod';
 
 // Define the Product Model
 const ProductModel = z.object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     name: z.string().min(3),
     description: z.string().optional(),
     price: z.number().positive(),
-    createdAt: z.string().datetime(),
+    createdAt: z.iso.datetime(),
 });
 
 // Define the Meta object for Product
@@ -186,10 +186,30 @@ In this example:
 `CreateEndpoint` (and other auto endpoints) support lifecycle hooks for pre- and post-processing. You can override the `before` and `after` methods to add custom logic:
 
 ```typescript
+import { z } from 'zod';
+
+// Define User Model
+const UserSchema = z.object({
+    id: z.uuid(),
+    username: z.string(),
+    email: z.email(),
+    password: z.string(),
+    passwordHash: z.string().optional(),
+    createdAt: z.iso.datetime().optional(),
+});
+
+const userMeta = {
+    model: {
+        schema: UserSchema,
+        primaryKeys: ['id'],
+        tableName: 'users',
+    },
+};
+
 class CreateUser extends CreateEndpoint {
     _meta = userMeta;
 
-    async before(data: z.infer<typeof UserModel>): Promise<z.infer<typeof UserModel>> {
+    async before(data: z.infer<typeof UserSchema>): Promise<z.infer<typeof UserSchema>> {
         // Pre-processing: hash password, set defaults, validate business rules
         return {
             ...data,
@@ -198,14 +218,14 @@ class CreateUser extends CreateEndpoint {
         };
     }
 
-    async after(data: z.infer<typeof UserModel>): Promise<z.infer<typeof UserModel>> {
+    async after(data: z.infer<typeof UserSchema>): Promise<z.infer<typeof UserSchema>> {
         // Post-processing: send welcome email, log audit trail, etc.
         await sendWelcomeEmail(data.email);
         await auditLog.record('user_created', data.id);
         return data;
     }
 
-    async create(data: z.infer<typeof UserModel>) {
+    async create(data: z.infer<typeof UserSchema>) {
         // Save to database
         return await db.users.insert(data);
     }
@@ -253,6 +273,58 @@ In this example:
 
 `ReadEndpoint` automatically generates the OpenAPI schema for the path parameter `productId` and the successful response (200 OK, returning the product object). It also handles validation of the path parameter.
 
+### Lifecycle Hooks in ReadEndpoint
+
+`ReadEndpoint` supports `before` and `after` lifecycle hooks for pre- and post-processing:
+
+```typescript
+import type { ListFilters } from 'chanfana';
+import { z } from 'zod';
+
+// Define User Model
+const UserSchema = z.object({
+    id: z.uuid(),
+    username: z.string(),
+    email: z.email(),
+    role: z.string(),
+});
+
+const userMeta = {
+    model: {
+        schema: UserSchema,
+        primaryKeys: ['id'],
+        tableName: 'users',
+    },
+};
+
+class GetUser extends ReadEndpoint {
+    _meta = userMeta;
+
+    async before(filters: ListFilters): Promise<ListFilters> {
+        // Pre-processing: validate access permissions, log request
+        console.log('Fetching user with filters:', filters);
+        await checkUserPermissions(filters);
+        return filters;
+    }
+
+    async after(data: z.infer<typeof UserSchema>): Promise<z.infer<typeof UserSchema>> {
+        // Post-processing: add computed fields, log access
+        await auditLog.record('user_accessed', data.id);
+        return {
+            ...data,
+            lastAccessedAt: new Date().toISOString(),
+        };
+    }
+
+    async fetch(filters: ListFilters): Promise<z.infer<typeof UserSchema> | null> {
+        const userId = filters.filters[0].value;
+        return await db.users.findById(userId);
+    }
+}
+```
+
+The `before` hook runs before the `fetch` method, useful for access control or logging. The `after` hook runs after fetching, allowing you to transform or augment the retrieved data.
+
 ### Using Serializers to Transform Output
 
 The `serializer` and `serializerSchema` properties in your `Meta` object allow you to transform data before sending it in responses. This is particularly useful for removing sensitive fields or reformatting data:
@@ -264,9 +336,9 @@ import { z } from 'zod';
 
 // Internal model with sensitive fields
 const UserInternalModel = z.object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     username: z.string(),
-    email: z.string().email(),
+    email: z.email(),
     passwordHash: z.string(),    // Sensitive field
     apiKey: z.string(),           // Sensitive field
     role: z.string(),
@@ -274,9 +346,9 @@ const UserInternalModel = z.object({
 
 // Public model for API responses
 const UserPublicModel = z.object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     username: z.string(),
-    email: z.string().email(),
+    email: z.email(),
     role: z.string(),
 });
 
@@ -357,6 +429,65 @@ In this example:
 
 `UpdateEndpoint` generates schemas for the path parameter, request body (based on `productMeta.model.schema`), and the successful response (200 OK, returning the updated object). It also handles validation.
 
+### Lifecycle Hooks in UpdateEndpoint
+
+`UpdateEndpoint` supports `before` and `after` lifecycle hooks:
+
+```typescript
+import type { UpdateFilters } from 'chanfana';
+import { z } from 'zod';
+
+// Define User Model
+const UserSchema = z.object({
+    id: z.uuid(),
+    username: z.string(),
+    email: z.email(),
+    role: z.string(),
+    updatedAt: z.iso.datetime().optional(),
+});
+
+const userMeta = {
+    model: {
+        schema: UserSchema,
+        primaryKeys: ['id'],
+        tableName: 'users',
+    },
+};
+
+class UpdateUser extends UpdateEndpoint {
+    _meta = userMeta;
+
+    async before(oldObj: z.infer<typeof UserSchema>, filters: UpdateFilters): Promise<UpdateFilters> {
+        // Pre-processing: validate changes, set timestamps
+        filters.updatedData = {
+            ...filters.updatedData,
+            updatedAt: new Date().toISOString(),
+        };
+        return filters;
+    }
+
+    async after(data: z.infer<typeof UserSchema>): Promise<z.infer<typeof UserSchema>> {
+        // Post-processing: invalidate cache, send notification
+        await cache.invalidate(`user:${data.id}`);
+        await notifyUserUpdated(data.id);
+        return data;
+    }
+
+    async getObject(filters: UpdateFilters): Promise<z.infer<typeof UserSchema> | null> {
+        const userId = filters.filters[0].value;
+        return await db.users.findById(userId);
+    }
+
+    async update(oldObj: z.infer<typeof UserSchema>, filters: UpdateFilters): Promise<z.infer<typeof UserSchema>> {
+        const userId = filters.filters[0].value;
+        const updatedData = filters.updatedData;
+        return await db.users.update(userId, { ...oldObj, ...updatedData });
+    }
+}
+```
+
+The `before` hook runs before the `update` method, allowing you to modify the update data. The `after` hook runs after the update completes, useful for cache invalidation or notifications.
+
 ## `DeleteEndpoint`: Easy Resource Deletion
 
 `DeleteEndpoint` is used to delete resources. It handles `DELETE` requests, typically identified by primary key(s) in the path or body.
@@ -403,6 +534,63 @@ In this example:
 *   The `DELETE /products/:productId` route is registered with `DeleteProduct`.
 
 `DeleteEndpoint` generates schemas for the path parameter and the successful response (200 OK, returning the deleted object). It also handles validation.
+
+### Lifecycle Hooks in DeleteEndpoint
+
+`DeleteEndpoint` supports `before` and `after` lifecycle hooks:
+
+```typescript
+import type { Filters } from 'chanfana';
+import { z } from 'zod';
+
+// Define User Model
+const UserSchema = z.object({
+    id: z.uuid(),
+    username: z.string(),
+    email: z.email(),
+    role: z.string(),
+});
+
+const userMeta = {
+    model: {
+        schema: UserSchema,
+        primaryKeys: ['id'],
+        tableName: 'users',
+    },
+};
+
+class DeleteUser extends DeleteEndpoint {
+    _meta = userMeta;
+
+    async before(oldObj: z.infer<typeof UserSchema>, filters: Filters): Promise<Filters> {
+        // Pre-processing: validate deletion permissions, soft delete check
+        await checkDeletionPermissions(oldObj.id);
+        console.log('Preparing to delete user:', oldObj.id);
+        return filters;
+    }
+
+    async after(data: z.infer<typeof UserSchema>): Promise<z.infer<typeof UserSchema>> {
+        // Post-processing: cleanup related data, send notifications
+        await cleanupUserData(data.id);
+        await notifyUserDeleted(data.id);
+        await auditLog.record('user_deleted', data.id);
+        return data;
+    }
+
+    async getObject(filters: Filters): Promise<z.infer<typeof UserSchema> | null> {
+        const userId = filters.filters[0].value;
+        return await db.users.findById(userId);
+    }
+
+    async delete(oldObj: z.infer<typeof UserSchema>, filters: Filters): Promise<z.infer<typeof UserSchema> | null> {
+        const userId = filters.filters[0].value;
+        await db.users.delete(userId);
+        return oldObj;
+    }
+}
+```
+
+The `before` hook runs before the `delete` method, useful for validation or logging. The `after` hook runs after deletion, allowing you to perform cleanup tasks or send notifications.
 
 ## `ListEndpoint`: Implementing Resource Listing and Pagination
 
@@ -472,6 +660,65 @@ In this example:
 - **Search parameter:** `search` (or custom name via `searchFieldName`) for full-text search
 - **Ordering parameters:** `order_by`, `order_by_direction` (based on `orderByFields`)
 - **Response schema:** 200 OK, returning a list of products
+
+### Lifecycle Hooks in ListEndpoint
+
+`ListEndpoint` supports `before` and `after` lifecycle hooks:
+
+```typescript
+import type { ListFilters, ListResult } from 'chanfana';
+import { z } from 'zod';
+
+// Define User Model
+const UserSchema = z.object({
+    id: z.uuid(),
+    username: z.string(),
+    email: z.email(),
+    role: z.string(),
+    status: z.enum(['active', 'inactive']),
+});
+
+const userMeta = {
+    model: {
+        schema: UserSchema,
+        primaryKeys: ['id'],
+        tableName: 'users',
+    },
+};
+
+class ListUsers extends ListEndpoint {
+    _meta = userMeta;
+    filterFields = ['role', 'status'];
+    searchFields = ['username', 'email'];
+    orderByFields = ['createdAt', 'username'];
+
+    async before(filters: ListFilters): Promise<ListFilters> {
+        // Pre-processing: apply tenant filtering, validate access
+        console.log('Listing users with filters:', filters);
+        // Add tenant filter automatically
+        filters.filters.push({ field: 'tenantId', value: getCurrentTenantId() });
+        return filters;
+    }
+
+    async after(data: ListResult<z.infer<typeof UserSchema>>): Promise<ListResult<z.infer<typeof UserSchema>>> {
+        // Post-processing: add computed fields, log access
+        await auditLog.record('users_listed', { count: data.result.length });
+        return {
+            result: data.result.map(user => ({
+                ...user,
+                isActive: user.status === 'active',
+            })),
+        };
+    }
+
+    async list(filters: ListFilters): Promise<ListResult<z.infer<typeof UserSchema>>> {
+        const users = await db.users.findMany(filters);
+        return { result: users };
+    }
+}
+```
+
+The `before` hook runs before the `list` method, useful for adding default filters or validating access. The `after` hook runs after fetching the list, allowing you to transform or augment the results.
 
 **Example API calls:**
 ```

@@ -67,7 +67,7 @@ class ExampleEndpoint extends OpenAPIRoute {
         request: {
             body: contentJson(z.object({
                 name: z.string().min(3),
-                email: z.string().email(),
+                email: z.email(),
             })),
             query: z.object({
                 page: z.number().int().min(1).default(1),

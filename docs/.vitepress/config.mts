@@ -50,7 +50,7 @@ export default defineConfig({
           {text: "OpenAPI Customization", link: "/openapi-configuration-customization"},
           {text: "Advanced Patterns", link: "/advanced-topics-patterns"},
           {text: "Troubleshooting And FAQ", link: "/troubleshooting-and-faq"},
-          {text: "Migration: Zod v4", link: "/migration-zod-v4"},
+          {text: "Migration to Chanfana v3", link: "/migration-to-chanfana-3"},
         ],
       },
     ],
