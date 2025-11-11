@@ -1,14 +1,14 @@
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
-import { type ApiException, InputValidationException, MultiException } from "./exceptions";
+import type { ApiException } from "./exceptions";
 import { coerceInputs } from "./parameters";
-import type { AnyZodObject } from "./types";
-import type { OpenAPIRouteSchema, RouteOptions, ValidatedData } from "./types";
+import type { AnyZodObject, OpenAPIRouteSchema, RouteOptions, ValidatedData } from "./types";
 import { jsonResp } from "./utils";
+
 extendZodWithOpenApi(z);
 
 export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
-  handle(...args: any[]): Response | Promise<Response> | object | Promise<object> {
+  handle(..._args: any[]): Response | Promise<Response> | object | Promise<object> {
     throw new Error("Method not implemented.");
   }
 
@@ -58,7 +58,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       };
     }
 
-    // @ts-ignore
+    // @ts-expect-error
     return schema;
   }
 
@@ -77,7 +77,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     // In the future, errors will be handled as exceptions
     // Errors caught here are always validation errors
     // const updatedError: Array<object> = errors.map((err) => {
-    // 	// @ts-ignore
+    // 	// @ts-expect-error
     // 	if ((err as ApiException).buildResponse) {
     // 		// Error is already an internal exception
     // 		return err;
@@ -168,7 +168,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 
       try {
         unvalidatedData.body = await request.json();
-      } catch (e) {
+      } catch (_e) {
         unvalidatedData.body = {};
       }
     }

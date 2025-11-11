@@ -4,7 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 const READY_KEYWORD = "ready on";
-const URL_REGEX = /ready on\s+(https?:\/\/[\w\.-]+:\d+)/i;
+const URL_REGEX = /ready on\s+(https?:\/\/[\w.-]+:\d+)/i;
 
 // Parse command-line arguments
 let outputFile = "schema.json";
@@ -106,7 +106,7 @@ childProcess.stdout.on("data", async (data: Buffer) => {
           for (const path in schema.paths) {
             const pathObj = schema.paths[path];
             for (const method in pathObj) {
-              // @ts-ignore
+              // @ts-expect-error
               if (pathObj[method]["x-ignore"] === true) {
                 delete schema.paths[path];
                 break;

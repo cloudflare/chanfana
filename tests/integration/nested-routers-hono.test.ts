@@ -1,8 +1,7 @@
 import { Hono } from "hono";
-import { AutoRouter } from "itty-router";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { fromHono, fromIttyRouter } from "../../src";
+import { fromHono } from "../../src";
 import { OpenAPIRoute } from "../../src/route";
 import { jsonResp } from "../../src/utils";
 
@@ -32,7 +31,7 @@ class ToDoGet extends OpenAPIRoute {
     },
   };
 
-  async handle(request: Request, env: any, context: any) {
+  async handle(_request: Request, _env: any, _context: any) {
     return {
       todo: {
         lorem: "lorem",

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Arr, Bool, DateTime, Num, Obj, Str, convertParams } from "../parameters";
+import { Arr, Bool, convertParams, DateTime, Num, Obj, Str } from "../parameters";
 
 export function legacyTypeIntoZod(type: any, params?: any): z.ZodType {
   params = params || {};

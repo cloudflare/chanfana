@@ -4,7 +4,7 @@ import { OpenAPIRoute } from "../route";
 import { type FilterCondition, MetaGenerator, type MetaInput, type O, type UpdateFilters } from "./types";
 
 export class UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
-  // @ts-ignore
+  // @ts-expect-error
   _meta: MetaInput;
 
   get meta() {
@@ -70,7 +70,7 @@ export class UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     };
   }
 
-  async before(oldObj: O<typeof this.meta>, filters: UpdateFilters): Promise<UpdateFilters> {
+  async before(_oldObj: O<typeof this.meta>, filters: UpdateFilters): Promise<UpdateFilters> {
     return filters;
   }
 
@@ -78,15 +78,15 @@ export class UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return data;
   }
 
-  async getObject(filters: UpdateFilters): Promise<O<typeof this.meta> | null> {
+  async getObject(_filters: UpdateFilters): Promise<O<typeof this.meta> | null> {
     return null;
   }
 
-  async update(oldObj: O<typeof this.meta>, filters: UpdateFilters): Promise<O<typeof this.meta>> {
+  async update(oldObj: O<typeof this.meta>, _filters: UpdateFilters): Promise<O<typeof this.meta>> {
     return oldObj;
   }
 
-  async handle(...args: HandleArgs) {
+  async handle(..._args: HandleArgs) {
     let filters = await this.getFilters();
 
     const oldObj = await this.getObject(filters);

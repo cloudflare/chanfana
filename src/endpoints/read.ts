@@ -4,7 +4,7 @@ import { OpenAPIRoute } from "../route";
 import { type FilterCondition, type ListFilters, MetaGenerator, type MetaInput, type O } from "./types";
 
 export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
-  // @ts-ignore
+  // @ts-expect-error
   _meta: MetaInput;
 
   get meta() {
@@ -81,11 +81,11 @@ export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> exte
     return data;
   }
 
-  async fetch(filters: ListFilters): Promise<O<typeof this.meta> | null> {
+  async fetch(_filters: ListFilters): Promise<O<typeof this.meta> | null> {
     return null;
   }
 
-  async handle(...args: HandleArgs) {
+  async handle(..._args: HandleArgs) {
     let filters = await this.getFilters();
 
     filters = await this.before(filters);

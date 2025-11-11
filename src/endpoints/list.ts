@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { contentJson } from "../contentTypes";
-import { Enumeration, Str } from "../parameters";
+import { Enumeration } from "../parameters";
 import { OpenAPIRoute } from "../route";
 import type { AnyZodObject } from "../types";
 import {
@@ -13,7 +13,7 @@ import {
 } from "./types";
 
 export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
-  // @ts-ignore
+  // @ts-expect-error
   _meta: MetaInput;
 
   get meta() {
@@ -39,12 +39,12 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
     );
 
     for (const [key, value] of Object.entries(parsedQueryParameters)) {
-      // @ts-ignore  TODO: check this
+      // @ts-expect-error  TODO: check this
       parsedQueryParameters[key] = (value as AnyZodObject).optional();
     }
 
     if (this.searchFields) {
-      // @ts-ignore  TODO: check this
+      // @ts-expect-error  TODO: check this
       parsedQueryParameters[this.searchFieldName] = z
         .string()
         .optional()
@@ -140,13 +140,13 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
     return data;
   }
 
-  async list(filters: ListFilters): Promise<ListResult<O<typeof this.meta>>> {
+  async list(_filters: ListFilters): Promise<ListResult<O<typeof this.meta>>> {
     return {
       result: [],
     };
   }
 
-  async handle(...args: HandleArgs) {
+  async handle(..._args: HandleArgs) {
     let filters = await this.getFilters();
 
     filters = await this.before(filters);

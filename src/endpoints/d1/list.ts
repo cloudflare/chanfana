@@ -1,6 +1,6 @@
 import { ApiException } from "../../exceptions";
 import { ListEndpoint } from "../list";
-import type { ListFilters, ListResult, Logger, O } from "../types";
+import type { Logger } from "../types";
 
 export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> extends ListEndpoint<HandleArgs> {
   dbName = "DB";

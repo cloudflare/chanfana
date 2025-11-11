@@ -1,7 +1,7 @@
 import { AutoRouter } from "itty-router";
 import { beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { CreateEndpoint, DeleteEndpoint, ListEndpoint, ReadEndpoint, UpdateEndpoint, fromIttyRouter } from "../../src";
+import { CreateEndpoint, DeleteEndpoint, fromIttyRouter, ListEndpoint, ReadEndpoint, UpdateEndpoint } from "../../src";
 import type { Filters, ListFilters, UpdateFilters } from "../../src/endpoints/types";
 import { buildRequest } from "../utils";
 
@@ -98,7 +98,7 @@ class UserDeleteEndpoint extends DeleteEndpoint {
     return user || null;
   }
 
-  async delete(oldObj: User, filters: Filters): Promise<User | null> {
+  async delete(oldObj: User, _filters: Filters): Promise<User | null> {
     const deleted = { ...oldObj };
     delete mockDB[oldObj.id];
     return deleted;
@@ -619,6 +619,7 @@ describe("Serializer and SerializerSchema", () => {
         primaryKeys: ["id"],
         serializer: (obj: any) => {
           // Remove sensitive fields
+          // biome-ignore lint: tests
           const { passwordHash, apiKey, ...publicData } = obj;
           return publicData;
         },

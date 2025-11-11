@@ -59,7 +59,7 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
     return oldObj.results[0] as O<typeof this.meta>;
   }
 
-  async update(oldObj: O<typeof this.meta>, filters: UpdateFilters): Promise<O<typeof this.meta>> {
+  async update(_oldObj: O<typeof this.meta>, filters: UpdateFilters): Promise<O<typeof this.meta>> {
     const safeFilters = this.getSafeFilters(filters);
 
     let result;

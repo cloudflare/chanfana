@@ -1,12 +1,9 @@
 import { Hono } from "hono";
-import { AutoRouter } from "itty-router";
-import { describe, expectTypeOf, it } from "vitest";
+import { describe, it } from "vitest";
 import { z } from "zod";
 import { fromHono } from "../../src";
-import { fromIttyRouter } from "../../src/adapters/ittyRouter";
 import { OpenAPIRoute } from "../../src/route";
 import { jsonResp } from "../../src/utils";
-import { buildRequest } from "../utils";
 
 class ToDoGet extends OpenAPIRoute {
   schema = {
@@ -34,7 +31,7 @@ class ToDoGet extends OpenAPIRoute {
     },
   };
 
-  async handle(request: Request, env: any, context: any) {
+  async handle(_request: Request, _env: any, _context: any) {
     return {
       todo: {
         lorem: "lorem",
@@ -75,7 +72,7 @@ describe("innerRouter", () => {
 
     type AppType = typeof app;
 
-    const c = hc<AppType>("http://asd.com");
+    const _c = hc<AppType>("http://asd.com");
     // expectTypeOf(c).toEqualTypeOf(typeof Hono);  // TODO
   });
 });

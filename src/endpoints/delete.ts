@@ -4,7 +4,7 @@ import { OpenAPIRoute } from "../route";
 import { type FilterCondition, type Filters, MetaGenerator, type MetaInput, type O } from "./types";
 
 export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
-  // @ts-ignore
+  // @ts-expect-error
   _meta: MetaInput;
 
   get meta() {
@@ -65,7 +65,7 @@ export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     };
   }
 
-  async before(oldObj: O<typeof this.meta>, filters: Filters): Promise<Filters> {
+  async before(_oldObj: O<typeof this.meta>, filters: Filters): Promise<Filters> {
     return filters;
   }
 
@@ -73,15 +73,15 @@ export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return data;
   }
 
-  async delete(oldObj: O<typeof this.meta>, filters: Filters): Promise<O<typeof this.meta> | null> {
+  async delete(_oldObj: O<typeof this.meta>, _filters: Filters): Promise<O<typeof this.meta> | null> {
     return null;
   }
 
-  async getObject(filters: Filters): Promise<O<typeof this.meta> | null> {
+  async getObject(_filters: Filters): Promise<O<typeof this.meta> | null> {
     return null;
   }
 
-  async handle(...args: HandleArgs) {
+  async handle(..._args: HandleArgs) {
     let filters = await this.getFilters();
 
     const oldObj = await this.getObject(filters);

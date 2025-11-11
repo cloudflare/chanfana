@@ -1,8 +1,8 @@
 import { AutoRouter } from "itty-router";
 import { describe, expect, it } from "vitest";
 import { fromIttyRouter } from "../../src";
-import { ToDoGet, ToDoList, todoRouter } from "../router";
-import { buildRequest, findError } from "../utils";
+import { ToDoGet, todoRouter } from "../router";
+import { buildRequest } from "../utils";
 
 describe("openapi schema", () => {
   it("custom content type", async () => {

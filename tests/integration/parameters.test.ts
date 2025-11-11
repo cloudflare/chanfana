@@ -9,7 +9,7 @@ describe("queryParametersValidation", () => {
 
     // minus 1, because 1 parameter is optional
     expect(resp.errors.length).toEqual(
-      // @ts-ignore
+      // @ts-expect-error
       Object.keys(new ToDoList({}).schema.request.query.shape).length - 1,
     );
 

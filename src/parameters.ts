@@ -13,13 +13,13 @@ extendZodWithOpenApi(z);
 export function convertParams<M = z.ZodType>(field: any, params: any): M {
   params = params || {};
   if (params.required === false)
-    // @ts-ignore
+    // @ts-expect-error
     field = field.optional();
 
   if (params.description) field = field.describe(params.description);
 
   if (params.default)
-    // @ts-ignore
+    // @ts-expect-error
     field = field.default(params.default);
 
   if (params.example) {
@@ -73,7 +73,7 @@ export function DateTime(params?: ParameterType): z.ZodString {
 
 export function Regex(params: RegexParameterType): z.ZodString {
   return convertParams<z.ZodString>(
-    // @ts-ignore
+    // @ts-expect-error
     z
       .string()
       .regex(params.pattern, params.patternError || "Invalid"),
@@ -132,7 +132,7 @@ export function Enumeration(params: EnumerationParameterType): z.ZodEnum<any> {
 
   if (params.enumCaseSensitive === false) {
     values = Object.keys(values).reduce((accumulator, key) => {
-      // @ts-ignore
+      // @ts-expect-error
       accumulator[key.toLowerCase()] = values[key];
       return accumulator;
     }, {});
@@ -152,7 +152,7 @@ export function Enumeration(params: EnumerationParameterType): z.ZodEnum<any> {
   const result = convertParams<z.ZodEnum<any>>(field, params);
 
   // Keep retro compatibility
-  //@ts-ignore
+  //@ts-expect-error
   result.values = originalValues;
 
   return result;
@@ -187,7 +187,7 @@ export function coerceInputs(data: Record<string, any>, schema?: RouteParameter)
   for (let [key, value] of entries) {
     // Query, path and headers can be empty strings, that should equal to null as nothing was provided
     if (value === "") {
-      // @ts-ignore
+      // @ts-expect-error
       value = null;
     }
 
@@ -219,7 +219,7 @@ export function coerceInputs(data: Record<string, any>, schema?: RouteParameter)
       } else if (unwrapAndCheck(innerType, z.ZodNumber)) {
         params[key] = Number.parseFloat(params[key]);
       } else if (unwrapAndCheck(innerType, z.ZodBigInt)) {
-        params[key] = Number.parseInt(params[key]);
+        params[key] = Number.parseInt(params[key], 10);
       } else if (unwrapAndCheck(innerType, z.ZodDate)) {
         params[key] = new Date(params[key]);
       }
