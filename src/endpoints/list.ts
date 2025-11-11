@@ -29,9 +29,11 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
   defaultOrderBy?: string;
 
   getSchema() {
-    const parsedQueryParameters = this.meta.fields
-      .pick((this.filterFields || []).reduce((a, v) => ({ ...a, [v]: true }), {}))
-      .omit((this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {})).shape;
+    const parsedQueryParameters = this.meta.fields.pick(
+      (this.filterFields || [])
+        .filter((item) => !new Set(this.params.urlParams || []).has(item))
+        .reduce((a, v) => ({ ...a, [v]: true }), {}),
+    ).shape;
     const pathParameters = this.meta.fields.pick(
       (this.params.urlParams || this.meta.model.primaryKeys || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
     );
