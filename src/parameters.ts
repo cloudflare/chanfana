@@ -12,15 +12,11 @@ import { legacyTypeIntoZod } from "./zod/utils";
 extendZodWithOpenApi(z);
 export function convertParams<M = z.ZodType>(field: any, params: any): M {
   params = params || {};
-  if (params.required === false)
-    // @ts-expect-error
-    field = field.optional();
+  if (params.required === false) field = field.optional();
 
   if (params.description) field = field.describe(params.description);
 
-  if (params.default)
-    // @ts-expect-error
-    field = field.default(params.default);
+  if (params.default) field = field.default(params.default);
 
   if (params.example) {
     field = field.openapi({ example: params.example });
@@ -72,13 +68,7 @@ export function DateTime(params?: ParameterType): z.ZodString {
 }
 
 export function Regex(params: RegexParameterType): z.ZodString {
-  return convertParams<z.ZodString>(
-    // @ts-expect-error
-    z
-      .string()
-      .regex(params.pattern, params.patternError || "Invalid"),
-    params,
-  );
+  return convertParams<z.ZodString>(z.string().regex(params.pattern, params.patternError || "Invalid"), params);
 }
 
 export function Email(params?: ParameterType): z.ZodString {
@@ -187,7 +177,6 @@ export function coerceInputs(data: Record<string, any>, schema?: RouteParameter)
   for (let [key, value] of entries) {
     // Query, path and headers can be empty strings, that should equal to null as nothing was provided
     if (value === "") {
-      // @ts-expect-error
       value = null;
     }
 

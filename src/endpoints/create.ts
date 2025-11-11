@@ -44,7 +44,6 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
   async getObject(): Promise<O<typeof this.meta>> {
     const data = await this.getValidatedData();
 
-    // @ts-expect-error  TODO: check this
     const newData: any = {
       ...(data.body as object),
     };

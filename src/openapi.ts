@@ -126,10 +126,8 @@ export class OpenAPIHandler {
       urlParams = parsedParams.map((obj) => obj.replace(":", ""));
     }
 
-    // @ts-expect-error
-    let schema: OpenAPIRouteSchema;
-    // @ts-expect-error
-    let operationId: string;
+    let schema: OpenAPIRouteSchema | undefined;
+    let operationId: string | undefined;
 
     for (const handler of params.handlers) {
       if (handler.name) {
@@ -152,7 +150,6 @@ export class OpenAPIHandler {
     if (schema === undefined) {
       // No schema for this route, try to guest the parameters
 
-      // @ts-expect-error
       schema = {
         operationId: operationId,
         responses: {

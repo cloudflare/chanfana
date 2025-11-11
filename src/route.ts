@@ -58,7 +58,6 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       };
     }
 
-    // @ts-expect-error
     return schema;
   }
 
