@@ -47,7 +47,7 @@ export type Meta = {
   fields: AnyZodObject;
 };
 
-export type O<M extends Meta> = z.infer<M["model"]["schema"]>;
+export type O<M extends MetaInput> = z.infer<M["model"]["schema"]>;
 
 export type ListResult<O> = {
   result: Array<O>;

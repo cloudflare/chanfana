@@ -77,11 +77,11 @@ export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> exte
     return filters;
   }
 
-  async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+  async after(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
     return data;
   }
 
-  async fetch(_filters: ListFilters): Promise<O<typeof this.meta> | null> {
+  async fetch(_filters: ListFilters): Promise<O<typeof this._meta> | null> {
     return null;
   }
 

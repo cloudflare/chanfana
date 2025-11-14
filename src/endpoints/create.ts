@@ -41,7 +41,7 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     };
   }
 
-  async getObject(): Promise<O<typeof this.meta>> {
+  async getObject(): Promise<O<typeof this._meta>> {
     const data = await this.getValidatedData();
 
     const newData: any = {
@@ -55,15 +55,15 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return newData;
   }
 
-  async before(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+  async before(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
     return data;
   }
 
-  async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+  async after(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
     return data;
   }
 
-  async create(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+  async create(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
     return data;
   }
 

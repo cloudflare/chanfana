@@ -65,19 +65,19 @@ export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     };
   }
 
-  async before(_oldObj: O<typeof this.meta>, filters: Filters): Promise<Filters> {
+  async before(_oldObj: O<typeof this._meta>, filters: Filters): Promise<Filters> {
     return filters;
   }
 
-  async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+  async after(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
     return data;
   }
 
-  async delete(_oldObj: O<typeof this.meta>, _filters: Filters): Promise<O<typeof this.meta> | null> {
+  async delete(_oldObj: O<typeof this._meta>, _filters: Filters): Promise<O<typeof this._meta> | null> {
     return null;
   }
 
-  async getObject(_filters: Filters): Promise<O<typeof this.meta> | null> {
+  async getObject(_filters: Filters): Promise<O<typeof this._meta> | null> {
     return null;
   }
 

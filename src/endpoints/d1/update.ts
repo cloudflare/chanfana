@@ -56,10 +56,10 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
       return null;
     }
 
-    return oldObj.results[0] as O<typeof this.meta>;
+    return oldObj.results[0] as O<typeof this._meta>;
   }
 
-  async update(_oldObj: O<typeof this.meta>, filters: UpdateFilters): Promise<O<typeof this.meta>> {
+  async update(_oldObj: O<typeof this._meta>, filters: UpdateFilters): Promise<O<typeof this._meta>> {
     const safeFilters = this.getSafeFilters(filters);
 
     let result;
@@ -87,6 +87,6 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
 
     if (this.logger) this.logger.log(`Successfully updated ${this.meta.model.tableName}`);
 
-    return result as O<typeof this.meta>;
+    return result as O<typeof this._meta>;
   }
 }

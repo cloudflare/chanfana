@@ -136,11 +136,11 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
     return filters;
   }
 
-  async after(data: ListResult<O<typeof this.meta>>): Promise<ListResult<O<typeof this.meta>>> {
+  async after(data: ListResult<O<typeof this._meta>>): Promise<ListResult<O<typeof this._meta>>> {
     return data;
   }
 
-  async list(_filters: ListFilters): Promise<ListResult<O<typeof this.meta>>> {
+  async list(_filters: ListFilters): Promise<ListResult<O<typeof this._meta>>> {
     return {
       result: [],
     };

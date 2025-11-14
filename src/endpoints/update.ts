@@ -70,19 +70,19 @@ export class UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     };
   }
 
-  async before(_oldObj: O<typeof this.meta>, filters: UpdateFilters): Promise<UpdateFilters> {
+  async before(_oldObj: O<typeof this._meta>, filters: UpdateFilters): Promise<UpdateFilters> {
     return filters;
   }
 
-  async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+  async after(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
     return data;
   }
 
-  async getObject(_filters: UpdateFilters): Promise<O<typeof this.meta> | null> {
+  async getObject(_filters: UpdateFilters): Promise<O<typeof this._meta> | null> {
     return null;
   }
 
-  async update(oldObj: O<typeof this.meta>, _filters: UpdateFilters): Promise<O<typeof this.meta>> {
+  async update(oldObj: O<typeof this._meta>, _filters: UpdateFilters): Promise<O<typeof this._meta>> {
     return oldObj;
   }
 

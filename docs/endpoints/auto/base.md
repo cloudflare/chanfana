@@ -187,6 +187,7 @@ In this example:
 
 ```typescript
 import { z } from 'zod';
+import type { O } from 'chanfana';
 
 // Define User Model
 const UserSchema = z.object({
@@ -209,7 +210,7 @@ const userMeta = {
 class CreateUser extends CreateEndpoint {
     _meta = userMeta;
 
-    async before(data: z.infer<typeof UserSchema>): Promise<z.infer<typeof UserSchema>> {
+    async before(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
         // Pre-processing: hash password, set defaults, validate business rules
         return {
             ...data,
@@ -218,14 +219,14 @@ class CreateUser extends CreateEndpoint {
         };
     }
 
-    async after(data: z.infer<typeof UserSchema>): Promise<z.infer<typeof UserSchema>> {
+    async after(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
         // Post-processing: send welcome email, log audit trail, etc.
         await sendWelcomeEmail(data.email);
         await auditLog.record('user_created', data.id);
         return data;
     }
 
-    async create(data: z.infer<typeof UserSchema>) {
+    async create(data: O<typeof this._meta>) {
         // Save to database
         return await db.users.insert(data);
     }
@@ -241,6 +242,7 @@ The `before` hook runs before the `create` method, allowing you to transform or 
 **Example: Getting Product Details**
 
 ```typescript
+import type { Filters } from 'chanfana';
 import { Hono } from 'hono';
 import { fromHono, ReadEndpoint, contentJson } from 'chanfana';
 import { z } from 'zod';
@@ -250,7 +252,7 @@ import { z } from 'zod';
 class GetProduct extends ReadEndpoint {
     _meta = productMeta;
 
-    async fetch(filters: any) {
+    async fetch(filters: Filters) {
         const productId = filters.filters[0].value; // Accessing the productId from filters
         // In a real application, you would fetch product from database based on productId
         const product = { id: productId, name: `Product ${productId}`, price: 99.99 }; // Simulate product data
@@ -278,7 +280,7 @@ In this example:
 `ReadEndpoint` supports `before` and `after` lifecycle hooks for pre- and post-processing:
 
 ```typescript
-import type { ListFilters } from 'chanfana';
+import type { Filters, O } from 'chanfana';
 import { z } from 'zod';
 
 // Define User Model
@@ -300,14 +302,14 @@ const userMeta = {
 class GetUser extends ReadEndpoint {
     _meta = userMeta;
 
-    async before(filters: ListFilters): Promise<ListFilters> {
+    async before(filters: Filters): Promise<Filters> {
         // Pre-processing: validate access permissions, log request
         console.log('Fetching user with filters:', filters);
         await checkUserPermissions(filters);
         return filters;
     }
 
-    async after(data: z.infer<typeof UserSchema>): Promise<z.infer<typeof UserSchema>> {
+    async after(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
         // Post-processing: add computed fields, log access
         await auditLog.record('user_accessed', data.id);
         return {
@@ -316,7 +318,7 @@ class GetUser extends ReadEndpoint {
         };
     }
 
-    async fetch(filters: ListFilters): Promise<z.infer<typeof UserSchema> | null> {
+    async fetch(filters: Filters): Promise<O<typeof this._meta> | null> {
         const userId = filters.filters[0].value;
         return await db.users.findById(userId);
     }
@@ -331,7 +333,7 @@ The `serializer` and `serializerSchema` properties in your `Meta` object allow y
 
 ```typescript
 import { Hono } from 'hono';
-import { fromHono, ReadEndpoint } from 'chanfana';
+import { fromHono, ReadEndpoint, type Filters } from 'chanfana';
 import { z } from 'zod';
 
 // Internal model with sensitive fields
@@ -370,7 +372,7 @@ const secureMeta = {
 class GetUser extends ReadEndpoint {
     _meta = secureMeta;
 
-    async fetch(filters: any) {
+    async fetch(filters: Filters) {
         const userId = filters.filters[0].value;
         // Fetch user with all internal fields
         const user = await db.users.findById(userId);
@@ -389,7 +391,7 @@ The `serializer` function is automatically called before sending the response, e
 
 ```typescript
 import { Hono } from 'hono';
-import { fromHono, UpdateEndpoint, contentJson } from 'chanfana';
+import { fromHono, UpdateEndpoint, contentJson, type UpdateFilters, type O } from 'chanfana';
 import { z } from 'zod';
 
 // (ProductModel and productMeta are assumed to be defined as in the CreateEndpoint example)
@@ -397,14 +399,14 @@ import { z } from 'zod';
 class UpdateProduct extends UpdateEndpoint {
     _meta = productMeta;
 
-    async getObject(filters: any) {
+    async getObject(filters: UpdateFilters) {
         const productId = filters.filters[0].value;
         // In a real app, fetch the existing product from DB based on productId
         const existingProduct = { id: productId, name: `Product ${productId}`, price: 99.99 }; // Simulate
         return existingProduct;
     }
 
-    async update(oldObj: any, filters: any) {
+    async update(oldObj: O<typeof this._meta>, filters: UpdateFilters) {
         const productId = filters.filters[0].value;
         const updatedData = filters.updatedData;
         const updatedProduct = { ...oldObj, ...updatedData, id: productId }; // Simulate update
@@ -434,7 +436,7 @@ In this example:
 `UpdateEndpoint` supports `before` and `after` lifecycle hooks:
 
 ```typescript
-import type { UpdateFilters } from 'chanfana';
+import type { UpdateFilters, O } from 'chanfana';
 import { z } from 'zod';
 
 // Define User Model
@@ -457,7 +459,7 @@ const userMeta = {
 class UpdateUser extends UpdateEndpoint {
     _meta = userMeta;
 
-    async before(oldObj: z.infer<typeof UserSchema>, filters: UpdateFilters): Promise<UpdateFilters> {
+    async before(oldObj: O<typeof this._meta>, filters: UpdateFilters): Promise<UpdateFilters> {
         // Pre-processing: validate changes, set timestamps
         filters.updatedData = {
             ...filters.updatedData,
@@ -466,19 +468,19 @@ class UpdateUser extends UpdateEndpoint {
         return filters;
     }
 
-    async after(data: z.infer<typeof UserSchema>): Promise<z.infer<typeof UserSchema>> {
+    async after(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
         // Post-processing: invalidate cache, send notification
         await cache.invalidate(`user:${data.id}`);
         await notifyUserUpdated(data.id);
         return data;
     }
 
-    async getObject(filters: UpdateFilters): Promise<z.infer<typeof UserSchema> | null> {
+    async getObject(filters: UpdateFilters): Promise<O<typeof this._meta> | null> {
         const userId = filters.filters[0].value;
         return await db.users.findById(userId);
     }
 
-    async update(oldObj: z.infer<typeof UserSchema>, filters: UpdateFilters): Promise<z.infer<typeof UserSchema>> {
+    async update(oldObj: O<typeof this._meta>, filters: UpdateFilters): Promise<O<typeof this._meta>> {
         const userId = filters.filters[0].value;
         const updatedData = filters.updatedData;
         return await db.users.update(userId, { ...oldObj, ...updatedData });
@@ -496,7 +498,7 @@ The `before` hook runs before the `update` method, allowing you to modify the up
 
 ```typescript
 import { Hono } from 'hono';
-import { fromHono, DeleteEndpoint } from 'chanfana';
+import { fromHono, DeleteEndpoint, type Filters, type O } from 'chanfana';
 import { z } from 'zod';
 
 // (ProductModel and productMeta are assumed to be defined as in the CreateEndpoint example)
@@ -511,7 +513,7 @@ class DeleteProduct extends DeleteEndpoint {
         return existingProduct; // Return the object to be deleted (for logging/auditing)
     }
 
-    async delete(oldObj: any, filters: any) {
+    async delete(oldObj: O<typeof this._meta>, filters: Filters) {
         const productId = filters.filters[0].value;
         console.log("Deleting product:", productId);
         // In a real app, delete product from DB based on productId
@@ -540,7 +542,7 @@ In this example:
 `DeleteEndpoint` supports `before` and `after` lifecycle hooks:
 
 ```typescript
-import type { Filters } from 'chanfana';
+import type { Filters, O } from 'chanfana';
 import { z } from 'zod';
 
 // Define User Model
@@ -562,14 +564,14 @@ const userMeta = {
 class DeleteUser extends DeleteEndpoint {
     _meta = userMeta;
 
-    async before(oldObj: z.infer<typeof UserSchema>, filters: Filters): Promise<Filters> {
+    async before(oldObj: O<typeof this._meta>, filters: Filters): Promise<Filters> {
         // Pre-processing: validate deletion permissions, soft delete check
         await checkDeletionPermissions(oldObj.id);
         console.log('Preparing to delete user:', oldObj.id);
         return filters;
     }
 
-    async after(data: z.infer<typeof UserSchema>): Promise<z.infer<typeof UserSchema>> {
+    async after(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
         // Post-processing: cleanup related data, send notifications
         await cleanupUserData(data.id);
         await notifyUserDeleted(data.id);
@@ -577,12 +579,12 @@ class DeleteUser extends DeleteEndpoint {
         return data;
     }
 
-    async getObject(filters: Filters): Promise<z.infer<typeof UserSchema> | null> {
+    async getObject(filters: Filters): Promise<O<typeof this._meta> | null> {
         const userId = filters.filters[0].value;
         return await db.users.findById(userId);
     }
 
-    async delete(oldObj: z.infer<typeof UserSchema>, filters: Filters): Promise<z.infer<typeof UserSchema> | null> {
+    async delete(oldObj: O<typeof this._meta>, filters: Filters): Promise<O<typeof this._meta> | null> {
         const userId = filters.filters[0].value;
         await db.users.delete(userId);
         return oldObj;
@@ -600,7 +602,7 @@ The `before` hook runs before the `delete` method, useful for validation or logg
 
 ```typescript
 import { Hono } from 'hono';
-import { fromHono, ListEndpoint, contentJson } from 'chanfana';
+import { fromHono, ListEndpoint, contentJson, type ListFilters } from 'chanfana';
 import { z } from 'zod';
 
 // (ProductModel and productMeta are assumed to be defined as in the CreateEndpoint example)
@@ -623,7 +625,7 @@ class ListProducts extends ListEndpoint {
     // Optional: customize the search query parameter name (defaults to 'search')
     // searchFieldName = 'q';
 
-    async list(filters: any) {
+    async list(filters: ListFilters) {
         const options = filters.options;
         const filterConditions = filters.filters;
         console.log("Listing products with options:", options, "and filters:", filterConditions);
@@ -700,7 +702,7 @@ class ListUsers extends ListEndpoint {
         return filters;
     }
 
-    async after(data: ListResult<z.infer<typeof UserSchema>>): Promise<ListResult<z.infer<typeof UserSchema>>> {
+    async after(data: ListResult<O<typeof this._meta>>): Promise<ListResult<O<typeof this._meta>>> {
         // Post-processing: add computed fields, log access
         await auditLog.record('users_listed', { count: data.result.length });
         return {
@@ -711,7 +713,7 @@ class ListUsers extends ListEndpoint {
         };
     }
 
-    async list(filters: ListFilters): Promise<ListResult<z.infer<typeof UserSchema>>> {
+    async list(filters: ListFilters): Promise<ListResult<O<typeof this._meta>>> {
         const users = await db.users.findMany(filters);
         return { result: users };
     }

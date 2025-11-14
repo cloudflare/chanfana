@@ -20,7 +20,7 @@ export class D1CreateEndpoint<HandleArgs extends Array<object> = Array<object>> 
     return env[this.dbName];
   }
 
-  async create(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+  async create(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
     let inserted;
     try {
       const result = await this.getDBBinding()
@@ -32,7 +32,7 @@ export class D1CreateEndpoint<HandleArgs extends Array<object> = Array<object>> 
         .bind(...Object.values(data))
         .all();
 
-      inserted = result.results[0] as O<typeof this.meta>;
+      inserted = result.results[0] as O<typeof this._meta>;
     } catch (e: any) {
       if (this.logger)
         this.logger.error(`Caught exception while trying to create ${this.meta.model.tableName}: ${e.message}`);
