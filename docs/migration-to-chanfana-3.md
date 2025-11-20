@@ -107,6 +107,40 @@ const schema = z.object({
 });
 ```
 
+## Bug Fixes
+
+### UpdateEndpoint and Optional Fields with Defaults
+
+**Fixed in this release:**
+Zod 4 changed how optional fields with `.default()` values are handled. Previously in Zod 3, defaults were only applied if a field was present but invalid. In Zod 4, defaults are **always applied** even when the field is absent from the input.
+
+This caused an issue where `UpdateEndpoint` would incorrectly reset optional fields to their default values during partial updates, even when those fields weren't included in the update request.
+
+**Example:**
+```typescript
+const UserSchema = z.object({
+  id: z.number().int(),
+  username: z.string(),
+  email: z.email(),
+  age: z.number().int().optional().default(18),
+});
+
+// Database record: { id: 1, username: "john", age: 30 }
+
+// Update only username:
+PUT /users/1
+{ "username": "johndoe", "email": "john@example.com" }
+
+// ✅ Correctly keeps age as 30 (not reset to default 18)
+```
+
+**What we fixed:**
+- `UpdateEndpoint` now checks the raw request body to determine which fields were actually sent
+- Only fields present in the request are used to update the record
+- This preserves existing values for fields not included in partial updates
+
+**No action required** - This fix is automatic and restores the expected behavior for partial updates.
+
 ## Non-Breaking Changes
 
 ### IP Validation (Internal Only)

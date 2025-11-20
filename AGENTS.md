@@ -67,8 +67,21 @@ class MyEndpoint extends OpenAPIRoute {
 
 **Key methods:**
 - `getValidatedData()` - Returns validated request data (params, query, headers, body)
+- `getUnvalidatedData()` - Returns raw request data before Zod applies defaults/transformations (Zod 4+)
 - `execute()` - Internal method that handles request lifecycle
 - `validateRequest()` - Validates incoming request against schema
+
+**Zod 4 Consideration:**
+In Zod 4, optional fields with `.default()` are always present in validated data, even when absent from the input. Use `getUnvalidatedData()` to check which fields were actually sent:
+
+```typescript
+const validated = await this.getValidatedData(); // { field: "default_value" }
+const raw = await this.getUnvalidatedData();     // {}
+
+if ('field' in raw.body) {
+  // Field was actually sent in request
+}
+```
 
 **Lifecycle:**
 1. `execute()` called by router
@@ -109,6 +122,26 @@ class UserReadEndpoint extends ReadEndpoint {
   }
 }
 ```
+
+**UpdateEndpoint & Zod 4 Partial Updates:**
+`UpdateEndpoint` handles partial updates correctly with Zod 4. In Zod 4, optional fields with `.default()` are always present in validated data. The endpoint uses `getUnvalidatedData()` to determine which fields were actually sent:
+
+```typescript
+// UpdateEndpoint.getUpdatedData() implementation
+async getUpdatedData(_oldObj: O<typeof this._meta>): Promise<UpdatedData> {
+  const data = await this.getValidatedData();     // Has defaults applied
+  const rawData = await this.getUnvalidatedData(); // Raw request body
+  
+  // Only update fields that were actually sent
+  for (const [key, value] of Object.entries(data.body)) {
+    if (key in rawData.body) {  // Check raw data
+      updatedData[key] = value;
+    }
+  }
+}
+```
+
+This prevents default values from overwriting existing database values during partial updates.
 
 **ListEndpoint Properties:**
 - `filterFields: string[]` - Fields for exact-match filtering

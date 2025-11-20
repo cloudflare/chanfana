@@ -874,3 +874,213 @@ describe("ListEndpoint Advanced Features", () => {
     expect(resp.result[1].name).toBe("Desk"); // Higher price
   });
 });
+
+describe("UpdateEndpoint with Zod 4 Optional Defaults", () => {
+  const mockZod4DB: Record<string, any> = {};
+
+  // Schema with optional fields that have defaults
+  const UserWithDefaultsSchema = z.object({
+    id: z.number().int(),
+    username: z.string().min(3),
+    email: z.email(),
+    age: z.number().int().min(0).optional().default(18),
+    status: z.enum(["active", "inactive"]).optional().default("active"),
+    bio: z.string().optional(),
+  });
+
+  type UserWithDefaults = z.infer<typeof UserWithDefaultsSchema>;
+
+  class UserWithDefaultsUpdateEndpoint extends UpdateEndpoint {
+    _meta = {
+      model: {
+        tableName: "users",
+        schema: UserWithDefaultsSchema,
+        primaryKeys: ["id"],
+      },
+    };
+
+    async getObject(filters: UpdateFilters): Promise<UserWithDefaults | null> {
+      const idFilter = filters.filters.find((f) => f.field === "id");
+      if (!idFilter) return null;
+
+      const user = mockZod4DB[idFilter.value as number];
+      return user || null;
+    }
+
+    async update(oldObj: UserWithDefaults, filters: UpdateFilters): Promise<UserWithDefaults> {
+      const updated = { ...oldObj, ...filters.updatedData };
+      mockZod4DB[oldObj.id] = updated;
+      return updated;
+    }
+  }
+
+  const zod4Router = fromIttyRouter(AutoRouter());
+  zod4Router.put("/zod4-users/:id", UserWithDefaultsUpdateEndpoint);
+
+  beforeEach(() => {
+    // Clear and setup test data
+    Object.keys(mockZod4DB).forEach((key) => delete mockZod4DB[key]);
+  });
+
+  it("should NOT overwrite fields with defaults when not provided in request", async () => {
+    // Setup: User with non-default values
+    mockZod4DB[900] = {
+      id: 900,
+      username: "testuser",
+      email: "test@example.com",
+      age: 30, // NOT the default value of 18
+      status: "inactive", // NOT the default value of "active"
+      bio: "Original bio",
+    };
+
+    // Update only the username - age and status should remain unchanged
+    const request = await zod4Router.fetch(
+      new Request("https://example.com/zod4-users/900", {
+        method: "PUT",
+        body: JSON.stringify({
+          username: "newusername",
+          email: "test@example.com",
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    );
+
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    expect(resp.success).toBe(true);
+    expect(resp.result.username).toBe("newusername");
+    expect(resp.result.age).toBe(30); // Should remain 30, NOT reset to default 18
+    expect(resp.result.status).toBe("inactive"); // Should remain "inactive", NOT reset to default "active"
+    expect(resp.result.bio).toBe("Original bio"); // Should remain unchanged
+  });
+
+  it("should allow explicitly setting fields to their default values", async () => {
+    // Setup: User with non-default values
+    mockZod4DB[901] = {
+      id: 901,
+      username: "user901",
+      email: "user901@example.com",
+      age: 35,
+      status: "inactive",
+    };
+
+    // Explicitly set age to the default value
+    const request = await zod4Router.fetch(
+      new Request("https://example.com/zod4-users/901", {
+        method: "PUT",
+        body: JSON.stringify({
+          username: "user901",
+          email: "user901@example.com",
+          age: 18, // Explicitly setting to default
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    );
+
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    expect(resp.result.age).toBe(18); // Should be updated to 18
+  });
+
+  it("should handle updating optional fields without defaults", async () => {
+    mockZod4DB[902] = {
+      id: 902,
+      username: "user902",
+      email: "user902@example.com",
+      age: 25,
+      status: "active",
+      bio: "Old bio",
+    };
+
+    // Update bio (optional without default)
+    const request = await zod4Router.fetch(
+      new Request("https://example.com/zod4-users/902", {
+        method: "PUT",
+        body: JSON.stringify({
+          username: "user902",
+          email: "user902@example.com",
+          bio: "New bio",
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    );
+
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    expect(resp.result.bio).toBe("New bio");
+    expect(resp.result.age).toBe(25); // Should remain unchanged
+  });
+
+  it("should handle empty request body without overwriting with defaults", async () => {
+    mockZod4DB[903] = {
+      id: 903,
+      username: "user903",
+      email: "user903@example.com",
+      age: 40,
+      status: "inactive",
+    };
+
+    // Send minimal required fields only
+    const request = await zod4Router.fetch(
+      new Request("https://example.com/zod4-users/903", {
+        method: "PUT",
+        body: JSON.stringify({
+          username: "user903",
+          email: "user903@example.com",
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    );
+
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    expect(resp.result.age).toBe(40); // Should NOT be reset to 18
+    expect(resp.result.status).toBe("inactive"); // Should NOT be reset to "active"
+  });
+
+  it("should properly handle partial updates with mixed fields", async () => {
+    mockZod4DB[904] = {
+      id: 904,
+      username: "user904",
+      email: "user904@example.com",
+      age: 50,
+      status: "inactive",
+      bio: "Original bio",
+    };
+
+    // Update some fields but not others
+    const request = await zod4Router.fetch(
+      new Request("https://example.com/zod4-users/904", {
+        method: "PUT",
+        body: JSON.stringify({
+          username: "updated904",
+          email: "updated904@example.com",
+          status: "active", // Explicitly update this one
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    );
+
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    expect(resp.result.username).toBe("updated904");
+    expect(resp.result.status).toBe("active"); // Should be updated
+    expect(resp.result.age).toBe(50); // Should NOT be reset to default
+    expect(resp.result.bio).toBe("Original bio"); // Should remain unchanged
+  });
+});

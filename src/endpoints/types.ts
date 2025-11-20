@@ -26,6 +26,10 @@ export type UpdateFilters = {
   updatedData: Record<string, any>;
 };
 
+export type UpdatedData = {
+  updatedData: Record<string, any>;
+};
+
 export type Model = {
   tableName: string;
   schema: AnyZodObject;

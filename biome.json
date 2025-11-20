@@ -31,7 +31,8 @@
       },
       "suspicious": {
         "noExplicitAny": "off",
-        "noImplicitAnyLet": "off"
+        "noImplicitAnyLet": "off",
+        "useIterableCallbackReturn": "off"
       },
       "performance": {
         "noAccumulatingSpread": "off"
