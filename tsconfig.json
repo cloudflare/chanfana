@@ -18,7 +18,7 @@
     "noEmit": true,
     /* If your code runs in the DOM: */
     "lib": ["es2022", "dom", "dom.iterable"],
-    "types": ["@types/node", "@types/service-worker-mock", "@cloudflare/workers-types/experimental"]
+    "types": ["@types/node", "@cloudflare/workers-types/experimental"]
   },
   "include": ["src", "tests"]
 }
