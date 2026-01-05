@@ -54,7 +54,6 @@ const outputDir: string = dirname(resolvedOutputFile);
 const childProcess = spawn("npx", wranglerArgs, {
   cwd: process.cwd(),
   stdio: ["inherit", "pipe", "pipe"],
-  shell: true,
 });
 
 // Buffer stdout and stderr lines in memory

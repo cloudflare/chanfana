@@ -1,5 +1,5 @@
 import { ApiException, type InputValidationException } from "../../exceptions";
-import type { Logger, O, UpdateFilters } from "../types";
+import type { Filters, Logger, O, UpdateFilters } from "../types";
 import { UpdateEndpoint } from "../update";
 
 export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> extends UpdateEndpoint<HandleArgs> {
@@ -20,7 +20,7 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
     return env[this.dbName];
   }
 
-  getSafeFilters(filters: UpdateFilters) {
+  getSafeFilters(filters: Filters) {
     // Filters should only apply to primary keys
     const safeFilters = filters.filters.filter((f) => {
       return this.meta.model.primaryKeys.includes(f.field);
@@ -41,7 +41,7 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
     return { conditions, conditionsParams };
   }
 
-  async getObject(filters: UpdateFilters): Promise<Record<string, unknown> | null> {
+  async getObject(filters: Filters): Promise<Record<string, unknown> | null> {
     const safeFilters = this.getSafeFilters(filters);
 
     const oldObj = await this.getDBBinding()
