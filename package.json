@@ -17,7 +17,7 @@
   "scripts": {
     "build": "rm -rf dist/ && tsc && tsup src/index.ts src/cli.ts --format cjs,esm --dts --config tsconfig.json --external Hono",
     "lint": "npx @biomejs/biome check || (npx @biomejs/biome check --write; exit 1)",
-    "test": "vitest run --root tests",
+    "test": "tsc && vitest run --root tests",
     "docs:deploy": "npm run docs:build && wrangler pages deploy docs/.vitepress/dist/ --project-name chanfana --branch main",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
@@ -56,27 +56,25 @@
     "url": "https://github.com/cloudflare/chanfana/issues"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.5",
-    "@cloudflare/vitest-pool-workers": "^0.10.5",
-    "@cloudflare/workers-types": "4.20251111.0",
+    "@biomejs/biome": "2.3.11",
+    "@cloudflare/vitest-pool-workers": "^0.11.1",
+    "@cloudflare/workers-types": "4.20260103.0",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "24.10.0",
-    "@types/service-worker-mock": "^2.0.4",
-    "hono": "4.10.4",
+    "@types/node": "25.0.3",
+    "hono": "4.11.3",
     "itty-router": "5.0.22",
-    "pkg-pr-new": "^0.0.60",
-    "tsup": "8.5.0",
+    "pkg-pr-new": "^0.0.62",
+    "tsup": "8.5.1",
     "typescript": "5.9.3",
     "vitepress": "^1.6.4",
-    "vitest": "^3.2.4",
     "vitest-openapi": "^1.0.3",
-    "wrangler": "4.46.0"
+    "wrangler": "4.54.0"
   },
   "dependencies": {
-    "@asteasolutions/zod-to-openapi": "^8.1.0",
-    "js-yaml": "^4.1.0",
+    "@asteasolutions/zod-to-openapi": "^8.4.0",
+    "js-yaml": "^4.1.1",
     "openapi3-ts": "^4.5.0",
     "yargs-parser": "^22.0.0",
-    "zod": "^4.1.12"
+    "zod": "^4.3.5"
   }
 }

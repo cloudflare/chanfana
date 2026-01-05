@@ -10,11 +10,8 @@ export type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 
 export type IsEqual<A, B> = (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B ? 1 : 2 ? true : false;
 
-type Filter<KeyType, ExcludeType> = IsEqual<KeyType, ExcludeType> extends true
-  ? never
-  : KeyType extends ExcludeType
-    ? never
-    : KeyType;
+type Filter<KeyType, ExcludeType> =
+  IsEqual<KeyType, ExcludeType> extends true ? never : KeyType extends ExcludeType ? never : KeyType;
 
 type ExceptOptions = {
   requireExactProps?: boolean;
@@ -151,10 +148,11 @@ type GetOutput<T extends object | undefined, P extends keyof T> = T extends NonN
 
 type GetPartBody<T extends RequestTypes, P extends keyof T> = T[P] extends ZodRequestBody ? T[P] : undefined;
 
-type GetBody<T extends ZodRequestBody | undefined> = T extends NonNullable<T>
-  ? T["content"]["application/json"] extends NonNullable<T["content"]["application/json"]>
-    ? T["content"]["application/json"]["schema"] extends z.ZodType
-      ? z.output<T["content"]["application/json"]["schema"]>
+type GetBody<T extends ZodRequestBody | undefined> =
+  T extends NonNullable<T>
+    ? T["content"]["application/json"] extends NonNullable<T["content"]["application/json"]>
+      ? T["content"]["application/json"]["schema"] extends z.ZodType
+        ? z.output<T["content"]["application/json"]["schema"]>
+        : undefined
       : undefined
-    : undefined
-  : undefined;
+    : undefined;

@@ -14,13 +14,14 @@ import { OpenAPIHandler, type OpenAPIRouterType } from "../openapi";
 import type { OpenAPIRoute } from "../route";
 import type { RouterOptions } from "../types";
 
-type MergeTypedResponse<T> = T extends Promise<infer T2>
-  ? T2 extends TypedResponse
-    ? T2
-    : TypedResponse
-  : T extends TypedResponse
-    ? T
-    : TypedResponse;
+type MergeTypedResponse<T> =
+  T extends Promise<infer T2>
+    ? T2 extends TypedResponse
+      ? T2
+      : TypedResponse
+    : T extends TypedResponse
+      ? T
+      : TypedResponse;
 
 const HIJACKED_METHODS = new Set(["basePath", "on", "route", "delete", "get", "patch", "post", "put", "all"]);
 

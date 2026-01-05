@@ -619,7 +619,6 @@ describe("Serializer and SerializerSchema", () => {
         primaryKeys: ["id"],
         serializer: (obj: any) => {
           // Remove sensitive fields
-          // biome-ignore lint: tests
           const { passwordHash, apiKey, ...publicData } = obj;
           return publicData;
         },
