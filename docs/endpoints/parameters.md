@@ -136,7 +136,7 @@ const isActiveSchema = Bool({
 
 ### `DateTime`: Date and Time Strings
 
-The `DateTime` parameter type represents date and time strings in ISO 8601 format (e.g., "2024-01-20T10:30:00Z"). It's based on `z.string().datetime()` from Zod.
+The `DateTime` parameter type represents date and time strings in ISO 8601 format (e.g., "2024-01-20T10:30:00Z"). It's based on `z.iso.datetime()` from Zod v4.
 
 **Usage:**
 
@@ -162,7 +162,7 @@ const createdAtSchema = DateTime({
 
 ### `DateOnly`: Date Strings
 
-The `DateOnly` parameter type represents date strings in YYYY-MM-DD format (e.g., "2024-01-20"). It's based on `z.date()` from Zod, which is then formatted as a string.
+The `DateOnly` parameter type represents date strings in YYYY-MM-DD format (e.g., "2024-01-20"). It's based on `z.iso.date()` from Zod v4, which validates ISO 8601 date strings.
 
 **Usage:**
 
@@ -221,7 +221,7 @@ const passwordSchema = Regex({
 
 ### `Email`: Email Address Strings
 
-The `Email` parameter type represents strings that must be valid email addresses. It's based on `z.string().email()` from Zod.
+The `Email` parameter type represents strings that must be valid email addresses. It's based on `z.email()` from Zod v4.
 
 **Usage:**
 
@@ -247,7 +247,7 @@ const emailSchema = Email({
 
 ### `Uuid`: UUID Strings
 
-The `Uuid` parameter type represents strings that must be valid UUIDs (Universally Unique Identifiers). It's based on `z.string().uuid()` from Zod.
+The `Uuid` parameter type represents strings that must be valid UUIDs (Universally Unique Identifiers). It's based on `z.uuid()` from Zod v4.
 
 **Usage:**
 
@@ -299,7 +299,7 @@ const websiteSchema = Hostname({
 
 ### `Ipv4`: IPv4 Address Strings
 
-The `Ipv4` parameter type represents strings that must be valid IPv4 addresses. It's based on `z.string().ip({ version: "v4" })` from Zod.
+The `Ipv4` parameter type represents strings that must be valid IPv4 addresses. It's based on `z.ipv4()` from Zod.
 
 **Usage:**
 
@@ -325,7 +325,7 @@ const ipAddressSchema = Ipv4({
 
 ### `Ipv6`: IPv6 Address Strings
 
-The `Ipv6` parameter type represents strings that must be valid IPv6 addresses. It's based on `z.string().ip({ version: "v6" })` from Zod.
+The `Ipv6` parameter type represents strings that must be valid IPv6 addresses. It's based on `z.ipv6()` from Zod.
 
 **Usage:**
 
@@ -351,7 +351,7 @@ const ipv6AddressSchema = Ipv6({
 
 ### `Ip`: IP Address Strings (v4 or v6)
 
-The `Ip` parameter type represents strings that must be valid IP addresses, either IPv4 or IPv6. It's based on `z.string().ip()` from Zod.
+The `Ip` parameter type represents strings that must be valid IP addresses, either IPv4 or IPv6. It's based on `z.union([z.ipv4(), z.ipv6()])` from Zod.
 
 **Usage:**
 

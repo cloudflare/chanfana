@@ -92,7 +92,7 @@ class CreateUserEndpoint extends OpenAPIRoute {
         request: {
             body: contentJson(z.object({
                 username: z.string().min(3),
-                email: z.string().email(),
+                email: z.email(),
             })),
         },
         responses: {

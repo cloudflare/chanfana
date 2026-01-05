@@ -1,13 +1,14 @@
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
-import { type AnyZodObject, z } from "zod";
-import { type ApiException, InputValidationException, MultiException } from "./exceptions";
+import { z } from "zod";
+import type { ApiException } from "./exceptions";
 import { coerceInputs } from "./parameters";
-import type { OpenAPIRouteSchema, RouteOptions, ValidatedData } from "./types";
+import type { AnyZodObject, OpenAPIRouteSchema, RouteOptions, ValidatedData } from "./types";
 import { jsonResp } from "./utils";
+
 extendZodWithOpenApi(z);
 
 export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
-  handle(...args: any[]): Response | Promise<Response> | object | Promise<object> {
+  handle(..._args: any[]): Response | Promise<Response> | object | Promise<object> {
     throw new Error("Method not implemented.");
   }
 
@@ -15,6 +16,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 
   args: HandleArgs; // Args the execute() was called with
   validatedData: any = undefined; // this acts as a cache, in case the users calls the validate method twice
+  unvalidatedData: any = undefined; // stores raw request data before Zod applies defaults/transformations
   params: RouteOptions;
   schema: OpenAPIRouteSchema = {};
 
@@ -32,6 +34,56 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 
     this.validatedData = data;
     return data;
+  }
+
+  async getUnvalidatedData(): Promise<any> {
+    if (this.unvalidatedData !== undefined) return this.unvalidatedData;
+
+    const request = this.params.router.getRequest(this.args);
+    const schema: OpenAPIRouteSchema = this.getSchemaZod();
+    const unvalidatedData: any = {};
+
+    if (schema.request?.params) {
+      unvalidatedData.params = coerceInputs(this.params.router.getUrlParams(this.args), schema.request?.params);
+    }
+    if (schema.request?.query) {
+      unvalidatedData.query = {};
+    }
+
+    if (schema.request?.headers) {
+      unvalidatedData.headers = {};
+    }
+
+    const { searchParams } = new URL(request.url);
+    const queryParams = coerceInputs(searchParams, schema.request?.query);
+    if (queryParams !== null) unvalidatedData.query = queryParams;
+
+    if (schema.request?.headers) {
+      const tmpHeaders: Record<string, any> = {};
+
+      const rHeaders = new Headers(request.headers);
+      for (const header of Object.keys((schema.request?.headers as AnyZodObject).shape)) {
+        tmpHeaders[header] = rHeaders.get(header);
+      }
+
+      unvalidatedData.headers = coerceInputs(tmpHeaders, schema.request?.headers as AnyZodObject);
+    }
+
+    if (
+      request.method.toLowerCase() !== "get" &&
+      schema.request?.body &&
+      schema.request?.body.content["application/json"] &&
+      schema.request?.body.content["application/json"].schema
+    ) {
+      try {
+        unvalidatedData.body = await request.json();
+      } catch (_e) {
+        unvalidatedData.body = {};
+      }
+    }
+
+    this.unvalidatedData = unvalidatedData;
+    return unvalidatedData;
   }
 
   getSchema(): OpenAPIRouteSchema {
@@ -57,7 +109,6 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       };
     }
 
-    // @ts-ignore
     return schema;
   }
 
@@ -76,7 +127,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     // In the future, errors will be handled as exceptions
     // Errors caught here are always validation errors
     // const updatedError: Array<object> = errors.map((err) => {
-    // 	// @ts-ignore
+    // 	// @ts-expect-error
     // 	if ((err as ApiException).buildResponse) {
     // 		// Error is already an internal exception
     // 		return err;
@@ -89,6 +140,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 
   async execute(...args: HandleArgs) {
     this.validatedData = undefined;
+    this.unvalidatedData = undefined;
     this.args = args;
 
     let resp;
@@ -96,7 +148,21 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       resp = await this.handle(...args);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        return this.handleValidationError(e.errors);
+        return this.handleValidationError(e.issues);
+      }
+
+      // Handle ApiException
+      if ((e as ApiException).buildResponse) {
+        const apiError = e as ApiException;
+        return jsonResp(
+          {
+            success: false,
+            errors: apiError.buildResponse(),
+          },
+          {
+            status: apiError.status,
+          },
+        );
       }
 
       throw e;
@@ -111,36 +177,20 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 
   async validateRequest(request: Request) {
     const schema: OpenAPIRouteSchema = this.getSchemaZod();
-    const unvalidatedData: any = {};
+
+    // Get unvalidated data (this also stores it in this.unvalidatedData)
+    const unvalidatedData = await this.getUnvalidatedData();
 
     const rawSchema: any = {};
     if (schema.request?.params) {
       rawSchema.params = schema.request?.params;
-      unvalidatedData.params = coerceInputs(this.params.router.getUrlParams(this.args), schema.request?.params);
     }
     if (schema.request?.query) {
       rawSchema.query = schema.request?.query;
-      unvalidatedData.query = {};
     }
 
     if (schema.request?.headers) {
       rawSchema.headers = schema.request?.headers;
-      unvalidatedData.headers = {};
-    }
-
-    const { searchParams } = new URL(request.url);
-    const queryParams = coerceInputs(searchParams, schema.request?.query);
-    if (queryParams !== null) unvalidatedData.query = queryParams;
-
-    if (schema.request?.headers) {
-      const tmpHeaders: Record<string, any> = {};
-
-      const rHeaders = new Headers(request.headers);
-      for (const header of Object.keys((schema.request?.headers as AnyZodObject).shape)) {
-        tmpHeaders[header] = rHeaders.get(header);
-      }
-
-      unvalidatedData.headers = coerceInputs(tmpHeaders, schema.request?.headers as AnyZodObject);
     }
 
     if (
@@ -150,18 +200,14 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       schema.request?.body.content["application/json"].schema
     ) {
       rawSchema.body = schema.request.body.content["application/json"].schema;
-
-      try {
-        unvalidatedData.body = await request.json();
-      } catch (e) {
-        unvalidatedData.body = {};
-      }
     }
 
-    let validationSchema: any = z.object(rawSchema);
+    let validationSchema: any;
 
     if (this.params?.raiseUnknownParameters === undefined || this.params?.raiseUnknownParameters === true) {
-      validationSchema = validationSchema.strict();
+      validationSchema = z.strictObject(rawSchema);
+    } else {
+      validationSchema = z.object(rawSchema);
     }
 
     return await validationSchema.parseAsync(unvalidatedData);

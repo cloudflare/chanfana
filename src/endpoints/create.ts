@@ -4,7 +4,7 @@ import { OpenAPIRoute } from "../route";
 import { MetaGenerator, type MetaInput, type O } from "./types";
 
 export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
-  // @ts-ignore
+  // @ts-expect-error
   _meta: MetaInput;
 
   get meta() {
@@ -41,10 +41,9 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     };
   }
 
-  async getObject(): Promise<O<typeof this.meta>> {
+  async getObject(): Promise<O<typeof this._meta>> {
     const data = await this.getValidatedData();
 
-    // @ts-ignore  TODO: check this
     const newData: any = {
       ...(data.body as object),
     };
@@ -56,19 +55,19 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return newData;
   }
 
-  async before(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+  async before(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
     return data;
   }
 
-  async after(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+  async after(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
     return data;
   }
 
-  async create(data: O<typeof this.meta>): Promise<O<typeof this.meta>> {
+  async create(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
     return data;
   }
 
-  async handle(...args: HandleArgs) {
+  async handle(..._args: HandleArgs) {
     let obj = await this.getObject();
 
     obj = await this.before(obj);

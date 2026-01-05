@@ -19,7 +19,7 @@ export class D1ReadEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return env[this.dbName];
   }
 
-  async fetch(filters: ListFilters): Promise<O<typeof this.meta> | null> {
+  async fetch(filters: ListFilters): Promise<O<typeof this._meta> | null> {
     const conditions = filters.filters.map((obj) => `${obj.field} = ?`);
 
     const obj = await this.getDBBinding()
@@ -31,6 +31,6 @@ export class D1ReadEndpoint<HandleArgs extends Array<object> = Array<object>> ex
       return null;
     }
 
-    return obj.results[0] as O<typeof this.meta>;
+    return obj.results[0] as O<typeof this._meta>;
   }
 }

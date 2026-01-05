@@ -14,7 +14,7 @@ type InferSchemaType<T> = T extends z.ZodType ? z.infer<T> : T;
 export const contentJson = <T>(schema: T): JsonContent<InferSchemaType<T>> => ({
   content: {
     "application/json": {
-      schema: schema instanceof z.ZodType ? schema : legacyTypeIntoZod(schema),
+      schema: (schema instanceof z.ZodType ? schema : legacyTypeIntoZod(schema)) as z.ZodType<InferSchemaType<T>>,
     },
   },
 });

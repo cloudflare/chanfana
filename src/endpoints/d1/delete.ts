@@ -35,7 +35,7 @@ export class D1DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> 
     return { conditions, conditionsParams };
   }
 
-  async getObject(filters: Filters): Promise<O<typeof this.meta> | null> {
+  async getObject(filters: Filters): Promise<O<typeof this._meta> | null> {
     const safeFilters = this.getSafeFilters(filters);
 
     const oldObj = await this.getDBBinding()
@@ -47,10 +47,10 @@ export class D1DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> 
       return null;
     }
 
-    return oldObj.results[0] as O<typeof this.meta>;
+    return oldObj.results[0] as O<typeof this._meta>;
   }
 
-  async delete(oldObj: O<typeof this.meta>, filters: Filters): Promise<O<typeof this.meta> | null> {
+  async delete(oldObj: O<typeof this._meta>, filters: Filters): Promise<O<typeof this._meta> | null> {
     const safeFilters = this.getSafeFilters(filters);
 
     let result;

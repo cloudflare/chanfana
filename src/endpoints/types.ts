@@ -1,5 +1,5 @@
-import type { AnyZodObject, z } from "zod";
-import type { SetRequired } from "../types";
+import type { z } from "zod";
+import type { AnyZodObject, SetRequired } from "../types";
 
 export type FilterCondition = {
   field: string;
@@ -26,6 +26,10 @@ export type UpdateFilters = {
   updatedData: Record<string, any>;
 };
 
+export type UpdatedData = {
+  updatedData: Record<string, any>;
+};
+
 export type Model = {
   tableName: string;
   schema: AnyZodObject;
@@ -47,7 +51,7 @@ export type Meta = {
   fields: AnyZodObject;
 };
 
-export type O<M extends Meta> = z.infer<M["model"]["schema"]>;
+export type O<M extends MetaInput> = z.infer<M["model"]["schema"]>;
 
 export type ListResult<O> = {
   result: Array<O>;

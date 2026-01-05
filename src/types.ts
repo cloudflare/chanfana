@@ -1,7 +1,10 @@
 import type { RouteConfig, ZodMediaTypeObject } from "@asteasolutions/zod-to-openapi";
 import type { HeadersObject as HeadersObject30, LinksObject as LinksObject30, OpenAPIObject } from "openapi3-ts/oas30";
 import type { HeadersObject as HeadersObject31, LinksObject as LinksObject31 } from "openapi3-ts/oas31";
-import type { AnyZodObject, ZodEffects, ZodType, z } from "zod";
+import type { ZodObject, ZodPipe, ZodType, z } from "zod";
+
+// Type alias for compatibility with Zod v4
+export type AnyZodObject = ZodObject<any, any>;
 
 export type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 
@@ -61,7 +64,7 @@ export interface ResponseConfig {
   links?: LinksObject;
   content?: ZodContentObject;
 }
-export type RouteParameter = AnyZodObject | ZodEffects<AnyZodObject, unknown, unknown> | undefined;
+export type RouteParameter = AnyZodObject | ZodPipe<AnyZodObject, any> | undefined;
 
 export interface RouterOptions {
   base?: string;
@@ -150,7 +153,7 @@ type GetPartBody<T extends RequestTypes, P extends keyof T> = T[P] extends ZodRe
 
 type GetBody<T extends ZodRequestBody | undefined> = T extends NonNullable<T>
   ? T["content"]["application/json"] extends NonNullable<T["content"]["application/json"]>
-    ? T["content"]["application/json"]["schema"] extends z.ZodTypeAny
+    ? T["content"]["application/json"]["schema"] extends z.ZodType
       ? z.output<T["content"]["application/json"]["schema"]>
       : undefined
     : undefined

@@ -31,7 +31,7 @@ export class ApiException extends Error {
     };
 
     if (inst.includesPath === true) {
-      // @ts-ignore
+      // @ts-expect-error
       innerError.path = ["body", "fieldName"];
     }
 

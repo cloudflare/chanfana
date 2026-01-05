@@ -36,10 +36,10 @@ class CreateResourceEndpoint extends OpenAPIRoute {
                 description: 'Resource created successfully',
                 ...contentJson(z.object({
                     id: z.string(),
-                    createdAt: z.string().datetime(),
+                    createdAt: z.iso.datetime(),
                 })),
                 headers: z.object({
-                    'Location': z.string().url().describe('URL of the newly created resource'),
+                    'Location': z.url().describe('URL of the newly created resource'),
                 }),
             },
             "400": { description: 'Bad Request' }, // Example error response
@@ -185,7 +185,7 @@ class ProductEndpoint extends OpenAPIRoute {
     schema = {
         request: {
             params: z.object({
-                productId: z.string().uuid().describe("Unique ID of the product"),
+                productId: z.uuid().describe("Unique ID of the product"),
             }),
         },
         responses: {
@@ -196,7 +196,7 @@ class ProductEndpoint extends OpenAPIRoute {
                     name: z.string(),
                     description: z.string().optional(),
                     price: z.number().positive(),
-                    imageUrl: z.string().url().optional(),
+                    imageUrl: z.url().optional(),
                 })),
             },
             ...InputValidationException.schema(),

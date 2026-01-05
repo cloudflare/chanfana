@@ -3,7 +3,7 @@ export function jsonResp(data: any, params?: object): Response {
     headers: {
       "content-type": "application/json;charset=UTF-8",
     },
-    // @ts-ignore
+    // @ts-expect-error
     status: params?.status ? params.status : 200,
     ...params,
   });

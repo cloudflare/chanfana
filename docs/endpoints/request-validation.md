@@ -23,7 +23,7 @@ class CreateUserEndpoint extends OpenAPIRoute {
             body: contentJson(z.object({
                 username: z.string().min(3).max(20),
                 password: z.string().min(8),
-                email: z.string().email(),
+                email: z.email(),
                 fullName: z.string().optional(),
                 age: z.number().int().positive().optional(),
             })),
@@ -149,7 +149,7 @@ class GetProductEndpoint extends OpenAPIRoute {
     schema = {
         request: {
             params: z.object({
-                productId: z.string().uuid().describe("Unique ID of the product"),
+                productId: z.uuid().describe("Unique ID of the product"),
             }),
         },
         responses: {
@@ -170,7 +170,7 @@ class GetProductEndpoint extends OpenAPIRoute {
 In this example:
 
 *   We define a Zod object schema for `schema.request.params` with a single path parameter `productId`.
-*   The `productId` is defined as a `z.string().uuid()` to ensure it's a valid UUID.
+*   The `productId` is defined as a `z.uuid()` to ensure it's a valid UUID.
 *   `this.getValidatedData<typeof this.schema>().params` will be typed as:
 
     ```typescript

@@ -1,6 +1,6 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 
-// @ts-ignore
+// @ts-expect-error
 export class OpenAPIRegistryMerger extends OpenAPIRegistry {
   public _definitions: { route: { path: string } }[] = [];
 

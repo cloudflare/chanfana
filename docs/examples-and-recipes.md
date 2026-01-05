@@ -43,12 +43,12 @@ Let's build a complete example of a simple Task Management API using Hono, Chanf
 
     // Task Model
     const TaskModel = z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
         title: z.string().min(3).max(100),
         description: z.string().optional(),
         completed: z.boolean().default(false),
-        createdAt: z.string().datetime(),
-        updatedAt: z.string().datetime().optional(),
+        createdAt: z.iso.datetime(),
+        updatedAt: z.iso.datetime().optional(),
     });
 
     // Task Meta

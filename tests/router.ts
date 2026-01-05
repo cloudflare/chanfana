@@ -1,6 +1,6 @@
 import { AutoRouter } from "itty-router";
 import { z } from "zod";
-import { OpenAPIRoute, extendZodWithOpenApi } from "../src";
+import { extendZodWithOpenApi, OpenAPIRoute } from "../src";
 import { fromIttyRouter } from "../src/adapters/ittyRouter";
 import { contentJson } from "../src/contentTypes";
 import {
@@ -27,7 +27,7 @@ export class ToDoList extends OpenAPIRoute {
     summary: "List all ToDos",
     request: {
       query: z.object({
-        p_array_dates: z.string().date().array(),
+        p_array_dates: z.iso.date().array(),
         p_number: z.number(),
         p_string: z.string(),
         p_boolean: z.boolean(),
@@ -72,7 +72,7 @@ export class ToDoList extends OpenAPIRoute {
     },
   };
 
-  async handle(request: Request, env: any, context: any) {
+  async handle(_request: Request, _env: any, _context: any) {
     const data = await this.getValidatedData<typeof this.schema>();
 
     return {
@@ -108,7 +108,7 @@ export class ToDoGet extends OpenAPIRoute {
     },
   };
 
-  async handle(request: Request, env: any, context: any) {
+  async handle(_request: Request, _env: any, _context: any) {
     return {
       todo: {
         lorem: "lorem",
@@ -132,7 +132,7 @@ export class ContentTypeGet extends OpenAPIRoute {
     },
   };
 
-  async handle(request: Request, env: any, context: any) {
+  async handle(_request: Request, _env: any, _context: any) {
     return {
       todo: {
         lorem: "lorem",
@@ -182,7 +182,7 @@ export class ToDoCreate extends OpenAPIRoute {
     },
   };
 
-  async handle(request: Request, env: any, context: any) {
+  async handle(_request: Request, _env: any, _context: any) {
     const data = await this.getValidatedData<typeof this.schema>();
 
     return {
@@ -256,7 +256,7 @@ export class ToDoCreateTyped extends OpenAPIRoute {
     },
   };
 
-  async handle(request: Request, env: any, context: any) {
+  async handle(_request: Request, _env: any, _context: any) {
     return {};
   }
 }
@@ -272,7 +272,7 @@ export class ToDoHeaderCheck extends OpenAPIRoute {
     },
   };
 
-  async handle(request: Request, env: any, context: any) {
+  async handle(_request: Request, _env: any, _context: any) {
     const data = await this.getValidatedData<typeof this.schema>();
 
     return {

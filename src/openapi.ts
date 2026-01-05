@@ -1,7 +1,6 @@
 import { OpenApiGeneratorV3, OpenApiGeneratorV31 } from "@asteasolutions/zod-to-openapi";
 import yaml from "js-yaml";
 import { z } from "zod";
-import type { OpenAPIRoute } from "./route";
 import type { OpenAPIRouteSchema, RouterOptions } from "./types";
 import { getReDocUI, getSwaggerUI } from "./ui";
 import { OpenAPIRegistryMerger } from "./zod/registry";
@@ -97,11 +96,7 @@ export class OpenAPIHandler {
     });
   }
 
-  registerNestedRouter(params: {
-    method: string;
-    nestedRouter: any;
-    path?: string;
-  }) {
+  registerNestedRouter(params: { method: string; nestedRouter: any; path?: string }) {
     // Only overwrite the path if the nested router don't have a base already
     const path = params.nestedRouter.options?.base
       ? undefined
@@ -131,10 +126,8 @@ export class OpenAPIHandler {
       urlParams = parsedParams.map((obj) => obj.replace(":", ""));
     }
 
-    // @ts-ignore
-    let schema: OpenAPIRouteSchema = undefined;
-    // @ts-ignore
-    let operationId: string = undefined;
+    let schema: OpenAPIRouteSchema | undefined;
+    let operationId: string | undefined;
 
     for (const handler of params.handlers) {
       if (handler.name) {
@@ -157,7 +150,6 @@ export class OpenAPIHandler {
     if (schema === undefined) {
       // No schema for this route, try to guest the parameters
 
-      // @ts-ignore
       schema = {
         operationId: operationId,
         responses: {
@@ -194,7 +186,7 @@ export class OpenAPIHandler {
     if (params.doRegister === undefined || params.doRegister) {
       this.registry.registerPath({
         ...schema,
-        // @ts-ignore
+        // @ts-expect-error
         method: params.method,
         path: parsedRoute,
       });
@@ -215,7 +207,7 @@ export class OpenAPIHandler {
     });
   }
 
-  handleCommonProxy(target: any, prop: string, ...args: any[]) {
+  handleCommonProxy(_target: any, prop: string, ..._args: any[]) {
     // This is a hack to allow older versions of wrangler to use this library
     // https://github.com/cloudflare/workers-sdk/issues/5420
     if (prop === "middleware") {
@@ -238,15 +230,15 @@ export class OpenAPIHandler {
     return undefined;
   }
 
-  getRequest(args: any[]) {
+  getRequest(_args: any[]) {
     throw new Error("getRequest not implemented");
   }
 
-  getUrlParams(args: any[]): Record<string, any> {
+  getUrlParams(_args: any[]): Record<string, any> {
     throw new Error("getUrlParams not implemented");
   }
 
-  getBindings(args: any[]): Record<string, any> {
+  getBindings(_args: any[]): Record<string, any> {
     throw new Error("getBindings not implemented");
   }
 }

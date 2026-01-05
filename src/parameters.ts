@@ -1,20 +1,22 @@
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
-import type { EnumerationParameterType, ParameterType, RegexParameterType, RouteParameter } from "./types";
-import { isSpecificZodType, legacyTypeIntoZod } from "./zod/utils";
+import type {
+  AnyZodObject,
+  EnumerationParameterType,
+  ParameterType,
+  RegexParameterType,
+  RouteParameter,
+} from "./types";
+import { legacyTypeIntoZod } from "./zod/utils";
 
 extendZodWithOpenApi(z);
 export function convertParams<M = z.ZodType>(field: any, params: any): M {
   params = params || {};
-  if (params.required === false)
-    // @ts-ignore
-    field = field.optional();
+  if (params.required === false) field = field.optional();
 
   if (params.description) field = field.describe(params.description);
 
-  if (params.default)
-    // @ts-ignore
-    field = field.default(params.default);
+  if (params.default) field = field.default(params.default);
 
   if (params.example) {
     field = field.openapi({ example: params.example });
@@ -58,29 +60,23 @@ export function Str(params?: ParameterType): z.ZodString {
 
 export function DateTime(params?: ParameterType): z.ZodString {
   return convertParams<z.ZodString>(
-    z.string().datetime({
-      message: "Must be in the following format: YYYY-mm-ddTHH:MM:ssZ",
+    z.iso.datetime({
+      error: "Must be in the following format: YYYY-mm-ddTHH:MM:ssZ",
     }),
     params,
   );
 }
 
 export function Regex(params: RegexParameterType): z.ZodString {
-  return convertParams<z.ZodString>(
-    // @ts-ignore
-    z
-      .string()
-      .regex(params.pattern, params.patternError || "Invalid"),
-    params,
-  );
+  return convertParams<z.ZodString>(z.string().regex(params.pattern, params.patternError || "Invalid"), params);
 }
 
 export function Email(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.string().email(), params);
+  return convertParams<z.ZodString>(z.email(), params);
 }
 
 export function Uuid(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.string().uuid(), params);
+  return convertParams<z.ZodString>(z.uuid(), params);
 }
 
 export function Hostname(params?: ParameterType): z.ZodString {
@@ -95,19 +91,19 @@ export function Hostname(params?: ParameterType): z.ZodString {
 }
 
 export function Ipv4(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.string().ip({ version: "v4" }), params);
+  return convertParams<z.ZodString>(z.ipv4(), params);
 }
 
 export function Ipv6(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.string().ip({ version: "v6" }), params);
+  return convertParams<z.ZodString>(z.ipv6(), params);
 }
 
-export function Ip(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.string().ip(), params);
+export function Ip(params?: ParameterType): z.ZodString | z.ZodUnion<[z.ZodString, z.ZodString]> {
+  return convertParams<z.ZodString | z.ZodUnion<[z.ZodString, z.ZodString]>>(z.union([z.ipv4(), z.ipv6()]), params);
 }
 
 export function DateOnly(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.date(), params);
+  return convertParams<z.ZodString>(z.iso.date(), params);
 }
 
 export function Bool(params?: ParameterType): z.ZodBoolean {
@@ -126,7 +122,7 @@ export function Enumeration(params: EnumerationParameterType): z.ZodEnum<any> {
 
   if (params.enumCaseSensitive === false) {
     values = Object.keys(values).reduce((accumulator, key) => {
-      // @ts-ignore
+      // @ts-expect-error
       accumulator[key.toLowerCase()] = values[key];
       return accumulator;
     }, {});
@@ -146,10 +142,27 @@ export function Enumeration(params: EnumerationParameterType): z.ZodEnum<any> {
   const result = convertParams<z.ZodEnum<any>>(field, params);
 
   // Keep retro compatibility
-  //@ts-ignore
+  //@ts-expect-error
   result.values = originalValues;
 
   return result;
+}
+
+// Helper function to unwrap optional/nullable types and check instanceof
+function unwrapAndCheck(schema: any, ZodClass: any): boolean {
+  let current = schema;
+  // Check first before unwrapping (important for arrays which also have .unwrap())
+  if (current instanceof ZodClass) {
+    return true;
+  }
+  // Unwrap optional/nullable/default wrappers
+  while (current && typeof current.unwrap === "function") {
+    current = current.unwrap();
+    if (current instanceof ZodClass) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // This should only be used for query, params, headers and cookies
@@ -164,7 +177,6 @@ export function coerceInputs(data: Record<string, any>, schema?: RouteParameter)
   for (let [key, value] of entries) {
     // Query, path and headers can be empty strings, that should equal to null as nothing was provided
     if (value === "") {
-      // @ts-ignore
       value = null;
     }
 
@@ -177,8 +189,8 @@ export function coerceInputs(data: Record<string, any>, schema?: RouteParameter)
     }
 
     let innerType;
-    if (schema && (schema as z.AnyZodObject).shape && (schema as z.AnyZodObject).shape[key]) {
-      innerType = (schema as z.AnyZodObject).shape[key];
+    if (schema && (schema as AnyZodObject).shape && (schema as AnyZodObject).shape[key]) {
+      innerType = (schema as AnyZodObject).shape[key];
     } else if (schema) {
       // Fallback for Zod effects
       innerType = schema;
@@ -186,18 +198,18 @@ export function coerceInputs(data: Record<string, any>, schema?: RouteParameter)
 
     // Soft transform query strings into arrays
     if (innerType) {
-      if (isSpecificZodType(innerType, "ZodArray") && !Array.isArray(params[key])) {
+      if (unwrapAndCheck(innerType, z.ZodArray) && !Array.isArray(params[key])) {
         params[key] = [params[key]];
-      } else if (isSpecificZodType(innerType, "ZodBoolean")) {
+      } else if (unwrapAndCheck(innerType, z.ZodBoolean)) {
         const _val = (params[key] as string).toLowerCase().trim();
         if (_val === "true" || _val === "false") {
           params[key] = _val === "true";
         }
-      } else if (isSpecificZodType(innerType, "ZodNumber") || innerType instanceof z.ZodNumber) {
+      } else if (unwrapAndCheck(innerType, z.ZodNumber)) {
         params[key] = Number.parseFloat(params[key]);
-      } else if (isSpecificZodType(innerType, "ZodBigInt") || innerType instanceof z.ZodBigInt) {
-        params[key] = Number.parseInt(params[key]);
-      } else if (isSpecificZodType(innerType, "ZodDate") || innerType instanceof z.ZodDate) {
+      } else if (unwrapAndCheck(innerType, z.ZodBigInt)) {
+        params[key] = Number.parseInt(params[key], 10);
+      } else if (unwrapAndCheck(innerType, z.ZodDate)) {
         params[key] = new Date(params[key]);
       }
     }

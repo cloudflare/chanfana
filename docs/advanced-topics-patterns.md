@@ -164,7 +164,7 @@ import { z } from 'zod';
 
 // Define Product Model
 const ProductModel = z.object({
-    productId: z.string().uuid(), // Renamed field
+    productId: z.uuid(), // Renamed field
     productName: z.string(),     // Renamed field
     priceInCents: z.number().int(), // Different unit
 });
@@ -173,7 +173,7 @@ const ProductModel = z.object({
 const productListMeta = {
     model: {
         schema: z.object({ // Internal schema (e.g., database schema)
-            id: z.string().uuid(),
+            id: z.uuid(),
             name: z.string(),
             price_cents: z.number().int(),
         }),

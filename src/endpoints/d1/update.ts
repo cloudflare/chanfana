@@ -1,5 +1,5 @@
 import { ApiException, type InputValidationException } from "../../exceptions";
-import type { Logger, O, UpdateFilters } from "../types";
+import type { Filters, Logger, O, UpdateFilters } from "../types";
 import { UpdateEndpoint } from "../update";
 
 export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> extends UpdateEndpoint<HandleArgs> {
@@ -20,7 +20,7 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
     return env[this.dbName];
   }
 
-  getSafeFilters(filters: UpdateFilters) {
+  getSafeFilters(filters: Filters) {
     // Filters should only apply to primary keys
     const safeFilters = filters.filters.filter((f) => {
       return this.meta.model.primaryKeys.includes(f.field);
@@ -41,7 +41,7 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
     return { conditions, conditionsParams };
   }
 
-  async getObject(filters: UpdateFilters): Promise<object | null> {
+  async getObject(filters: Filters): Promise<Record<string, unknown> | null> {
     const safeFilters = this.getSafeFilters(filters);
 
     const oldObj = await this.getDBBinding()
@@ -56,10 +56,10 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
       return null;
     }
 
-    return oldObj.results[0] as O<typeof this.meta>;
+    return oldObj.results[0] as O<typeof this._meta>;
   }
 
-  async update(oldObj: O<typeof this.meta>, filters: UpdateFilters): Promise<O<typeof this.meta>> {
+  async update(_oldObj: O<typeof this._meta>, filters: UpdateFilters): Promise<O<typeof this._meta>> {
     const safeFilters = this.getSafeFilters(filters);
 
     let result;
@@ -87,6 +87,6 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
 
     if (this.logger) this.logger.log(`Successfully updated ${this.meta.model.tableName}`);
 
-    return result as O<typeof this.meta>;
+    return result as O<typeof this._meta>;
   }
 }
