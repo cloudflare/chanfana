@@ -1,10 +1,10 @@
-# Migration Guide: Zod v4
+# Migration Guide: Chanfana v2 to v3 (Zod v4)
 
-This guide helps you migrate from chanfana with Zod v3 to chanfana with Zod v4. Chanfana now supports Zod v4, bringing improved tree-shakeability and better performance to your API projects.
+This guide helps you migrate from chanfana v2 (Zod v3) to chanfana v3 (Zod v4). Chanfana v3 brings Zod v4 support with improved tree-shakeability and better performance to your API projects.
 
 ## What Changed
 
-Chanfana has been updated to use Zod v4 and `@asteasolutions/zod-to-openapi` v8. While most of the chanfana API remains the same, there are some important changes to be aware of.
+Chanfana v3 has been updated to use Zod v4 and `@asteasolutions/zod-to-openapi` v8. While most of the chanfana API remains the same, there are some important changes to be aware of.
 
 ## Breaking Changes
 
@@ -60,7 +60,7 @@ const schema = z.object({
   userId: z.string().uuid(),
   createdAt: z.string().datetime(),
   website: z.string().url(),
-  birthDate: z.date(), // For date-only strings like "2024-01-20"
+  birthDate: z.string().date(), // For date-only strings like "2024-01-20"
 });
 
 // After (Zod v4)
@@ -80,9 +80,9 @@ const schema = z.object({
 - `z.string().uuid()` → `z.uuid()`
 - `z.string().url()` → `z.url()`
 - `z.string().datetime()` → `z.iso.datetime()`
-- `z.date()` (for date strings) → `z.iso.date()`
-- `z.string().ipv4()` → `z.ipv4()`
-- `z.string().ipv6()` → `z.ipv6()`
+- `z.string().date()` → `z.iso.date()`
+- `z.string().ip({ version: "v4" })` → `z.ipv4()`
+- `z.string().ip({ version: "v6" })` → `z.ipv6()`
 
 **Note:** If you're using chanfana's parameter helpers like `Email()`, `Uuid()`, `DateTime()`, `DateOnly()`, etc., these have already been updated internally and require no changes from you.
 
@@ -103,7 +103,7 @@ const schema = z.object({
 
 // After (Zod v4)
 const schema = z.object({
-  status: z.enum(Status), // Or use array: z.enum(['active', 'inactive'])
+  status: z.enum(['active', 'inactive']), // Use string array for enum values
 });
 ```
 
@@ -140,6 +140,55 @@ PUT /users/1
 - This preserves existing values for fields not included in partial updates
 
 **No action required** - This fix is automatic and restores the expected behavior for partial updates.
+
+## New Features
+
+### New `getUnvalidatedData()` Method
+
+A new method `getUnvalidatedData()` is now available on `OpenAPIRoute`. This returns the raw request data **before** Zod applies defaults or transformations.
+
+This is useful when you need to distinguish between:
+- A field that was explicitly sent with a value
+- A field that was absent from the request (but may have a Zod default)
+
+```typescript
+import { OpenAPIRoute } from 'chanfana';
+import { z } from 'zod';
+
+class MyEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: z.object({
+              name: z.string(),
+              status: z.enum(['active', 'inactive']).optional().default('active'),
+            }),
+          },
+        },
+      },
+    },
+  };
+
+  async handle() {
+    const validated = await this.getValidatedData();
+    // validated.body = { name: "test", status: "active" } (default applied)
+
+    const raw = await this.getUnvalidatedData();
+    // raw.body = { name: "test" } (no status field)
+
+    // Check if status was actually sent
+    if ('status' in raw.body) {
+      // User explicitly provided status
+    } else {
+      // Status is using default value
+    }
+
+    return { success: true };
+  }
+}
+```
 
 ## Non-Breaking Changes
 
@@ -202,7 +251,7 @@ Update your `package.json`:
 ```json
 {
   "dependencies": {
-    "chanfana": "^2.8.3", // or latest
+    "chanfana": "^3.0.0",
     "zod": "^4.0.0"
   }
 }
@@ -220,7 +269,7 @@ If you're using Zod directly in your schemas, search for and replace deprecated 
 
 ```bash
 # Search for patterns that need updating
-grep -r "z\.string()\.\.email\|uuid\|datetime\|url" .
+grep -r "z\.string()\.(email\|uuid\|datetime\|url\|date)" .
 grep -r "z\.nativeEnum" .
 ```
 
