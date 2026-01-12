@@ -201,6 +201,188 @@ If `getProductFromDatabase` returns `null`, a `NotFoundException` is thrown. Cha
 }
 ```
 
+### `UnauthorizedException`: Authentication Required (401)
+
+`UnauthorizedException` is used when authentication is required but not provided or invalid.
+
+**Key features:**
+*   **`status`:** `401 Unauthorized`
+*   **`code`:** `7003`
+*   **`default_message`:** `"Unauthorized"`
+
+```typescript
+import { UnauthorizedException } from 'chanfana';
+
+// In your endpoint
+if (!authToken) {
+    throw new UnauthorizedException("Authentication token is required");
+}
+```
+
+### `ForbiddenException`: Access Denied (403)
+
+`ForbiddenException` is used when the user is authenticated but doesn't have permission to access the resource.
+
+**Key features:**
+*   **`status`:** `403 Forbidden`
+*   **`code`:** `7004`
+*   **`default_message`:** `"Forbidden"`
+
+```typescript
+import { ForbiddenException } from 'chanfana';
+
+// In your endpoint
+if (!user.hasRole('admin')) {
+    throw new ForbiddenException("Admin access required");
+}
+```
+
+### `MethodNotAllowedException`: HTTP Method Not Supported (405)
+
+`MethodNotAllowedException` is used when the HTTP method is not supported for the requested resource.
+
+**Key features:**
+*   **`status`:** `405 Method Not Allowed`
+*   **`code`:** `7005`
+*   **`default_message`:** `"Method Not Allowed"`
+
+### `ConflictException`: Resource Conflict (409)
+
+`ConflictException` is used when the request conflicts with the current state of the resource (e.g., duplicate resource creation).
+
+**Key features:**
+*   **`status`:** `409 Conflict`
+*   **`code`:** `7006`
+*   **`default_message`:** `"Conflict"`
+
+```typescript
+import { ConflictException } from 'chanfana';
+
+// In your endpoint
+const existingUser = await db.getUserByEmail(email);
+if (existingUser) {
+    throw new ConflictException("A user with this email already exists");
+}
+```
+
+### `UnprocessableEntityException`: Semantic Validation Error (422)
+
+`UnprocessableEntityException` is used when the request is well-formed but contains semantic errors. Like `InputValidationException`, it includes a `path` property.
+
+**Key features:**
+*   **`status`:** `422 Unprocessable Entity`
+*   **`code`:** `7007`
+*   **`default_message`:** `"Unprocessable Entity"`
+*   **`path`:** Optional path to the problematic field
+
+```typescript
+import { UnprocessableEntityException } from 'chanfana';
+
+// In your endpoint
+if (startDate > endDate) {
+    throw new UnprocessableEntityException(
+        "Start date cannot be after end date",
+        ["body", "startDate"]
+    );
+}
+```
+
+### `TooManyRequestsException`: Rate Limiting (429)
+
+`TooManyRequestsException` is used when the user has sent too many requests in a given time period. It includes an optional `retryAfter` property.
+
+**Key features:**
+*   **`status`:** `429 Too Many Requests`
+*   **`code`:** `7008`
+*   **`default_message`:** `"Too Many Requests"`
+*   **`retryAfter`:** Optional number of seconds until the user can retry
+
+```typescript
+import { TooManyRequestsException } from 'chanfana';
+
+// In your endpoint
+if (rateLimitExceeded) {
+    throw new TooManyRequestsException("Rate limit exceeded", 60); // Retry after 60 seconds
+}
+```
+
+### `InternalServerErrorException`: Server Errors (500)
+
+`InternalServerErrorException` is used for unexpected server errors. **Important:** By default, `isVisible` is `false` to prevent leaking internal error details to clients.
+
+**Key features:**
+*   **`status`:** `500 Internal Server Error`
+*   **`code`:** `7009`
+*   **`default_message`:** `"Internal Server Error"`
+*   **`isVisible`:** `false` (error message hidden from clients)
+
+```typescript
+import { InternalServerErrorException } from 'chanfana';
+
+// In your endpoint
+try {
+    await criticalOperation();
+} catch (e) {
+    console.error("Critical operation failed:", e);
+    throw new InternalServerErrorException("Database connection failed"); // Message won't be exposed
+}
+```
+
+### `BadGatewayException`: Upstream Server Error (502)
+
+`BadGatewayException` is used when an upstream server returns an invalid response.
+
+**Key features:**
+*   **`status`:** `502 Bad Gateway`
+*   **`code`:** `7010`
+*   **`default_message`:** `"Bad Gateway"`
+
+### `ServiceUnavailableException`: Service Temporarily Unavailable (503)
+
+`ServiceUnavailableException` is used when the server is temporarily unavailable (e.g., maintenance, overload). It includes an optional `retryAfter` property.
+
+**Key features:**
+*   **`status`:** `503 Service Unavailable`
+*   **`code`:** `7011`
+*   **`default_message`:** `"Service Unavailable"`
+*   **`retryAfter`:** Optional number of seconds until the service is available
+
+```typescript
+import { ServiceUnavailableException } from 'chanfana';
+
+// In your endpoint
+if (maintenanceMode) {
+    throw new ServiceUnavailableException("Service under maintenance", 300); // Retry after 5 minutes
+}
+```
+
+### `GatewayTimeoutException`: Upstream Server Timeout (504)
+
+`GatewayTimeoutException` is used when an upstream server doesn't respond in time.
+
+**Key features:**
+*   **`status`:** `504 Gateway Timeout`
+*   **`code`:** `7012`
+*   **`default_message`:** `"Gateway Timeout"`
+
+## Exception Summary Table
+
+| Exception | Status | Code | Default Message | Special Properties |
+|-----------|--------|------|-----------------|-------------------|
+| `ApiException` | 500 | 7000 | "Internal Error" | Base class |
+| `InputValidationException` | 400 | 7001 | "Input Validation Error" | `path` |
+| `NotFoundException` | 404 | 7002 | "Not Found" | - |
+| `UnauthorizedException` | 401 | 7003 | "Unauthorized" | - |
+| `ForbiddenException` | 403 | 7004 | "Forbidden" | - |
+| `MethodNotAllowedException` | 405 | 7005 | "Method Not Allowed" | - |
+| `ConflictException` | 409 | 7006 | "Conflict" | - |
+| `UnprocessableEntityException` | 422 | 7007 | "Unprocessable Entity" | `path` |
+| `TooManyRequestsException` | 429 | 7008 | "Too Many Requests" | `retryAfter` |
+| `InternalServerErrorException` | 500 | 7009 | "Internal Server Error" | `isVisible: false` |
+| `BadGatewayException` | 502 | 7010 | "Bad Gateway" | - |
+| `ServiceUnavailableException` | 503 | 7011 | "Service Unavailable" | `retryAfter` |
+| `GatewayTimeoutException` | 504 | 7012 | "Gateway Timeout" | - |
+
 ### `MultiException`: Managing Multiple Errors
 
 `MultiException` is used to group multiple `ApiException` instances together. This can be useful when you need to report multiple validation errors or other types of errors simultaneously.

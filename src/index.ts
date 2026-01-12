@@ -3,6 +3,7 @@ export * from "./adapters/hono";
 export * from "./adapters/ittyRouter";
 export * from "./contentTypes";
 export * from "./endpoints/create";
+export * from "./endpoints/d1/base";
 export * from "./endpoints/d1/create";
 export * from "./endpoints/d1/delete";
 export * from "./endpoints/d1/list";

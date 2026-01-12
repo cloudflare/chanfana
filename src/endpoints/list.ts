@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { contentJson } from "../contentTypes";
+import { InputValidationException } from "../exceptions";
 import { Enumeration } from "../parameters";
 import { OpenAPIRoute } from "../route";
 import type { AnyZodObject } from "../types";
@@ -92,6 +93,7 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
           }),
           ...this.schema?.responses?.[200],
         },
+        ...InputValidationException.schema(),
         ...this.schema?.responses,
       },
       ...this.schema,

@@ -32,7 +32,7 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
             success: Boolean,
             result: this.meta.model.serializerSchema,
           }),
-          ...this.schema?.responses?.[200],
+          ...this.schema?.responses?.[201],
         },
         ...InputValidationException.schema(),
         ...this.schema?.responses,
