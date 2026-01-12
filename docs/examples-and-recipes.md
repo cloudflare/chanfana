@@ -526,7 +526,7 @@ export class ToDoList extends OpenAPIRoute {
           'application/json': {
             schema: z.object({
               series: z.object({
-                timestamps: z.string().date().array(),
+                timestamps: z.iso.date().array(),
                 values: z.number().array(),
               })
             }),
@@ -562,7 +562,7 @@ export class ToDoList extends OpenAPIRoute {
           'application/json': {
             schema: z.object({
               series: z.object({
-                timestamps: z.string().date().array(),
+                timestamps: z.iso.date().array(),
                 values: z.number().array(),
               })
             }),

@@ -26,6 +26,7 @@ library for Cloudflare Workers but runs on any runtime supported by the base rou
 The key features are:
 
 - OpenAPI 3 and 3.1 schema generator and validator
+- Zod v4 compatible with full TypeScript inference
 - Fully written in typescript
 - [Class-based endpoints](https://chanfana.pages.dev/endpoints/defining-endpoints)
 - Query, Path, Headers, and Body typescript inference, see [Parameters](https://chanfana.pages.dev/endpoints/parameters) and [Request Validation](https://chanfana.pages.dev/endpoints/request-validation)

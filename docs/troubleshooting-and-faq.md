@@ -86,6 +86,71 @@ This section provides solutions to common issues you might encounter while using
 
 ## Frequently Asked Questions (FAQ)
 
+### Zod v4 Migration FAQ
+
+**Q: Why are my optional fields always having values now?**
+
+**A:** In Zod 4, optional fields with `.default()` are always present in validated data, even when absent from the input. This is a change from Zod 3 behavior. Use `getUnvalidatedData()` to check which fields were actually sent:
+
+```typescript
+const validated = await this.getValidatedData();  // { field: "default_value" }
+const raw = await this.getUnvalidatedData();       // {}
+
+if ('field' in raw.body) {
+  // Field was actually sent in request
+}
+```
+
+**Q: Why is `z.string().email()` not working?**
+
+**A:** Zod 4 changed string format methods to top-level functions:
+
+```typescript
+// Before (Zod 3)
+z.string().email()
+z.string().uuid()
+z.string().datetime()
+z.string().url()
+z.string().date()
+
+// After (Zod 4)
+z.email()
+z.uuid()
+z.iso.datetime()
+z.url()
+z.iso.date()
+```
+
+Chanfana's parameter helpers (`Email`, `Uuid`, `DateTime`, `DateOnly`) already use the correct Zod 4 syntax.
+
+**Q: Why are error messages different after upgrading?**
+
+**A:** Zod 4 changed error message formats. For example:
+
+```typescript
+// Zod 3 error for missing required field
+"Required"
+
+// Zod 4 error for missing required field
+"Invalid input: expected string, received undefined"
+```
+
+Update your test expectations and error handling code accordingly.
+
+**Q: How do I use strict object validation in Zod 4?**
+
+**A:** The `.strict()` method has been replaced with `z.strictObject()`:
+
+```typescript
+// Before (Zod 3)
+z.object({ name: z.string() }).strict()
+
+// After (Zod 4)
+z.strictObject({ name: z.string() })
+```
+
+---
+
 **Q: Can I use Chanfana with routers other than Hono and itty-router?**
 
 **A:** Chanfana is designed to be router-agnostic in principle. While it provides official adapters for Hono and itty-router, you can potentially create custom adapters for other routers. However, creating a custom adapter might require a deeper understanding of Chanfana's internals and the API of the target router.

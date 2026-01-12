@@ -47,7 +47,37 @@ The `OpenAPIRoute` class is the central building block for defining your API end
 *   **Schema Definition:**  The `schema` property within your `OpenAPIRoute` subclass is where you define the OpenAPI schema for your endpoint, including request and response specifications.
 *   **`handle` Method:**  This is the core method where you implement the actual logic of your endpoint. It's executed after successful request validation.
 *   **`getValidatedData()` Method:**  Provides access to the validated request data (body, query parameters, path parameters, headers) within your `handle` method, ensuring you are working with data that conforms to your schema.
+*   **`getUnvalidatedData()` Method (Zod 4+):** Returns raw request data before Zod applies defaults or transformations. This is essential for partial updates where you need to distinguish between "field not sent" and "field sent with default value".
 *   **Lifecycle Hooks (e.g., `before`, `after`, `create`, `update`, `delete`, `fetch`, `list` in auto endpoints):**  Some subclasses of `OpenAPIRoute`, like the predefined CRUD endpoints, offer lifecycle hooks to customize behavior at different stages of the request processing.
+
+### getValidatedData() vs getUnvalidatedData()
+
+In Zod 4, optional fields with `.default()` are always present in validated data, even when absent from the input. This can cause issues with partial updates. Use `getUnvalidatedData()` to check which fields were actually sent:
+
+```typescript
+class UpdateUser extends OpenAPIRoute {
+  schema = {
+    request: {
+      body: contentJson(z.object({
+        name: z.string().optional(),
+        status: z.string().default('active'),
+      })),
+    },
+  };
+
+  async handle() {
+    const validated = await this.getValidatedData();
+    // validated.body = { status: 'active' } - default applied even if not sent
+
+    const raw = await this.getUnvalidatedData();
+    // raw.body = {} - shows what was actually in the request
+
+    if ('status' in raw.body) {
+      // User explicitly sent status field
+    }
+  }
+}
+```
 
 By extending `OpenAPIRoute`, you create reusable and well-defined endpoints that automatically benefit from schema generation and validation.
 
@@ -86,7 +116,12 @@ Data validation is automatically performed by Chanfana based on the request sche
 Chanfana provides a structured approach to error handling. When validation fails or when exceptions occur within your `handle` method, Chanfana aims to return informative and consistent error responses.
 
 *   **Automatic Validation Error Responses:** As mentioned above, validation errors are automatically caught and transformed into `400 Bad Request` responses with detailed error messages.
-*   **Exception Handling:** You can throw custom exceptions within your `handle` method to signal specific error conditions. Chanfana provides base exception classes like `ApiException`, `InputValidationException`, and `NotFoundException` that you can use or extend to create your own API-specific exceptions. These exceptions can be configured to automatically generate appropriate error responses and OpenAPI schema definitions for error responses.
+*   **Exception Handling:** You can throw custom exceptions within your `handle` method to signal specific error conditions. Chanfana provides a comprehensive set of exception classes:
+    *   **Client Errors (4xx):** `InputValidationException` (400), `UnauthorizedException` (401), `ForbiddenException` (403), `NotFoundException` (404), `MethodNotAllowedException` (405), `ConflictException` (409), `UnprocessableEntityException` (422), `TooManyRequestsException` (429)
+    *   **Server Errors (5xx):** `InternalServerErrorException` (500), `BadGatewayException` (502), `ServiceUnavailableException` (503), `GatewayTimeoutException` (504)
+    *   **Utility:** `MultiException` for aggregating multiple errors
+
+    See [Error Handling](./error-handling.md) for detailed documentation on all exception types.
 *   **Consistent Error Format:** Chanfana encourages a consistent error response format (typically JSON) to make it easier for clients to handle errors from your API.
 
 By understanding these core concepts, you are well-equipped to start building robust, well-documented, and maintainable APIs with Chanfana.

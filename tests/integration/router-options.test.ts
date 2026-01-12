@@ -40,7 +40,7 @@ describe("routerOptions", () => {
       router.get("/todo", EndpointWithoutOperationId);
     };
 
-    expect(t).toThrow("Route /todo don't have operationId set!");
+    expect(t).toThrow("Route /todo doesn't have operationId set!");
   });
 
   it("generate operation ids true and unset", async () => {
