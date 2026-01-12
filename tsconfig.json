@@ -20,5 +20,5 @@
     "lib": ["es2022", "dom", "dom.iterable"],
     "types": ["@types/node", "@cloudflare/workers-types/experimental"]
   },
-  "include": ["src", "tests"]
+  "include": ["src"]
 }

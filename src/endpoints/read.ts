@@ -1,5 +1,5 @@
 import { contentJson } from "../contentTypes";
-import { NotFoundException } from "../exceptions";
+import { InputValidationException, NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
 import { type FilterCondition, type ListFilters, MetaGenerator, type MetaInput, type O } from "./types";
 
@@ -43,6 +43,7 @@ export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> exte
           }),
           ...this.schema?.responses?.[200],
         },
+        ...InputValidationException.schema(),
         ...NotFoundException.schema(),
         ...this.schema?.responses,
       },

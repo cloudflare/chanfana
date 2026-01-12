@@ -64,12 +64,23 @@ In this example:
 You can use the full power of Zod to define complex validation rules for your request bodies. This includes:
 
 *   **Data Types:** `z.string()`, `z.number()`, `z.boolean()`, `z.date()`, `z.array()`, `z.object()`, `z.enum()`, etc.
-*   **String Validations:** `min()`, `max()`, `email()`, `url()`, `uuid()`, `regex()`, etc.
+*   **String Validations:** `min()`, `max()`, `regex()`, `startsWith()`, `endsWith()`, etc.
+*   **Top-Level String Formats (Zod v4):** `z.email()`, `z.url()`, `z.uuid()`, `z.ipv4()`, `z.ipv6()`, etc.
+*   **Date/Time Formats (Zod v4):** `z.iso.datetime()`, `z.iso.date()`, `z.iso.time()`, etc.
 *   **Number Validations:** `int()`, `positive()`, `negative()`, `min()`, `max()`, etc.
-*   **Array Validations:** `min()`, `max()`, `nonempty()`, `unique()`, etc.
-*   **Object Validations:** `required()`, `optional()`, `partial()`, `strict()`, `refine()`, etc.
+*   **Array Validations:** `min()`, `max()`, `nonempty()`, etc.
+*   **Object Validations:** `optional()`, `partial()`, `strict()`, `refine()`, etc.
 *   **Transformations:** `transform()`, `preprocess()`, etc.
-*   **Effects:** `refinement()`, `superRefine()`, etc.
+*   **Effects:** `refine()`, `superRefine()`, etc.
+
+::: tip Zod v4 Changes
+In Zod v4, many string format validations are now top-level functions:
+- `z.string().email()` → `z.email()`
+- `z.string().url()` → `z.url()`
+- `z.string().uuid()` → `z.uuid()`
+- `z.string().datetime()` → `z.iso.datetime()`
+- `z.string().date()` → `z.iso.date()`
+:::
 
 Refer to the [Zod documentation](https://zod.dev/) for a comprehensive list of validation methods and features.
 
