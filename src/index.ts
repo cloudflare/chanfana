@@ -23,4 +23,3 @@ export * from "./types";
 export * from "./ui";
 export * from "./utils";
 export * from "./zod/registry";
-export * from "./zod/utils";

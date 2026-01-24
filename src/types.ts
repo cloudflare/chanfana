@@ -81,28 +81,6 @@ export interface RouteOptions {
   urlParams: Array<string>;
 }
 
-export interface ParameterType {
-  default?: string | number | boolean;
-  description?: string;
-  example?: string | number | boolean;
-  required?: boolean;
-  deprecated?: boolean;
-}
-
-export interface StringParameterType extends ParameterType {
-  format?: string;
-}
-
-export interface EnumerationParameterType extends StringParameterType {
-  values: Record<string, any>;
-  enumCaseSensitive?: boolean;
-}
-
-export interface RegexParameterType extends StringParameterType {
-  pattern: RegExp;
-  patternError?: string;
-}
-
 export type RequestTypes = {
   body?: ZodRequestBody;
   params?: AnyZodObject;

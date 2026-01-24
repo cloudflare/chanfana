@@ -34,23 +34,27 @@ export class ApiException extends Error {
 
   static schema() {
     const inst = new this();
-    const innerError = {
-      code: inst.code,
-      message: inst.default_message,
-    };
 
-    if (inst.includesPath === true) {
-      // @ts-expect-error
-      innerError.path = ["body", "fieldName"];
-    }
+    const errorSchema = inst.includesPath
+      ? z.object({
+          code: z.number(),
+          message: z.string(),
+          path: z.array(z.string()),
+        })
+      : z.object({
+          code: z.number(),
+          message: z.string(),
+        });
 
     return {
       [inst.status]: {
         description: inst.default_message,
-        ...contentJson({
-          success: z.literal(false),
-          errors: [innerError],
-        }),
+        ...contentJson(
+          z.object({
+            success: z.literal(false),
+            errors: z.array(errorSchema),
+          }),
+        ),
       },
     };
   }

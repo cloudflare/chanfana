@@ -68,12 +68,12 @@ This section provides solutions to common issues you might encounter while using
 
 **5. OpenAPI schema is missing descriptions or examples:**
 
-*   **Cause:** You have not provided descriptions or examples in your Zod schemas or Chanfana parameter types.
-*   **Solution:** Use Zod's `describe()` method and Chanfana parameter type options like `description` and `example` to add metadata to your schemas. This metadata is used to generate more informative OpenAPI documentation.
+*   **Cause:** You have not provided descriptions or examples in your Zod schemas.
+*   **Solution:** Use Zod's `describe()` method and `.openapi()` method to add metadata to your schemas. This metadata is used to generate more informative OpenAPI documentation.
 
     ```typescript
-    const nameSchema = Str({ description: 'User name', example: 'John Doe' }); // Add description and example
-    const ageSchema = Int({ description: 'User age' }); // Add description
+    const nameSchema = z.string().describe('User name').openapi({ example: 'John Doe' });
+    const ageSchema = z.number().int().describe('User age');
     ```
 
 **6. D1 endpoints are not working, "Binding 'DB' is not defined in worker" error:**
@@ -121,7 +121,7 @@ z.url()
 z.iso.date()
 ```
 
-Chanfana's parameter helpers (`Email`, `Uuid`, `DateTime`, `DateOnly`) already use the correct Zod 4 syntax.
+Use the Zod v4 top-level functions directly as shown above.
 
 **Q: Why are error messages different after upgrading?**
 

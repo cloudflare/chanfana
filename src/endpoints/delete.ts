@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { contentJson } from "../contentTypes";
 import { NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
@@ -30,10 +31,12 @@ export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> ex
       responses: {
         "200": {
           description: "Returns the Object if it was successfully deleted",
-          ...contentJson({
-            success: Boolean,
-            result: this.meta.model.serializerSchema,
-          }),
+          ...contentJson(
+            z.object({
+              success: z.boolean(),
+              result: this.meta.model.serializerSchema,
+            }),
+          ),
           ...this.schema?.responses?.[200],
         },
         ...NotFoundException.schema(),

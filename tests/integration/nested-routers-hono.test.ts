@@ -19,12 +19,12 @@ class ToDoGet extends OpenAPIRoute {
         description: "example",
         content: {
           "application/json": {
-            schema: {
-              todo: {
-                lorem: String,
-                ipsum: String,
-              },
-            },
+            schema: z.object({
+              todo: z.object({
+                lorem: z.string(),
+                ipsum: z.string(),
+              }),
+            }),
           },
         },
       },
@@ -159,7 +159,22 @@ describe("innerRouter", () => {
                 content: {
                   "application/json": {
                     schema: {
-                      todo: {},
+                      properties: {
+                        todo: {
+                          properties: {
+                            ipsum: {
+                              type: "string",
+                            },
+                            lorem: {
+                              type: "string",
+                            },
+                          },
+                          required: ["lorem", "ipsum"],
+                          type: "object",
+                        },
+                      },
+                      required: ["todo"],
+                      type: "object",
                     },
                   },
                 },

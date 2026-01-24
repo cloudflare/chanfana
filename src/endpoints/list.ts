@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { contentJson } from "../contentTypes";
 import { InputValidationException } from "../exceptions";
-import { Enumeration } from "../parameters";
 import { OpenAPIRoute } from "../route";
 import type { AnyZodObject } from "../types";
 import {
@@ -62,19 +61,10 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
       .extend(parsedQueryParameters);
 
     if (this.orderByFields && this.orderByFields.length > 0) {
+      const orderByFieldsTuple = this.orderByFields as [string, ...string[]];
       queryParameters = queryParameters.extend({
-        order_by: Enumeration({
-          default: this.orderByFields[0],
-          values: this.orderByFields,
-          description: "Order By Column Name",
-          required: false,
-        }),
-        order_by_direction: Enumeration({
-          default: "asc",
-          values: ["asc", "desc"],
-          description: "Order By Direction",
-          required: false,
-        }),
+        order_by: z.enum(orderByFieldsTuple).optional().default(orderByFieldsTuple[0]).describe("Order By Column Name"),
+        order_by_direction: z.enum(["asc", "desc"]).optional().default("asc").describe("Order By Direction"),
       });
     }
 
@@ -87,10 +77,12 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
       responses: {
         "200": {
           description: "List objects",
-          ...contentJson({
-            success: Boolean,
-            result: [this.meta.model.serializerSchema],
-          }),
+          ...contentJson(
+            z.object({
+              success: z.boolean(),
+              result: z.array(this.meta.model.serializerSchema),
+            }),
+          ),
           ...this.schema?.responses?.[200],
         },
         ...InputValidationException.schema(),
