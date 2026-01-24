@@ -11,7 +11,7 @@ class ObjectReturnEndpoint extends OpenAPIRoute {
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({ data: z.string() }),
+        ...contentJson(z.object({ data: z.string() })),
       },
     },
   };
@@ -27,7 +27,7 @@ class ResponseReturnEndpoint extends OpenAPIRoute {
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({ data: z.string() }),
+        ...contentJson(z.object({ data: z.string() })),
       },
     },
   };
@@ -45,7 +45,7 @@ class NullReturnEndpoint extends OpenAPIRoute {
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({ data: z.string() }),
+        ...contentJson(z.object({ data: z.string() })),
       },
     },
   };
@@ -59,14 +59,16 @@ class NullReturnEndpoint extends OpenAPIRoute {
 class HeadEndpoint extends OpenAPIRoute {
   schema = {
     request: {
-      body: contentJson({
-        data: z.string(),
-      }),
+      body: contentJson(
+        z.object({
+          data: z.string(),
+        }),
+      ),
     },
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({ success: Boolean }),
+        ...contentJson(z.object({ success: z.boolean() })),
       },
     },
   };
@@ -89,11 +91,13 @@ class FalsyDefaultsEndpoint extends OpenAPIRoute {
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({
-          count: z.number(),
-          enabled: z.boolean(),
-          name: z.string(),
-        }),
+        ...contentJson(
+          z.object({
+            count: z.number(),
+            enabled: z.boolean(),
+            name: z.string(),
+          }),
+        ),
       },
     },
   };
@@ -119,7 +123,7 @@ class StrictParamsEndpoint extends OpenAPIRoute {
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({ allowed: z.string() }),
+        ...contentJson(z.object({ allowed: z.string() })),
       },
     },
   };
@@ -239,24 +243,28 @@ describe("getUnvalidatedData", () => {
   class UnvalidatedDataEndpoint extends OpenAPIRoute {
     schema = {
       request: {
-        body: contentJson({
-          name: z.string(),
-          optional: z.string().optional().default("default_value"),
-        }),
+        body: contentJson(
+          z.object({
+            name: z.string(),
+            optional: z.string().optional().default("default_value"),
+          }),
+        ),
       },
       responses: {
         "200": {
           description: "Success",
-          ...contentJson({
-            validated: z.object({
-              name: z.string(),
-              optional: z.string(),
+          ...contentJson(
+            z.object({
+              validated: z.object({
+                name: z.string(),
+                optional: z.string(),
+              }),
+              unvalidated: z.object({
+                name: z.string().optional(),
+                optional: z.string().optional(),
+              }),
             }),
-            unvalidated: z.object({
-              name: z.string().optional(),
-              optional: z.string().optional(),
-            }),
-          }),
+          ),
         },
       },
     };

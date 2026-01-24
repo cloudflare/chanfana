@@ -28,7 +28,7 @@ class ThrowApiExceptionEndpoint extends OpenAPIRoute {
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({ success: Boolean }),
+        ...contentJson(z.object({ success: z.boolean() })),
       },
     },
   };
@@ -44,7 +44,7 @@ class ThrowNotFoundEndpoint extends OpenAPIRoute {
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({ success: Boolean }),
+        ...contentJson(z.object({ success: z.boolean() })),
       },
     },
   };
@@ -60,7 +60,7 @@ class ThrowNotFoundWithMessageEndpoint extends OpenAPIRoute {
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({ success: Boolean }),
+        ...contentJson(z.object({ success: z.boolean() })),
       },
     },
   };
@@ -76,7 +76,7 @@ class ThrowInputValidationEndpoint extends OpenAPIRoute {
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({ success: Boolean }),
+        ...contentJson(z.object({ success: z.boolean() })),
       },
     },
   };
@@ -92,7 +92,7 @@ class ThrowMultiExceptionEndpoint extends OpenAPIRoute {
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({ success: Boolean }),
+        ...contentJson(z.object({ success: z.boolean() })),
       },
     },
   };
@@ -112,7 +112,7 @@ class ThrowZodErrorEndpoint extends OpenAPIRoute {
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({ success: Boolean }),
+        ...contentJson(z.object({ success: z.boolean() })),
       },
     },
   };
@@ -129,7 +129,7 @@ class ThrowHiddenErrorEndpoint extends OpenAPIRoute {
     responses: {
       "200": {
         description: "Success",
-        ...contentJson({ success: Boolean }),
+        ...contentJson(z.object({ success: z.boolean() })),
       },
     },
   };
@@ -440,7 +440,7 @@ describe("New Exceptions in Route Handler", () => {
   // Create test endpoints for each new exception type
   class ThrowUnauthorizedEndpoint extends OpenAPIRoute {
     schema = {
-      responses: { "200": { description: "Success", ...contentJson({ success: Boolean }) } },
+      responses: { "200": { description: "Success", ...contentJson(z.object({ success: z.boolean() })) } },
     };
     async handle() {
       throw new UnauthorizedException("Invalid API key");
@@ -449,7 +449,7 @@ describe("New Exceptions in Route Handler", () => {
 
   class ThrowForbiddenEndpoint extends OpenAPIRoute {
     schema = {
-      responses: { "200": { description: "Success", ...contentJson({ success: Boolean }) } },
+      responses: { "200": { description: "Success", ...contentJson(z.object({ success: z.boolean() })) } },
     };
     async handle() {
       throw new ForbiddenException("Insufficient permissions");
@@ -458,7 +458,7 @@ describe("New Exceptions in Route Handler", () => {
 
   class ThrowConflictEndpoint extends OpenAPIRoute {
     schema = {
-      responses: { "200": { description: "Success", ...contentJson({ success: Boolean }) } },
+      responses: { "200": { description: "Success", ...contentJson(z.object({ success: z.boolean() })) } },
     };
     async handle() {
       throw new ConflictException("User already exists");
@@ -467,7 +467,7 @@ describe("New Exceptions in Route Handler", () => {
 
   class ThrowTooManyRequestsEndpoint extends OpenAPIRoute {
     schema = {
-      responses: { "200": { description: "Success", ...contentJson({ success: Boolean }) } },
+      responses: { "200": { description: "Success", ...contentJson(z.object({ success: z.boolean() })) } },
     };
     async handle() {
       throw new TooManyRequestsException("Rate limit exceeded", 60);
@@ -476,7 +476,7 @@ describe("New Exceptions in Route Handler", () => {
 
   class ThrowServiceUnavailableEndpoint extends OpenAPIRoute {
     schema = {
-      responses: { "200": { description: "Success", ...contentJson({ success: Boolean }) } },
+      responses: { "200": { description: "Success", ...contentJson(z.object({ success: z.boolean() })) } },
     };
     async handle() {
       throw new ServiceUnavailableException("Under maintenance");

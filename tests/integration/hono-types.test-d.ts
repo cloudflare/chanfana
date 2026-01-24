@@ -19,12 +19,12 @@ class ToDoGet extends OpenAPIRoute {
         description: "example",
         content: {
           "application/json": {
-            schema: {
-              todo: {
-                lorem: String,
-                ipsum: String,
-              },
-            },
+            schema: z.object({
+              todo: z.object({
+                lorem: z.string(),
+                ipsum: z.string(),
+              }),
+            }),
           },
         },
       },

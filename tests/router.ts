@@ -3,23 +3,12 @@ import { z } from "zod";
 import { extendZodWithOpenApi, OpenAPIRoute } from "../src";
 import { fromIttyRouter } from "../src/adapters/ittyRouter";
 import { contentJson } from "../src/contentTypes";
-import {
-  Bool,
-  DateOnly,
-  DateTime,
-  Email,
-  Enumeration,
-  Hostname,
-  Int,
-  Ipv4,
-  Ipv6,
-  Num,
-  Regex,
-  Str,
-  Uuid,
-} from "../src/parameters";
 
 extendZodWithOpenApi(z);
+
+// Hostname regex pattern (used by the old Hostname() helper)
+const hostnamePattern =
+  /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/;
 
 export class ToDoList extends OpenAPIRoute {
   schema = {
@@ -31,33 +20,24 @@ export class ToDoList extends OpenAPIRoute {
         p_number: z.number(),
         p_string: z.string(),
         p_boolean: z.boolean(),
-        p_int: Int(),
-        p_num: Num(),
-        p_str: Str(),
-        p_bool: Bool(),
-        p_enumeration: Enumeration({
-          values: {
-            json: "ENUM_JSON",
-            csv: "ENUM_CSV",
-          },
+        p_int: z.number().int().openapi({ type: "integer" }),
+        p_num: z.number().openapi({ type: "number" }),
+        p_str: z.string(),
+        p_bool: z.boolean().openapi({ type: "boolean" }),
+        p_enumeration: z.enum(["json", "csv"]).transform((val) => ({ json: "ENUM_JSON", csv: "ENUM_CSV" })[val]),
+        p_enumeration_insensitive: z
+          .preprocess((val) => String(val).toLowerCase(), z.enum(["json", "csv"]))
+          .openapi({ enum: ["json", "csv"] }),
+        p_datetime: z.iso.datetime({
+          error: "Must be in the following format: YYYY-mm-ddTHH:MM:ssZ",
         }),
-        p_enumeration_insensitive: Enumeration({
-          values: {
-            json: "json",
-            csv: "csv",
-          },
-          enumCaseSensitive: false,
-        }),
-        p_datetime: DateTime(),
-        p_dateonly: DateOnly(),
-        p_regex: Regex({
-          pattern: /^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$/,
-        }),
-        p_email: Email(),
-        p_uuid: Uuid(),
-        p_hostname: Hostname(),
-        p_ipv4: Ipv4(),
-        p_ipv6: Ipv6(),
+        p_dateonly: z.iso.date(),
+        p_regex: z.string().regex(/^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$/, "Invalid"),
+        p_email: z.email(),
+        p_uuid: z.uuid(),
+        p_hostname: z.string().regex(hostnamePattern),
+        p_ipv4: z.ipv4(),
+        p_ipv6: z.ipv6(),
         p_optional: z.number().optional(),
       }),
     },
@@ -88,7 +68,7 @@ export class ToDoGet extends OpenAPIRoute {
     summary: "Get a single ToDo",
     request: {
       params: z.object({
-        id: Num(),
+        id: z.number().openapi({ type: "number" }),
       }),
     },
     responses: {
@@ -99,7 +79,7 @@ export class ToDoGet extends OpenAPIRoute {
             schema: z.object({
               todo: z.object({
                 lorem: z.string(),
-                ipsum: Str(),
+                ipsum: z.string(),
               }),
             }),
           },
@@ -151,14 +131,11 @@ export class ToDoCreate extends OpenAPIRoute {
         content: {
           "application/json": {
             schema: z.object({
-              title: Str(),
-              description: Str({ required: false }),
-              type: Enumeration({
-                values: {
-                  nextWeek: "nextWeek",
-                  nextMonth: "nextMonth",
-                },
-              }),
+              title: z.string(),
+              description: z.string().optional(),
+              type: z
+                .enum(["nextWeek", "nextMonth"])
+                .transform((val) => ({ nextWeek: "nextWeek", nextMonth: "nextMonth" })[val]),
             }),
           },
         },
@@ -171,9 +148,9 @@ export class ToDoCreate extends OpenAPIRoute {
           "application/json": {
             schema: z.object({
               todo: z.object({
-                title: Str(),
-                description: Str(),
-                type: Str(),
+                title: z.string(),
+                description: z.string(),
+                type: z.string(),
               }),
             }),
           },
@@ -192,36 +169,25 @@ export class ToDoCreate extends OpenAPIRoute {
 }
 
 const query = z.object({
-  p_int: Int(),
-  p_num: Num(),
-  p_str: Str(),
-  p_arrstr: z.array(Str()),
-  p_bool: Bool(),
-  p_enumeration: Enumeration({
-    values: {
-      json: "ENUM_JSON",
-      csv: "ENUM_CSV",
-    },
+  p_int: z.number().int().openapi({ type: "integer" }),
+  p_num: z.number().openapi({ type: "number" }),
+  p_str: z.string(),
+  p_arrstr: z.array(z.string()),
+  p_bool: z.boolean().openapi({ type: "boolean" }),
+  p_enumeration: z.enum(["json", "csv"]).transform((val) => ({ json: "ENUM_JSON", csv: "ENUM_CSV" })[val]),
+  p_enumeration_insensitive: z
+    .preprocess((val) => String(val).toLowerCase(), z.enum(["json", "csv"]))
+    .openapi({ enum: ["json", "csv"] }),
+  p_datetime: z.iso.datetime({
+    error: "Must be in the following format: YYYY-mm-ddTHH:MM:ssZ",
   }),
-  p_enumeration_insensitive: Enumeration({
-    values: {
-      json: "json",
-      csv: "csv",
-    },
-    enumCaseSensitive: false,
-  }),
-  p_datetime: DateTime(),
-  p_regex: Regex({
-    pattern: /^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$/,
-  }),
-  p_email: Email(),
-  p_uuid: Uuid(),
+  p_regex: z.string().regex(/^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$/, "Invalid"),
+  p_email: z.email(),
+  p_uuid: z.uuid(),
 
-  p_ipv4: Ipv4(),
-  p_ipv6: Ipv6(),
-  p_optional: Int({
-    required: false,
-  }),
+  p_ipv4: z.ipv4(),
+  p_ipv6: z.ipv6(),
+  p_optional: z.number().int().optional().openapi({ type: "integer" }),
 });
 
 export class ToDoCreateTyped extends OpenAPIRoute {
@@ -231,7 +197,7 @@ export class ToDoCreateTyped extends OpenAPIRoute {
     request: {
       query: query,
       headers: z.object({
-        p_hostname: Hostname(),
+        p_hostname: z.string().regex(hostnamePattern),
       }),
       body: {
         content: {
@@ -267,7 +233,7 @@ export class ToDoHeaderCheck extends OpenAPIRoute {
     summary: "List all ToDos",
     request: {
       headers: z.object({
-        p_hostname: Hostname(),
+        p_hostname: z.string().regex(hostnamePattern),
       }),
     },
   };

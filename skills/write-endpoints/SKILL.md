@@ -163,89 +163,83 @@ z.strictObject({})
 z.enum(['option1', 'option2'])
 ```
 
-### Parameter Helpers
+### Common Zod Types for APIs
 
-Chanfana provides helper functions for common parameter types:
+Use native Zod schemas for all parameter types:
 
 ```typescript
-import {
-    Str, Num, Int, Bool, DateTime, DateOnly,
-    Email, Uuid, Hostname, Ipv4, Ipv6, Ip,
-    Enumeration, Arr, Obj, Regex
-} from 'chanfana';
+import { z } from 'zod';
 
 // String with constraints
-const nameSchema = Str({
-    description: "User's name",
-    minLength: 3,
-    maxLength: 50,
-    example: 'John Doe',
-});
+const nameSchema = z.string()
+    .min(3)
+    .max(50)
+    .describe("User's name")
+    .openapi({ example: 'John Doe' });
 
 // Number with range
-const priceSchema = Num({
-    description: 'Product price',
-    minimum: 0,
-    example: 99.99,
-});
+const priceSchema = z.number()
+    .min(0)
+    .describe('Product price')
+    .openapi({ example: 99.99 });
 
 // Integer
-const ageSchema = Int({
-    description: "User's age",
-    minimum: 0,
-    maximum: 120,
-});
+const ageSchema = z.number()
+    .int()
+    .min(0)
+    .max(120)
+    .describe("User's age");
 
 // Boolean with default
-const isActiveSchema = Bool({
-    description: 'User active status',
-    default: true,
-});
+const isActiveSchema = z.boolean()
+    .default(true)
+    .describe('User active status');
 
 // Date/time (ISO 8601)
-const createdAtSchema = DateTime({
-    description: 'Creation timestamp',
-    example: '2024-01-20T10:30:00Z',
-});
+const createdAtSchema = z.iso.datetime()
+    .describe('Creation timestamp')
+    .openapi({ example: '2024-01-20T10:30:00Z' });
 
 // Date only (YYYY-MM-DD)
-const birthDateSchema = DateOnly({
-    description: 'Birth date',
-    example: '1990-05-15',
-});
+const birthDateSchema = z.iso.date()
+    .describe('Birth date')
+    .openapi({ example: '1990-05-15' });
 
 // Email, UUID
-const emailSchema = Email({ description: 'Email address' });
-const userIdSchema = Uuid({ description: 'User ID' });
+const emailSchema = z.email().describe('Email address');
+const userIdSchema = z.uuid().describe('User ID');
 
 // Enumeration
-const statusSchema = Enumeration({
-    description: 'Order status',
-    values: ['pending', 'processing', 'shipped', 'delivered'],
-    default: 'pending',
-});
+const statusSchema = z.enum(['pending', 'processing', 'shipped', 'delivered'])
+    .default('pending')
+    .describe('Order status');
 
 // Array
-const tagsSchema = Arr(Str(), {
+const tagsSchema = z.array(z.string()).openapi({
     description: 'Tags',
-    minItems: 1,
-    maxItems: 10,
-    uniqueItems: true,
 });
 
 // Object
-const addressSchema = Obj({
-    street: Str({ description: 'Street address' }),
-    city: Str({ description: 'City' }),
-    zipCode: Str({ description: 'Zip code' }),
-}, { description: 'Address' });
+const addressSchema = z.object({
+    street: z.string().describe('Street address'),
+    city: z.string().describe('City'),
+    zipCode: z.string().describe('Zip code'),
+});
 
 // Regex pattern
-const phoneSchema = Regex({
-    description: 'Phone number',
-    pattern: /^\+?[1-9]\d{1,14}$/,
-    patternError: 'Invalid phone number format',
-});
+const phoneSchema = z.string()
+    .regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number format')
+    .describe('Phone number');
+
+// IP addresses
+const ipv4Schema = z.ipv4();
+const ipv6Schema = z.ipv6();
+const ipSchema = z.union([z.ipv4(), z.ipv6()]);
+
+// Hostname (regex pattern)
+const hostnameSchema = z.string().regex(
+    /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/
+);
 ```
 
 ### Validated Data Access
