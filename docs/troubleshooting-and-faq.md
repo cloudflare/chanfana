@@ -68,12 +68,12 @@ This section provides solutions to common issues you might encounter while using
 
 **5. OpenAPI schema is missing descriptions or examples:**
 
-*   **Cause:** You have not provided descriptions or examples in your Zod schemas or Chanfana parameter types.
-*   **Solution:** Use Zod's `describe()` method and Chanfana parameter type options like `description` and `example` to add metadata to your schemas. This metadata is used to generate more informative OpenAPI documentation.
+*   **Cause:** You have not provided descriptions or examples in your Zod schemas.
+*   **Solution:** Use Zod's `describe()` method and `.openapi()` method to add metadata to your schemas. This metadata is used to generate more informative OpenAPI documentation.
 
     ```typescript
-    const nameSchema = Str({ description: 'User name', example: 'John Doe' }); // Add description and example
-    const ageSchema = Int({ description: 'User age' }); // Add description
+    const nameSchema = z.string().describe('User name').openapi({ example: 'John Doe' });
+    const ageSchema = z.number().int().describe('User age');
     ```
 
 **6. D1 endpoints are not working, "Binding 'DB' is not defined in worker" error:**
@@ -85,6 +85,71 @@ This section provides solutions to common issues you might encounter while using
     *   Ensure that you have deployed your Cloudflare Worker or are running it in a local environment where the D1 binding is correctly set up.
 
 ## Frequently Asked Questions (FAQ)
+
+### Zod v4 Migration FAQ
+
+**Q: Why are my optional fields always having values now?**
+
+**A:** In Zod 4, optional fields with `.default()` are always present in validated data, even when absent from the input. This is a change from Zod 3 behavior. Use `getUnvalidatedData()` to check which fields were actually sent:
+
+```typescript
+const validated = await this.getValidatedData();  // { field: "default_value" }
+const raw = await this.getUnvalidatedData();       // {}
+
+if ('field' in raw.body) {
+  // Field was actually sent in request
+}
+```
+
+**Q: Why is `z.string().email()` not working?**
+
+**A:** Zod 4 changed string format methods to top-level functions:
+
+```typescript
+// Before (Zod 3)
+z.string().email()
+z.string().uuid()
+z.string().datetime()
+z.string().url()
+z.string().date()
+
+// After (Zod 4)
+z.email()
+z.uuid()
+z.iso.datetime()
+z.url()
+z.iso.date()
+```
+
+Use the Zod v4 top-level functions directly as shown above.
+
+**Q: Why are error messages different after upgrading?**
+
+**A:** Zod 4 changed error message formats. For example:
+
+```typescript
+// Zod 3 error for missing required field
+"Required"
+
+// Zod 4 error for missing required field
+"Invalid input: expected string, received undefined"
+```
+
+Update your test expectations and error handling code accordingly.
+
+**Q: How do I use strict object validation in Zod 4?**
+
+**A:** The `.strict()` method has been replaced with `z.strictObject()`:
+
+```typescript
+// Before (Zod 3)
+z.object({ name: z.string() }).strict()
+
+// After (Zod 4)
+z.strictObject({ name: z.string() })
+```
+
+---
 
 **Q: Can I use Chanfana with routers other than Hono and itty-router?**
 

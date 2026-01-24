@@ -1,496 +1,354 @@
-# Parameters: Defining Input Types in Detail
+# Parameters: Defining Input Types with Zod
 
-Chanfana provides a rich set of parameter types to define the inputs of your API endpoints, ensuring data validation and clear OpenAPI documentation. These parameter types are used within your Zod schemas to specify the expected format and constraints for request body fields, query parameters, path parameters, and headers.
+Chanfana uses native Zod schemas to define the inputs of your API endpoints, ensuring data validation and clear OpenAPI documentation. This guide covers how to use Zod effectively for request body fields, query parameters, path parameters, and headers.
 
-## Introduction to Parameter Types
+## Introduction
 
-Chanfana's parameter types are essentially wrappers around Zod schema types, enhanced with OpenAPI metadata and convenience methods. They are designed to simplify the process of defining API inputs and generating accurate OpenAPI specifications.
+With Chanfana v3, all parameter types are defined using native Zod schemas. This provides:
 
-You can find these parameter types in the `chanfana` library:
+- **Type safety**: Full TypeScript inference
+- **Validation**: Built-in Zod validation
+- **OpenAPI generation**: Automatic schema documentation
+- **Flexibility**: Access to all Zod features
 
-```typescript
-import {
-    Str, Num, Int, Bool, DateTime, DateOnly, Regex, Email, Uuid, Hostname, Ipv4, Ipv6, Ip, Enumeration, Arr, Obj
-} from 'chanfana';
-```
+## Basic Types
 
-Let's explore each parameter type in detail.
-
-## Core Parameter Types
-
-These are fundamental parameter types for common data types.
-
-### `Str`: Strings
-
-The `Str` parameter type represents string inputs. It's based on `z.string()` from Zod.
-
-**Usage:**
+### Strings
 
 ```typescript
-import { Str } from 'chanfana';
 import { z } from 'zod';
 
-const nameSchema = Str({
-    description: 'User\'s name',
-    minLength: 3,
-    maxLength: 50,
-    example: 'John Doe',
-});
+// Basic string
+const nameSchema = z.string();
 
-// nameSchema is a ZodString with OpenAPI metadata
-```
+// With description (appears in OpenAPI docs)
+const usernameSchema = z.string().describe("User's username");
 
-**Options:**
+// With constraints
+const passwordSchema = z.string().min(8).max(100);
 
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minLength`:** Minimum string length.
-*   **`maxLength`:** Maximum string length.
-*   **`format`:** OpenAPI format (e.g., "date", "date-time", "password").
-
-### `Num`: Numbers
-
-The `Num` parameter type represents floating-point number inputs. It's based on `z.number()` from Zod.
-
-**Usage:**
-
-```typescript
-import { Num } from 'chanfana';
-import { z } from 'zod';
-
-const priceSchema = Num({
-    description: 'Product price',
-    minimum: 0,
-    exclusiveMinimum: true,
-    example: 99.99,
+// With OpenAPI metadata
+const titleSchema = z.string().openapi({
+    description: 'Article title',
+    example: 'Getting Started with Chanfana',
 });
 ```
 
-**Options:**
-
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minimum`:** Minimum allowed value.
-*   **`maximum`:** Maximum allowed value.
-*   **`exclusiveMinimum`:** (boolean) If `true`, the value must be strictly greater than `minimum`.
-*   **`exclusiveMaximum`:** (boolean) If `true`, the value must be strictly less than `maximum`.
-*   **`multipleOf`:** Value must be a multiple of this number.
-
-### `Int`: Integers
-
-The `Int` parameter type represents integer number inputs. It's based on `z.number().int()` from Zod.
-
-**Usage:**
+### Numbers
 
 ```typescript
-import { Int } from 'chanfana';
 import { z } from 'zod';
 
-const ageSchema = Int({
-    description: 'User\'s age',
-    minimum: 0,
-    maximum: 120,
-    example: 30,
-});
+// Floating-point number
+const priceSchema = z.number();
+
+// Integer
+const ageSchema = z.number().int();
+
+// With constraints
+const quantitySchema = z.number().int().min(1).max(100);
+
+// With OpenAPI type hint for proper documentation
+const countSchema = z.number().int().openapi({ type: "integer" });
 ```
 
-**Options:**
-
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minimum`:** Minimum allowed value.
-*   **`maximum`:** Maximum allowed value.
-*   **`exclusiveMinimum`:** (boolean) If `true`, the value must be strictly greater than `minimum`.
-*   **`exclusiveMaximum`:** (boolean) If `true`, the value must be strictly less than `maximum`.
-*   **`multipleOf`:** Value must be a multiple of this number.
-
-### `Bool`: Booleans
-
-The `Bool` parameter type represents boolean inputs (`true` or `false`). It's based on `z.boolean()` from Zod.
-
-**Usage:**
+### Booleans
 
 ```typescript
-import { Bool } from 'chanfana';
 import { z } from 'zod';
 
-const isActiveSchema = Bool({
-    description: 'User active status',
-    default: true,
+const isActiveSchema = z.boolean();
+
+// With default value
+const enabledSchema = z.boolean().default(true);
+
+// With OpenAPI metadata
+const verifiedSchema = z.boolean().openapi({
+    description: 'Whether the user is verified',
     example: true,
 });
 ```
 
-**Options:**
+## Zod v4 String Format Types
 
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-
-### `DateTime`: Date and Time Strings
-
-The `DateTime` parameter type represents date and time strings in ISO 8601 format (e.g., "2024-01-20T10:30:00Z"). It's based on `z.iso.datetime()` from Zod v4.
-
-**Usage:**
+Zod v4 provides top-level functions for common string formats:
 
 ```typescript
-import { DateTime } from 'chanfana';
 import { z } from 'zod';
 
-const createdAtSchema = DateTime({
-    description: 'Date and time of creation',
-    example: '2024-01-20T10:30:00Z',
+// Email validation
+const emailSchema = z.email();
+
+// UUID validation
+const userIdSchema = z.uuid();
+
+// URL validation
+const websiteSchema = z.url();
+
+// ISO datetime (e.g., "2024-01-20T10:30:00Z")
+const createdAtSchema = z.iso.datetime();
+
+// ISO date only (e.g., "2024-01-20")
+const birthDateSchema = z.iso.date();
+
+// IPv4 address
+const ipv4Schema = z.ipv4();
+
+// IPv6 address
+const ipv6Schema = z.ipv6();
+
+// Either IPv4 or IPv6
+const ipSchema = z.union([z.ipv4(), z.ipv6()]);
+```
+
+**Note:** The old Zod v3 syntax (`z.string().email()`, `z.string().uuid()`, etc.) is deprecated. Use the Zod v4 top-level functions shown above.
+
+## Pattern Matching (Regex)
+
+```typescript
+import { z } from 'zod';
+
+// Phone number pattern
+const phoneSchema = z.string().regex(
+    /^\+?[1-9]\d{1,14}$/,
+    'Invalid phone number format'
+);
+
+// Hostname pattern
+const hostnameSchema = z.string().regex(
+    /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/
+);
+
+// Slug pattern
+const slugSchema = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+```
+
+## Enumerations
+
+```typescript
+import { z } from 'zod';
+
+// Simple enum
+const statusSchema = z.enum(['pending', 'processing', 'shipped', 'delivered']);
+
+// With default
+const prioritySchema = z.enum(['low', 'medium', 'high']).default('medium');
+
+// With value mapping (transform input to different output)
+const formatSchema = z
+    .enum(['json', 'csv', 'xml'])
+    .transform((val) => ({
+        json: 'application/json',
+        csv: 'text/csv',
+        xml: 'application/xml',
+    })[val]);
+
+// Case-insensitive enum (preprocess to lowercase)
+const caseInsensitiveStatus = z
+    .preprocess((val) => String(val).toLowerCase(), z.enum(['active', 'inactive']))
+    .openapi({ enum: ['active', 'inactive'] });
+```
+
+## Arrays
+
+```typescript
+import { z } from 'zod';
+
+// Array of strings
+const tagsSchema = z.array(z.string());
+
+// Alternative syntax
+const numbersSchema = z.number().array();
+
+// With constraints
+const itemsSchema = z.array(z.string()).min(1).max(10);
+
+// Array of dates
+const datesSchema = z.iso.date().array();
+
+// With OpenAPI metadata
+const categoriesSchema = z.array(z.string()).openapi({
+    description: 'List of category names',
+    example: ['electronics', 'books', 'clothing'],
 });
 ```
 
-**Options:**
-
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minLength`:** Minimum string length.
-*   **`maxLength`:** Maximum string length.
-*   **`format`:** Defaults to "date-time" in OpenAPI.
-
-### `DateOnly`: Date Strings
-
-The `DateOnly` parameter type represents date strings in YYYY-MM-DD format (e.g., "2024-01-20"). It's based on `z.iso.date()` from Zod v4, which validates ISO 8601 date strings.
-
-**Usage:**
+## Objects
 
 ```typescript
-import { DateOnly } from 'chanfana';
 import { z } from 'zod';
 
-const birthDateSchema = DateOnly({
-    description: 'User\'s birth date',
-    example: '1990-05-15',
+// Nested object
+const addressSchema = z.object({
+    street: z.string(),
+    city: z.string(),
+    zipCode: z.string().regex(/^\d{5}(-\d{4})?$/),
+    country: z.string().optional(),
+});
+
+// With OpenAPI descriptions
+const userProfileSchema = z.object({
+    firstName: z.string().describe('First name'),
+    lastName: z.string().describe('Last name'),
+    age: z.number().int().min(0).optional().describe('Age in years'),
 });
 ```
 
-**Options:**
-
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minLength`:** Minimum string length.
-*   **`maxLength`:** Maximum string length.
-*   **`format`:** Defaults to "date" in OpenAPI.
-
-## Specialized String Parameter Types
-
-These parameter types are specialized versions of `Str` for specific string formats.
-
-### `Regex`: Regular Expression Matching Strings
-
-The `Regex` parameter type represents strings that must match a given regular expression pattern. It's based on `z.string().regex()` from Zod.
-
-**Usage:**
+## Optional and Default Values
 
 ```typescript
-import { Regex } from 'chanfana';
 import { z } from 'zod';
 
-const passwordSchema = Regex({
-    description: 'Password (must contain at least one uppercase, one lowercase, and one number)',
-    pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
-    patternError: 'Password must meet complexity requirements',
-});
+// Optional field
+const middleNameSchema = z.string().optional();
+
+// With default value
+const pageSchema = z.number().int().default(1);
+const perPageSchema = z.number().int().default(20);
+
+// Optional with default
+const sortOrderSchema = z.enum(['asc', 'desc']).optional().default('asc');
+
+// Nullable
+const deletedAtSchema = z.iso.datetime().nullable();
 ```
 
-**Options:**
+## Adding OpenAPI Metadata
 
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minLength`:** Minimum string length.
-*   **`maxLength`:** Maximum string length.
-*   **`format`:** OpenAPI format (e.g., "date", "date-time", "password").
-*   **`pattern`:** (RegExp) The regular expression pattern to match.
-*   **`patternError`:** (string, optional) Custom error message if the pattern doesn't match.
-
-### `Email`: Email Address Strings
-
-The `Email` parameter type represents strings that must be valid email addresses. It's based on `z.email()` from Zod v4.
-
-**Usage:**
+Use `.describe()` for simple descriptions and `.openapi()` for full OpenAPI metadata:
 
 ```typescript
-import { Email } from 'chanfana';
 import { z } from 'zod';
 
-const emailSchema = Email({
-    description: 'User\'s email address',
+// Simple description
+const nameSchema = z.string().describe("User's full name");
+
+// Full OpenAPI metadata
+const priceSchema = z.number().openapi({
+    description: 'Product price in USD',
+    example: 29.99,
+    minimum: 0,
+});
+
+// Format hints for OpenAPI
+const passwordSchema = z.string().min(8).openapi({
+    format: 'password',
+    description: 'User password (min 8 characters)',
+});
+
+// Multiple metadata options
+const emailSchema = z.email().openapi({
+    description: 'Contact email address',
     example: 'user@example.com',
 });
 ```
 
-**Options:**
+## Complete Example
 
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minLength`:** Minimum string length.
-*   **`maxLength`:** Maximum string length.
-*   **`format`:** Defaults to "email" in OpenAPI.
-
-### `Uuid`: UUID Strings
-
-The `Uuid` parameter type represents strings that must be valid UUIDs (Universally Unique Identifiers). It's based on `z.uuid()` from Zod v4.
-
-**Usage:**
+Here's a complete example showing various parameter types in an endpoint:
 
 ```typescript
-import { Uuid } from 'chanfana';
+import { OpenAPIRoute, contentJson } from 'chanfana';
 import { z } from 'zod';
 
-const userIdSchema = Uuid({
-    description: 'User ID (UUID format)',
-    example: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
-});
+class CreateOrderEndpoint extends OpenAPIRoute {
+    schema = {
+        tags: ['Orders'],
+        summary: 'Create a new order',
+        request: {
+            params: z.object({
+                storeId: z.uuid().describe('Store identifier'),
+            }),
+            query: z.object({
+                notify: z.boolean().optional().default(true).describe('Send notification email'),
+                priority: z.enum(['low', 'normal', 'high']).optional().default('normal'),
+            }),
+            headers: z.object({
+                'X-Idempotency-Key': z.uuid().describe('Unique request identifier'),
+            }),
+            body: contentJson(z.object({
+                customerId: z.uuid(),
+                items: z.array(z.object({
+                    productId: z.uuid(),
+                    quantity: z.number().int().min(1),
+                    price: z.number().min(0),
+                })).min(1),
+                shippingAddress: z.object({
+                    street: z.string(),
+                    city: z.string(),
+                    zipCode: z.string(),
+                    country: z.string().length(2).describe('ISO 3166-1 alpha-2 country code'),
+                }),
+                notes: z.string().optional(),
+                requestedDelivery: z.iso.date().optional(),
+            })),
+        },
+        responses: {
+            '201': {
+                description: 'Order created successfully',
+                ...contentJson(z.object({
+                    id: z.uuid(),
+                    status: z.enum(['pending', 'confirmed']),
+                    createdAt: z.iso.datetime(),
+                })),
+            },
+        },
+    };
+
+    async handle(c) {
+        const data = await this.getValidatedData<typeof this.schema>();
+
+        // data.params.storeId - string (UUID)
+        // data.query.notify - boolean
+        // data.query.priority - 'low' | 'normal' | 'high'
+        // data.headers['X-Idempotency-Key'] - string (UUID)
+        // data.body.customerId - string (UUID)
+        // data.body.items - array of order items
+        // etc.
+
+        return {
+            id: crypto.randomUUID(),
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+        };
+    }
+}
 ```
 
-**Options:**
+## Migration from Parameter Helpers
 
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minLength`:** Minimum string length.
-*   **`maxLength`:** Maximum string length.
-*   **`format`:** Defaults to "uuid" in OpenAPI.
+If you're migrating from older versions of Chanfana that used parameter helpers, here's the mapping:
 
-### `Hostname`: Hostname Strings
+| Old Helper | New Zod Equivalent |
+|------------|-------------------|
+| `Str()` | `z.string()` |
+| `Num()` | `z.number()` |
+| `Int()` | `z.number().int()` |
+| `Bool()` | `z.boolean()` |
+| `DateTime()` | `z.iso.datetime()` |
+| `DateOnly()` | `z.iso.date()` |
+| `Email()` | `z.email()` |
+| `Uuid()` | `z.uuid()` |
+| `Ipv4()` | `z.ipv4()` |
+| `Ipv6()` | `z.ipv6()` |
+| `Ip()` | `z.union([z.ipv4(), z.ipv6()])` |
+| `Hostname()` | `z.string().regex(/hostname-pattern/)` |
+| `Regex({ pattern })` | `z.string().regex(pattern)` |
+| `Enumeration({ values })` | `z.enum([...])` |
 
-The `Hostname` parameter type represents strings that must be valid hostnames. It's based on `z.string().regex()` with a hostname pattern from Zod.
-
-**Usage:**
+For options like `description`, `example`, and `default`, use Zod's native methods:
 
 ```typescript
-import { Hostname } from 'chanfana';
-import { z } from 'zod';
+// Old
+Str({ description: 'Name', example: 'John', default: 'Anonymous' })
 
-const websiteSchema = Hostname({
-    description: 'Website hostname',
-    example: 'www.example.com',
-});
+// New
+z.string()
+    .default('Anonymous')
+    .describe('Name')
+    .openapi({ example: 'John' })
 ```
-
-**Options:**
-
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minLength`:** Minimum string length.
-*   **`maxLength`:** Maximum string length.
-*   **`format`:** Defaults to "hostname" in OpenAPI.
-
-### `Ipv4`: IPv4 Address Strings
-
-The `Ipv4` parameter type represents strings that must be valid IPv4 addresses. It's based on `z.ipv4()` from Zod.
-
-**Usage:**
-
-```typescript
-import { Ipv4 } from 'chanfana';
-import { z } from 'zod';
-
-const ipAddressSchema = Ipv4({
-    description: 'IPv4 address',
-    example: '192.168.1.1',
-});
-```
-
-**Options:**
-
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minLength`:** Minimum string length.
-*   **`maxLength`:** Maximum string length.
-*   **`format`:** Defaults to "ipv4" in OpenAPI.
-
-### `Ipv6`: IPv6 Address Strings
-
-The `Ipv6` parameter type represents strings that must be valid IPv6 addresses. It's based on `z.ipv6()` from Zod.
-
-**Usage:**
-
-```typescript
-import { Ipv6 } from 'chanfana';
-import { z } from 'zod';
-
-const ipv6AddressSchema = Ipv6({
-    description: 'IPv6 address',
-    example: '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
-});
-```
-
-**Options:**
-
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minLength`:** Minimum string length.
-*   **`maxLength`:** Maximum string length.
-*   **`format`:** Defaults to "ipv6" in OpenAPI.
-
-### `Ip`: IP Address Strings (v4 or v6)
-
-The `Ip` parameter type represents strings that must be valid IP addresses, either IPv4 or IPv6. It's based on `z.union([z.ipv4(), z.ipv6()])` from Zod.
-
-**Usage:**
-
-```typescript
-import { Ip } from 'chanfana';
-import { z } from 'zod';
-
-const anyIpAddressSchema = Ip({
-    description: 'IP address (IPv4 or IPv6)',
-    example: '192.168.1.1 or 2001:0db8:85a3::8a2e:0370:7334',
-});
-```
-
-**Options:**
-
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minLength`:** Minimum string length.
-*   **`maxLength`:** Maximum string length.
-*   **`format`:** Defaults to "ip" in OpenAPI.
-
-## Structural Parameter Types
-
-This section covers parameter types for defining complex data structures like enumerations, arrays, and objects.
-
-### `Enumeration`: Defining Allowed String Values (Enums)
-
-The `Enumeration` parameter type represents strings that must be one of a predefined set of allowed values (like enums in other languages). It's based on `z.enum()` from Zod.
-
-**Usage:**
-
-```typescript
-import { Enumeration } from 'chanfana';
-import { z } from 'zod';
-
-const statusSchema = Enumeration({
-    description: 'Order status',
-    values: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-    default: 'pending',
-    enumCaseSensitive: false, // Optional: default is true (case-sensitive)
-});
-```
-
-**Options:**
-
-*   **`description`:** Description for OpenAPI documentation.
-*   **`required`:** (boolean, default: `true`) Whether the parameter is required.
-*   **`default`:** Default value for the parameter.
-*   **`example`:** Example value for OpenAPI documentation.
-*   **`minLength`:** Minimum string length (if applicable, e.g. if the enum values have min/max length constraints).
-*   **`maxLength`:** Maximum string length (if applicable).
-*   **`format`:** OpenAPI format.
-*   **`values`:** (`Array<string>` or `Record<string, any>`) An array of allowed string values or a record where keys are allowed values and values are for internal mapping (if needed).
-*   **`enumCaseSensitive`:** (boolean, default: `true`) Whether enum matching should be case-sensitive. If `false`, input values are converted to lowercase before matching.
-
-### `Arr`: Arrays of a Specific Type
-
-The `Arr` parameter type represents arrays where all elements must be of a specific type. It's based on `z.array()` from Zod. It allows you to define arrays whose elements conform to another Chanfana parameter type or a standard Zod schema.
-
-**Usage:**
-
-```typescript
-import { Arr, Str } from 'chanfana';
-import { z } from 'zod';
-
-const tagsSchema = Arr(Str(), {
-    description: 'Array of tags',
-    minItems: 1,
-    maxItems: 10,
-    uniqueItems: true,
-    example: ['tag1', 'tag2', 'tag3'],
-});
-```
-
-**Options:**
-
-*   **`description`:** Description for OpenAPI documentation (for the array itself).
-*   **`required`:** (boolean, default: `true`) Whether the array is required.
-*   **`default`:** Default value for the array.
-*   **`example`:** Example value for OpenAPI documentation (for the array).
-*   **`minItems`:** Minimum number of items in the array.
-*   **`maxItems`:** Maximum number of items in the array.
-*   **`uniqueItems`:** (boolean) If `true`, array elements must be unique.
-
-The first argument to `Arr()` is the parameter type (e.g., `Str()`, `Num()`) or a Zod schema (e.g., `z.string()`, `z.object({...})`) for the elements of the array.
-
-### `Obj`: Objects with Defined Fields
-
-The `Obj` parameter type represents objects with a predefined structure (fields and their types). It's based on `z.object()` from Zod. Each field within the object is defined using a Chanfana parameter type or a standard Zod schema.
-
-**Usage:**
-
-```typescript
-import { Obj, Str, Num } from 'chanfana';
-import { z } from 'zod';
-
-const addressSchema = Obj({
-    street: Str({ description: 'Street address' }),
-    city: Str({ description: 'City' }),
-    zipCode: Str({ description: 'Zip code', pattern: /^\d{5}(-\d{4})?$/ }),
-    latitude: Num({ description: 'Latitude', required: false }),
-    longitude: Num({ description: 'Longitude', required: false }),
-}, {
-    description: 'User address object',
-});
-```
-
-**Options:**
-
-*   **`description`:** Description for OpenAPI documentation (for the object itself).
-*   **`required`:** (boolean, default: `true`) Whether the object is required.
-*   **`default`:** Default value for the object.
-*   **`example`:** Example value for OpenAPI documentation (for the object).
-
-The first argument to `Obj()` is an object where keys are field names and values are Chanfana parameter types (e.g., `Str()`, `Num()`) or Zod schemas for each field.
-
-## `convertParams`: Advanced Parameter Configuration
-
-The `convertParams` function is a lower-level utility function used internally by Chanfana's parameter types. You can use it directly for advanced parameter configuration or when you need to apply parameter options to existing Zod schemas that are not created using Chanfana's parameter types.
-
-**Usage:**
-
-```typescript
-import { convertParams, Str } from 'chanfana';
-import { z } from 'zod';
-
-const baseSchema = z.string(); // Existing Zod schema
-
-const enhancedSchema = convertParams(baseSchema, {
-    description: 'Enhanced string parameter',
-    example: 'example value',
-    required: false,
-});
-```
-
-`convertParams(field, params)` takes a Zod schema (`field`) and a parameter options object (`params`) and applies the options to the schema, returning the modified schema.
 
 ---
 
-By using these parameter types, you can precisely define the inputs of your API endpoints, enforce data validation, and generate comprehensive OpenAPI documentation, leading to more robust and developer-friendly APIs.
+By using native Zod schemas, you get full access to Zod's powerful validation capabilities while maintaining seamless OpenAPI documentation generation.

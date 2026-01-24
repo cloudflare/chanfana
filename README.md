@@ -17,6 +17,8 @@
 
 <hr />
 
+## Overview
+
 [chanfana](https://github.com/cloudflare/chanfana) **(previously known as itty-router-openapi)** is a library that adds
 OpenAPI schema generation and validation to any router (<a href="https://github.com/honojs/hono" target="_blank">
 Hono</a>, <a href="https://github.com/kwhitley/itty-router" target="_blank">itty-router</a>, etc), meant to be a
@@ -26,11 +28,23 @@ library for Cloudflare Workers but runs on any runtime supported by the base rou
 The key features are:
 
 - OpenAPI 3 and 3.1 schema generator and validator
+- Zod v4 compatible with full TypeScript inference
 - Fully written in typescript
 - [Class-based endpoints](https://chanfana.pages.dev/endpoints/defining-endpoints)
 - Query, Path, Headers, and Body typescript inference, see [Parameters](https://chanfana.pages.dev/endpoints/parameters) and [Request Validation](https://chanfana.pages.dev/endpoints/request-validation)
 - Extend existing [Hono](https://chanfana.pages.dev/router-adapters), [itty-router](https://chanfana.pages.dev/router-adapters), etc application, without touching old routes
 - CLI to extract the schema.json from your code (npx chanfana) - see [CLI Documentation](https://chanfana.pages.dev/cli)
+
+## AI Skills
+
+Chanfana provides AI coding assistant skills to help you build OpenAPI endpoints faster. Install them using [npx skills](https://www.npmjs.com/package/skills):
+
+```bash
+npx skills install cloudflare/chanfana
+```
+
+Available skills:
+- **write-endpoints** - Comprehensive guide for building OpenAPI endpoints with schema definition, request validation, CRUD operations, and D1 integration
 
 ## Getting started
 

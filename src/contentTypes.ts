@@ -1,5 +1,4 @@
-import { z } from "zod";
-import { legacyTypeIntoZod } from "./zod/utils";
+import type { z } from "zod";
 
 type JsonContent<T> = {
   content: {
@@ -9,12 +8,10 @@ type JsonContent<T> = {
   };
 };
 
-type InferSchemaType<T> = T extends z.ZodType ? z.infer<T> : T;
-
-export const contentJson = <T>(schema: T): JsonContent<InferSchemaType<T>> => ({
+export const contentJson = <T>(schema: z.ZodType<T>): JsonContent<T> => ({
   content: {
     "application/json": {
-      schema: (schema instanceof z.ZodType ? schema : legacyTypeIntoZod(schema)) as z.ZodType<InferSchemaType<T>>,
+      schema: schema,
     },
   },
 });

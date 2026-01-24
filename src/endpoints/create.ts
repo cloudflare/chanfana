@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { contentJson } from "../contentTypes";
 import { InputValidationException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
@@ -28,11 +29,13 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
       responses: {
         "201": {
           description: "Returns the created Object",
-          ...contentJson({
-            success: Boolean,
-            result: this.meta.model.serializerSchema,
-          }),
-          ...this.schema?.responses?.[200],
+          ...contentJson(
+            z.object({
+              success: z.boolean(),
+              result: this.meta.model.serializerSchema,
+            }),
+          ),
+          ...this.schema?.responses?.[201],
         },
         ...InputValidationException.schema(),
         ...this.schema?.responses,

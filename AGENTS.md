@@ -172,15 +172,27 @@ const schema = z.object({
 
 ### 4. Exception Handling
 
-Custom exception classes for API errors:
+Chanfana provides a comprehensive set of exception classes for API errors:
 
 ```typescript
 // Base exception
 throw new ApiException("Something went wrong");
 
-// Specific exceptions
-throw new NotFoundException();  // 404
+// Client errors (4xx)
 throw new InputValidationException("Invalid email", ["body", "email"]); // 400
+throw new UnauthorizedException("Invalid API key");    // 401
+throw new ForbiddenException("Access denied");         // 403
+throw new NotFoundException("User not found");         // 404
+throw new MethodNotAllowedException("Use POST");       // 405
+throw new ConflictException("Resource already exists");// 409
+throw new UnprocessableEntityException("Invalid state", ["body", "status"]); // 422
+throw new TooManyRequestsException("Rate limited", 60); // 429, with retryAfter
+
+// Server errors (5xx)
+throw new InternalServerErrorException("Unexpected error"); // 500 (isVisible=false by default)
+throw new BadGatewayException("Upstream error");       // 502
+throw new ServiceUnavailableException("Maintenance", 300); // 503, with retryAfter
+throw new GatewayTimeoutException("Upstream timeout"); // 504
 
 // Multiple exceptions
 throw new MultiException([error1, error2]);
@@ -191,6 +203,23 @@ throw new MultiException([error1, error2]);
 2. Caught by `execute()` in `route.ts`
 3. `buildResponse()` formats error
 4. Returned with proper status code
+
+**Exception Codes:**
+| Exception | Status | Code |
+|-----------|--------|------|
+| ApiException | 500 | 7000 |
+| InputValidationException | 400 | 7001 |
+| NotFoundException | 404 | 7002 |
+| UnauthorizedException | 401 | 7003 |
+| ForbiddenException | 403 | 7004 |
+| MethodNotAllowedException | 405 | 7005 |
+| ConflictException | 409 | 7006 |
+| UnprocessableEntityException | 422 | 7007 |
+| TooManyRequestsException | 429 | 7008 |
+| InternalServerErrorException | 500 | 7009 |
+| BadGatewayException | 502 | 7010 |
+| ServiceUnavailableException | 503 | 7011 |
+| GatewayTimeoutException | 504 | 7012 |
 
 ## Zod v3 → v4 Migration (Completed)
 
@@ -434,7 +463,7 @@ _meta = {
 1. **Update Code**: Make changes in `src/`
 2. **Update Tests**: Add/update tests in `tests/integration/`
 3. **Update Docs**: Update relevant markdown files in `docs/`
-4. **Run Tests**: `npm test` - must pass all 94 tests
+4. **Run Tests**: `npm test` - must pass all 170 tests
 5. **Build**: `npm run build` - must succeed
 6. **Commit**: Clear commit messages describing changes
 
@@ -494,7 +523,18 @@ Zod parameter helper functions. All updated for Zod v4:
 Auto CRUD endpoint implementations:
 - **Base classes**: create.ts, read.ts, update.ts, delete.ts, list.ts
 - **D1 implementations**: d1/ directory
+- **D1 utilities**: d1/base.ts - SQL injection prevention, DB binding management
 - **Types**: types.ts with Meta, Model, Filters
+
+### `src/endpoints/d1/base.ts`
+
+D1 utility functions for SQL injection prevention and query building:
+- `validateSqlIdentifier()` - Validates SQL identifiers (table/column names)
+- `validateTableName()` / `validateColumnName()` - Convenience wrappers
+- `buildSafeFilters()` - Builds parameterized WHERE conditions
+- `buildPrimaryKeyFilters()` - Builds primary key lookup conditions
+- `getD1Binding()` - Safely retrieves D1 binding from environment
+- `handleDbError()` - Maps constraint violations to custom exceptions
 
 ## Advanced Patterns
 
@@ -602,6 +642,6 @@ npm test -- --coverage                     # With coverage
 
 ---
 
-**Last Updated**: 2025-11-11
+**Last Updated**: 2026-01-12
 **Maintainer**: Gabriel Massadas (@g4brym)
 **License**: MIT

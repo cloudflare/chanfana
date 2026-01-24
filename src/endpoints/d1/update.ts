@@ -1,54 +1,71 @@
-import { ApiException, type InputValidationException } from "../../exceptions";
+import type { InputValidationException } from "../../exceptions";
 import type { Filters, Logger, O, UpdateFilters } from "../types";
 import { UpdateEndpoint } from "../update";
+import {
+  buildPrimaryKeyFilters,
+  buildWhereClause,
+  getD1Binding,
+  handleDbError,
+  validateColumnName,
+  validateTableName,
+} from "./base";
 
+/**
+ * D1-specific UpdateEndpoint implementation.
+ * Provides automatic UPDATE operations with SQL injection prevention.
+ */
 export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> extends UpdateEndpoint<HandleArgs> {
+  /** Name of the D1 database binding in the worker environment. Defaults to "DB" */
   dbName = "DB";
+  /** Optional logger for debugging and error tracking */
   logger?: Logger;
+  /** Custom error messages for UNIQUE constraint violations. Keys are constraint names (e.g., "users.email") */
   constraintsMessages: Record<string, InputValidationException> = {};
 
+  /**
+   * Gets the D1 database binding from the worker environment.
+   * @returns D1Database instance
+   * @throws ApiException if binding is not defined or is not a D1 binding
+   */
   getDBBinding(): D1Database {
-    const env = this.params.router.getBindings(this.args);
-    if (env[this.dbName] === undefined) {
-      throw new ApiException(`Binding "${this.dbName}" is not defined in worker`);
-    }
-
-    if (env[this.dbName].prepare === undefined) {
-      throw new ApiException(`Binding "${this.dbName}" is not a D1 binding`);
-    }
-
-    return env[this.dbName];
+    return getD1Binding((args) => this.params.router.getBindings(args), this.args, this.dbName);
   }
 
-  getSafeFilters(filters: Filters) {
-    // Filters should only apply to primary keys
-    const safeFilters = filters.filters.filter((f) => {
-      return this.meta.model.primaryKeys.includes(f.field);
-    });
-
-    const conditions: string[] = [];
-    const conditionsParams: string[] = [];
-
-    for (const f of safeFilters) {
-      if (f.operator === "EQ") {
-        conditions.push(`${f.field} = ?${conditionsParams.length + 1}`);
-        conditionsParams.push(f.value as any);
-      } else {
-        throw new ApiException(`operator ${f.operator} Not implemented`);
-      }
-    }
-
-    return { conditions, conditionsParams };
+  /**
+   * Gets the list of valid column names from the model schema.
+   * @returns Array of valid column names
+   */
+  protected getValidColumns(): string[] {
+    return Object.keys(this.meta.model.schema.shape);
   }
 
+  /**
+   * Builds safe filters that only apply to primary keys.
+   * @param filters - Filters object containing all filter conditions
+   * @returns SafeFilters with validated conditions and parameters
+   */
+  protected getSafeFilters(filters: Filters) {
+    return buildPrimaryKeyFilters(filters, this.meta.model.primaryKeys, this.getValidColumns());
+  }
+
+  /**
+   * Fetches the existing object before update.
+   * @param filters - Filter conditions for finding the object
+   * @returns The existing record or null if not found
+   */
   async getObject(filters: Filters): Promise<Record<string, unknown> | null> {
+    const tableName = validateTableName(this.meta.model.tableName);
     const safeFilters = this.getSafeFilters(filters);
+    const whereClause = buildWhereClause(safeFilters.conditions);
+
+    const sql = `SELECT * FROM ${tableName} ${whereClause} LIMIT 1`;
+
+    if (this.logger) {
+      this.logger.debug?.(`[D1UpdateEndpoint] getObject SQL: ${sql}`);
+    }
 
     const oldObj = await this.getDBBinding()
-      .prepare(
-        `SELECT *
-                                                      FROM ${this.meta.model.tableName} WHERE ${safeFilters.conditions.join(" AND ")} LIMIT 1`,
-      )
+      .prepare(sql)
       .bind(...safeFilters.conditionsParams)
       .all();
 
@@ -59,34 +76,52 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
     return oldObj.results[0] as O<typeof this._meta>;
   }
 
+  /**
+   * Updates a record in the database.
+   * @param _oldObj - The existing record (for reference)
+   * @param filters - Filter conditions and data to update
+   * @returns The updated record
+   * @throws ApiException on database errors
+   */
   async update(_oldObj: O<typeof this._meta>, filters: UpdateFilters): Promise<O<typeof this._meta>> {
+    const tableName = validateTableName(this.meta.model.tableName);
+    const validColumns = this.getValidColumns();
     const safeFilters = this.getSafeFilters(filters);
+    const whereClause = buildWhereClause(safeFilters.conditions);
 
-    let result;
-    try {
-      const obj = await this.getDBBinding()
-        .prepare(
-          `UPDATE ${this.meta.model.tableName} SET ${Object.keys(filters.updatedData).map((key, index) => `${key} = ?${safeFilters.conditionsParams.length + index + 1}`)} WHERE ${safeFilters.conditions.join(" AND ")} RETURNING *`,
-        )
-        .bind(...safeFilters.conditionsParams, ...Object.values(filters.updatedData))
-        .all();
+    // Validate and build SET clause
+    const updateColumns = Object.keys(filters.updatedData);
+    const updateValues = Object.values(filters.updatedData);
 
-      result = obj.results[0];
-    } catch (e: any) {
-      if (this.logger)
-        this.logger.error(`Caught exception while trying to update ${this.meta.model.tableName}: ${e.message}`);
-      if (e.message.includes("UNIQUE constraint failed")) {
-        const constraintMessage = e.message.split("UNIQUE constraint failed:")[1].split(":")[0].trim();
-        if (this.constraintsMessages[constraintMessage]) {
-          throw this.constraintsMessages[constraintMessage];
-        }
-      }
+    // Build SET clause with proper parameter indices (starting after condition params)
+    const setClause = updateColumns
+      .map((col, i) => {
+        const validatedCol = validateColumnName(col, validColumns);
+        return `${validatedCol} = ?${safeFilters.conditionsParams.length + i + 1}`;
+      })
+      .join(", ");
 
-      throw new ApiException(e.message);
+    const sql = `UPDATE ${tableName} SET ${setClause} ${whereClause} RETURNING *`;
+
+    if (this.logger) {
+      this.logger.debug?.(`[D1UpdateEndpoint] update SQL: ${sql}`);
     }
 
-    if (this.logger) this.logger.log(`Successfully updated ${this.meta.model.tableName}`);
+    try {
+      const obj = await this.getDBBinding()
+        .prepare(sql)
+        .bind(...safeFilters.conditionsParams, ...updateValues)
+        .all();
 
-    return result as O<typeof this._meta>;
+      const result = obj.results[0] as O<typeof this._meta>;
+
+      if (this.logger) {
+        this.logger.log(`Successfully updated record in ${tableName}`);
+      }
+
+      return result;
+    } catch (e: unknown) {
+      handleDbError(e as Error, this.constraintsMessages, this.logger, `update ${tableName}`);
+    }
   }
 }

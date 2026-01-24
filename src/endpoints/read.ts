@@ -1,5 +1,6 @@
+import { z } from "zod";
 import { contentJson } from "../contentTypes";
-import { NotFoundException } from "../exceptions";
+import { InputValidationException, NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
 import { type FilterCondition, type ListFilters, MetaGenerator, type MetaInput, type O } from "./types";
 
@@ -37,12 +38,15 @@ export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> exte
       responses: {
         "200": {
           description: "Returns a single object if found",
-          ...contentJson({
-            success: Boolean,
-            result: this.meta.model.serializerSchema,
-          }),
+          ...contentJson(
+            z.object({
+              success: z.boolean(),
+              result: this.meta.model.serializerSchema,
+            }),
+          ),
           ...this.schema?.responses?.[200],
         },
+        ...InputValidationException.schema(),
         ...NotFoundException.schema(),
         ...this.schema?.responses,
       },
