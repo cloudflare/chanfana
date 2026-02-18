@@ -14,7 +14,10 @@ export type OpenAPIRouterType<M> = {
   schema: any;
 };
 
-/** Valid HTTP methods for OpenAPI routes */
+/**
+ * Valid HTTP methods for OpenAPI routes.
+ * These are the standard methods supported by the OpenAPI specification.
+ */
 export type HttpMethod = "get" | "head" | "post" | "put" | "delete" | "patch";
 
 /**
@@ -150,7 +153,7 @@ export class OpenAPIHandler {
    * Generates the OpenAPI schema document from registered routes.
    * @returns The complete OpenAPI specification object
    */
-  getGeneratedSchema() 
+  getGeneratedSchema() {
     try {
       const GeneratorClass = this.options?.openapiVersion === "3" ? OpenApiGeneratorV3 : OpenApiGeneratorV31;
       const generator = new GeneratorClass(this.registry.definitions);
@@ -177,6 +180,7 @@ export class OpenAPIHandler {
         paths: {},
       };
     }
+  }
 
   /**
    * Registers a nested router and merges its OpenAPI registry.
@@ -203,17 +207,18 @@ export class OpenAPIHandler {
    * @param path - The route path to parse
    * @returns The parsed and formatted path
    */
-  parseRoute(path: string): string 
+  parseRoute(path: string): string {
     return ((this.options.base || "") + path)
       .replaceAll(/\/+(\/|$)/g, "$1") // strip double & trailing slash
       .replaceAll(/:(\w+)/g, "{$1}"); // convert parameters into openapi compliant
+  }
 
   /**
    * Sanitizes an operationId to ensure it's valid for OpenAPI.
    * @param operationId - The raw operationId
    * @returns A sanitized operationId
    */
-  private sanitizeOperationId(operationId: string): string 
+  private sanitizeOperationId(operationId: string): string {
     return (
       operationId
         .replace(/[{}]/g, "") // Remove curly braces
@@ -222,6 +227,7 @@ export class OpenAPIHandler {
         .replace(/_+/g, "_") || // Collapse multiple underscores
       "root"
     ); // Fallback for empty result
+  }
 
   /**
    * Registers a route with the OpenAPI registry.
@@ -322,7 +328,7 @@ export class OpenAPIHandler {
    * Handles common proxy properties for the wrapped router.
    * Provides access to isChanfana flag, original router, schema, and registry.
    */
-  handleCommonProxy(_target: any, prop: string, ..._args: any[]) 
+  handleCommonProxy(_target: any, prop: string, ..._args: any[]) {
     // This is a hack to allow older versions of wrangler to use this library
     // https://github.com/cloudflare/workers-sdk/issues/5420
     if (prop === "middleware") {
@@ -346,28 +352,32 @@ export class OpenAPIHandler {
     }
 
     return undefined;
+  }
 
   /**
    * Gets the Request object from handler arguments.
    * Must be implemented by subclasses.
    * @param _args - Handler arguments
    */
-  getRequest(_args: any[]): Request 
+  getRequest(_args: any[]): Request {
     throw new Error("getRequest not implemented");
+  }
 
   /**
    * Gets URL parameters from handler arguments.
    * Must be implemented by subclasses.
    * @param _args - Handler arguments
    */
-  getUrlParams(_args: any[]): Record<string, any> 
+  getUrlParams(_args: any[]): Record<string, any> {
     throw new Error("getUrlParams not implemented");
+  }
 
   /**
    * Gets environment bindings from handler arguments.
    * Must be implemented by subclasses.
    * @param _args - Handler arguments
    */
-  getBindings(_args: any[]): Record<string, any> 
+  getBindings(_args: any[]): Record<string, any> {
     throw new Error("getBindings not implemented");
+  }
 }
