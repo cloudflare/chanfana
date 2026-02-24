@@ -33,3 +33,14 @@ jobs:
         with:
           json-summary-path: coverage/coverage-summary.json
           json-final-path: coverage/coverage-final.json
+
+      # Template smoke tests — ensure the starter template stays valid
+      - name: Template — install dependencies
+        run: npm install
+        working-directory: template
+      - name: Template — typecheck
+        run: npm run typecheck
+        working-directory: template
+      - name: Template — tests
+        run: npm test
+        working-directory: template
