@@ -120,11 +120,8 @@ export type ValidatedData<S> = S extends OpenAPIRouteSchema
 
 type GetRequest<T extends OpenAPIRouteSchema> = T["request"];
 
-type GetOutput<T extends object | undefined, P extends keyof T> = T extends NonNullable<T>
-  ? T[P] extends AnyZodObject
-    ? z.output<T[P]>
-    : undefined
-  : undefined;
+type GetOutput<T extends object | undefined, P extends keyof T> =
+  T extends NonNullable<T> ? (T[P] extends AnyZodObject ? z.output<T[P]> : undefined) : undefined;
 
 type GetPartBody<T extends RequestTypes, P extends keyof T> = T[P] extends ZodRequestBody ? T[P] : undefined;
 
