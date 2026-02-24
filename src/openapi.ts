@@ -56,7 +56,7 @@ export class OpenAPIHandler {
     }
 
     if (this.options?.openapi_url !== null) {
-      this.router.get((this.options?.base || "") + (this.options?.openapi_url || "/openapi.json"), () => {
+      this.router.get(this.options?.openapi_url || "/openapi.json", () => {
         return new Response(JSON.stringify(this.getGeneratedSchema()), {
           headers: {
             "content-type": "application/json;charset=UTF-8",
@@ -65,17 +65,14 @@ export class OpenAPIHandler {
         });
       });
 
-      this.router.get(
-        (this.options?.base || "") + (this.options?.openapi_url || "/openapi.json").replace(".json", ".yaml"),
-        () => {
-          return new Response(yaml.dump(this.getGeneratedSchema()), {
-            headers: {
-              "content-type": "text/yaml;charset=UTF-8",
-            },
-            status: 200,
-          });
-        },
-      );
+      this.router.get((this.options?.openapi_url || "/openapi.json").replace(".json", ".yaml"), () => {
+        return new Response(yaml.dump(this.getGeneratedSchema()), {
+          headers: {
+            "content-type": "text/yaml;charset=UTF-8",
+          },
+          status: 200,
+        });
+      });
     }
   }
 
@@ -225,6 +222,9 @@ export class OpenAPIHandler {
     }
     if (prop === "registry") {
       return this.registry;
+    }
+    if (prop === "options") {
+      return this.options;
     }
 
     return undefined;
