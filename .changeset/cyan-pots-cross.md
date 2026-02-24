@@ -1,5 +1,5 @@
 ---
-"chanfana": patch
+"chanfana": minor
 ---
 
 ### Bug Fixes
