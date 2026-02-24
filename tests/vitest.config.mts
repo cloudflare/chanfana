@@ -7,7 +7,14 @@ export default defineWorkersConfig({
     //   tsconfig: "tsconfig.json", // Path to your tsconfig file
     //   include: ["**/*.{test,spec}-d.ts"], // Explicitly include type-check test files
     // },
-    include: ["**/*.{test,spec}.?(c|m)[jt]s?(x)"], // Regular test files
+    include: ["tests/**/*.{test,spec}.?(c|m)[jt]s?(x)"], // Regular test files
+    coverage: {
+      provider: "istanbul",
+      all: true,
+      include: ["src/**/*.ts"],
+      exclude: ["src/cli.ts"],
+      reporter: ["text", "json-summary", "json"],
+    },
     poolOptions: {
       workers: {
         wrangler: {
