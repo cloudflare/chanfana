@@ -88,7 +88,7 @@ This section provides solutions to common issues you might encounter while using
 
 **Q: Why are chanfana errors showing up as `HTTPException` in Hono's `onError`?**
 
-**A:** As of v3.2, chanfana automatically converts its errors (validation errors, `ApiException` subclasses) into Hono `HTTPException` instances so they flow through `app.onError`. This enables centralized error logging and custom formatting. Call `err.getResponse()` to get chanfana's standard JSON error response:
+**A:** As of v3.1, chanfana automatically converts its errors (validation errors, `ApiException` subclasses) into Hono `HTTPException` instances so they flow through `app.onError`. This enables centralized error logging and custom formatting. Call `err.getResponse()` to get chanfana's standard JSON error response:
 
 ```typescript
 import { HTTPException } from 'hono/http-exception';

@@ -349,9 +349,9 @@ The `base` option is now validated:
 2. If you use `fromHono(app, { base: '/api' })` without `basePath()`, no changes needed — this now also configures Hono's route matching.
 3. Ensure your `base` values start with `/` and don't end with `/`.
 
-## Hono Error Handling Changes (v3.2)
+## Hono Error Handling Changes (v3.1)
 
-Chanfana v3.2 changes how errors are handled when using the Hono adapter.
+Chanfana v3.1 changes how errors are handled when using the Hono adapter.
 
 ### Errors now flow through Hono's `onError`
 
