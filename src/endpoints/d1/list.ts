@@ -79,8 +79,8 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
           .join(" OR ");
 
         conditions.push(`(${searchCondition})`);
-        // Escape LIKE wildcards to prevent unintended pattern matching
-        const escaped = String(f.value).replace(/[%_]/g, "\\$&");
+        // Escape the ESCAPE character itself first, then LIKE wildcards
+        const escaped = String(f.value).replace(/\\/g, "\\\\").replace(/[%_]/g, "\\$&");
         conditionsParams.push(`%${escaped}%`);
       } else if (f.operator === "EQ") {
         // Validate filter column
