@@ -57,7 +57,7 @@ describe("Task API", () => {
       expect(status).toBe(200);
       expect(body.info.title).toBe("Task API");
       expect(body.paths["/api/tasks"]).toBeDefined();
-      expect(body.paths["/api/tasks/:id"]).toBeDefined();
+      expect(body.paths["/api/tasks/{id}"]).toBeDefined();
     });
 
     it("should serve the docs page", async () => {
@@ -65,7 +65,7 @@ describe("Task API", () => {
 
       expect(res.status).toBe(200);
       const html = await res.text();
-      expect(html).toContain("Task API");
+      expect(html).toContain("SwaggerUI");
     });
   });
 

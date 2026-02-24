@@ -26,8 +26,8 @@ export const TaskSchema = z.object({
  */
 export const taskMeta = {
   model: {
-    tableName: "tasks" as const,
+    tableName: "tasks",
     schema: TaskSchema,
-    primaryKeys: ["id"] as const,
+    primaryKeys: ["id"],
   },
 };
