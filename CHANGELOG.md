@@ -1,0 +1,117 @@
+# chanfana
+
+## 3.1.0
+
+### Minor Changes
+
+- [#297](https://github.com/cloudflare/chanfana/pull/297) [`59df713`](https://github.com/cloudflare/chanfana/commit/59df713db890e9f37ae53a87202359d9f2b0c12d) Thanks [@G4brym](https://github.com/G4brym)! - ### Breaking Changes
+
+  - **Parameter helper functions removed** — `Str()`, `Num()`, `Int()`, `Bool()`, `DateTime()`, `DateOnly()`, `Email()`, `Uuid()`, `Hostname()`, `Ipv4()`, `Ipv6()`, `Ip()`, `Regex()`, `Enumeration()`, and `convertParams()` have been removed. Use native Zod schemas directly (e.g., `Str()` → `z.string()`, `Email()` → `z.email()`, `DateTime()` → `z.iso.datetime()`)
+  - **Legacy type support removed** — `legacyTypeIntoZod`, `Arr()`, and `Obj()` are no longer exported. `contentJson()` now requires a Zod schema instead of plain objects
+  - **D1 endpoint error messages sanitized** — Database errors no longer expose internal details. Use the `constraintsMessages` property to map constraint violations to user-friendly errors
+  - **D1 delete/update restricted to primary key filters** — Only filters matching `primaryKeys` are used in WHERE clauses for security
+  - **D1 `per_page` capped at 100** — Configurable via `maxPerPage` class property
+  - **`raiseUnknownParameters` now enforced** — Was previously accepted but not functional; now active
+
+  ### New Features
+
+  - **10 new exception classes** — `UnauthorizedException` (401), `ForbiddenException` (403), `MethodNotAllowedException` (405), `ConflictException` (409), `UnprocessableEntityException` (422), `TooManyRequestsException` (429), `InternalServerErrorException` (500), `BadGatewayException` (502), `ServiceUnavailableException` (503), `GatewayTimeoutException` (504)
+  - **D1 SQL injection prevention utilities** — New `d1/base.ts` module with `validateSqlIdentifier()`, `validateTableName()`, `validateColumnName()`, `buildSafeFilters()`, `buildPrimaryKeyFilters()`, `getD1Binding()`, `handleDbError()`, and query clause builders. All exported from `chanfana`
+  - **`Retry-After` HTTP header** — Automatically set on responses for `TooManyRequestsException` and `ServiceUnavailableException` when `retryAfter` is provided
+  - **`getUnvalidatedData()`** — New method on `OpenAPIRoute` to access raw request data before Zod applies defaults/transformations, useful for partial updates with Zod 4
+  - **Hono `basePath()` auto-detection** — Chanfana now detects Hono's `basePath()` automatically; passing both `basePath()` and `base` option now throws a descriptive error
+  - **Hono error flow** — Errors now flow through Hono's `app.onError` as `HTTPException` instances instead of being caught internally
+
+  ### Bug Fixes
+
+  - **D1: Prevent unscoped DELETE/UPDATE** — `buildPrimaryKeyFilters()` throws when no primary key filters match
+  - **D1: Fix shared exception instances** — `handleDbError()` clones constraint exceptions instead of re-throwing the same object
+  - **D1: Fix empty update producing invalid SQL** — Returns existing object when no fields to update
+  - **D1: Read endpoint uses primary key filters** — Consistent with delete/update behavior
+  - **D1: Delete uses shared `handleDbError`** — Consistent error handling and `constraintsMessages` support
+  - **D1: Escape LIKE wildcards** — `%` and `_` in search values no longer cause unintended pattern matching
+  - **D1: Column names validated against model schema** — Only fields defined in the Zod schema are accepted in SQL queries
+  - **Schema generation errors propagate** — No longer silently swallowed
+  - **CreateEndpoint response schema** — Fixed reference from status 200 to 201
+  - **Falsy default values** — `0`, `false`, and `""` are now correctly applied as defaults
+  - **BigInt coercion** — Uses `BigInt()` directly instead of `parseInt()` to avoid precision loss
+  - **Boolean coercion null guard** — Prevents errors when coercing null values to boolean
+  - **HEAD requests** — No longer attempt to parse request body
+  - **YAML URL generation** — Only replaces trailing `.json` in URL
+  - **ApiException import** — Changed from `import type` to value import for proper `instanceof` checks
+  - **ReadEndpoint & ListEndpoint response schema** — Added `InputValidationException` to documented 400 responses
+  - **Removed dead code** — `handleValidationError()` and `D1EndpointConfig` interface removed
+
+  ### Improvements
+
+  - **D1 parallel queries** — List endpoint runs data and count queries concurrently with `Promise.all()`
+  - **Configurable `maxPerPage`** — `D1ListEndpoint.maxPerPage` is a class property that can be overridden
+  - **Normalized ORDER BY direction** — Returns lowercase `"asc"`/`"desc"` for consistency
+  - **`sanitizeOperationId()`** — Ensures operationIds are valid by removing special characters
+  - **Router constructor validation** — `OpenAPIHandler` throws if router argument is missing
+  - **Comprehensive JSDoc** — Added to all exception classes, D1 endpoint methods, and OpenAPI handler methods
+  - **Error responses include `result: {}`** — Consistent shape with success responses
+
+- [#306](https://github.com/cloudflare/chanfana/pull/306) [`9470a04`](https://github.com/cloudflare/chanfana/commit/9470a045434b95f36e25d9650461b90e25c8cf74) Thanks [@G4brym](https://github.com/G4brym)! - ### Hono `basePath()` support
+
+  Chanfana now properly handles Hono's `basePath()` for route matching, OpenAPI schema generation, and documentation URLs.
+
+  **New features:**
+
+  - **Auto-detection of Hono's `basePath()`**: When a Hono instance is created with `basePath()` (e.g., `new Hono().basePath("/api")`), Chanfana automatically detects the base path and uses it for schema generation and doc routes. No need to pass `base` separately.
+  - **`base` option applies `basePath()` for Hono**: Using `fromHono(new Hono(), { base: "/api" })` now calls Hono's `basePath()` internally, so routes actually match at the prefixed path — not just in the OpenAPI schema.
+  - **`options` exposed via proxy**: The router proxy now exposes the `options` property for runtime access to the configured `RouterOptions`.
+
+  **New validations:**
+
+  - **Combining `basePath()` and `base` throws an error**: Using both Hono's `basePath()` and chanfana's `base` option (e.g., `fromHono(new Hono().basePath("/api"), { base: "/v1" })`) now throws a descriptive error with migration guidance.
+  - **Base path format validation**: The `base` option must start with `/` and must not end with `/`. Invalid formats now throw a clear error.
+
+  **Bug fixes:**
+
+  - Fixed a stale reference in nested route handling where routes were registered on the original Hono instance instead of the based router.
+
+  **No changes to itty-router behavior.**
+
+- [`b671b4d`](https://github.com/cloudflare/chanfana/commit/b671b4dd45919dbafb4e8c8228162a210651868c) Thanks [@G4brym](https://github.com/G4brym)! - ### Hono error handler integration
+
+  Chanfana errors (validation errors, API exceptions) now flow through Hono's `onError` handler automatically when using `fromHono()`. Previously, these errors were caught internally and formatted into responses before Hono could see them.
+
+  **How it works:**
+
+  The Hono adapter converts chanfana errors into Hono `HTTPException` instances with the same JSON response body chanfana normally produces. This means:
+
+  - Hono's `onError` handler receives the error for logging, monitoring, or custom formatting
+  - If no `onError` is configured, Hono's default handler calls `HTTPException.getResponse()` and returns the formatted response as usual — no behavior change for users without `onError`
+  - Unknown errors (not ZodError or ApiException) propagate as-is without wrapping
+
+  **Usage:**
+
+  ```typescript
+  import { fromHono } from "chanfana";
+  import { Hono } from "hono";
+  import { HTTPException } from "hono/http-exception";
+
+  const app = new Hono();
+  const openapi = fromHono(app);
+
+  app.onError((err, c) => {
+    console.error("Caught:", err);
+    if (err instanceof HTTPException) {
+      return err.getResponse();
+    }
+    return c.json({ error: "Internal Server Error" }, 500);
+  });
+  ```
+
+  **No changes to itty-router behavior.**
+
+  **Implementation details:**
+
+  - Added `wrapHandler()` hook to `OpenAPIHandler` base class for adapter-specific handler wrapping
+  - `HonoOpenAPIHandler` overrides `wrapHandler()` to convert errors to `HTTPException` via dynamic import (no runtime cost for itty-router users)
+  - Extracted `formatChanfanaError()` utility for consistent error formatting across code paths
+
+### Patch Changes
+
+- [#312](https://github.com/cloudflare/chanfana/pull/312) [`1b889cf`](https://github.com/cloudflare/chanfana/commit/1b889cf76b0cb26058c0b353db40f182a3e19265) Thanks [@G4brym](https://github.com/G4brym)! - Include source code, AI coding skills, and documentation in the npm package so AI tools can browse implementation details after installing chanfana. Added `llms.txt` as a lightweight entry point following the llmstxt.org convention.
