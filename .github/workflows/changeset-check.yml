@@ -1,0 +1,26 @@
+name: Changeset Check
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  changeset-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          cache: "npm"
+
+      - run: npm install --frozen-lockfile
+      - name: Check for changeset
+        run: npx changeset status --since=origin/main
