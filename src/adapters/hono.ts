@@ -91,9 +91,17 @@ export function fromHono<
   S extends Schema = M extends Hono<any, infer S, any> ? S : never,
   BasePath extends string = M extends Hono<any, any, infer BP> ? BP : never,
 >(router: M, options?: RouterOptions): HonoOpenAPIRouterType<E, S, BasePath> {
-  const openapiRouter = new HonoOpenAPIHandler(router, options);
+  // Apply basePath if chanfana base option is provided (appends to any existing Hono basePath)
+  const basedRouter = options?.base ? router.basePath(options.base) : router;
 
-  const proxy = new Proxy(router, {
+  // Read the effective base from Hono's _basePath (includes any pre-existing basePath + chanfana base)
+  // This ensures schema generation and doc routes use the correct full base path
+  const effectiveBase = (basedRouter as any)._basePath;
+  const effectiveOptions = effectiveBase !== "/" ? { ...options, base: effectiveBase } : options;
+
+  const openapiRouter = new HonoOpenAPIHandler(basedRouter, effectiveOptions);
+
+  const proxy = new Proxy(basedRouter, {
     get: (target: any, prop: string, ...args: any[]) => {
       const _result = openapiRouter.handleCommonProxy(target, prop, ...args);
       if (_result !== undefined) {
