@@ -66,6 +66,7 @@ export default app;
 3.  **Initialize Chanfana with `fromHono`:** Call `fromHono(app, options)` to initialize Chanfana for your Hono app.
     *   The first argument is your Hono application instance (`app`).
     *   The second argument is an optional `RouterOptions` object to configure Chanfana (e.g., `openapi_url`, `docs_url`).
+    *   **Base path:** Chanfana automatically detects Hono's `basePath()`. You can use either `fromHono(new Hono().basePath('/api'))` or `fromHono(new Hono(), { base: '/api' })` — both configure route matching, schema generation, and documentation URLs correctly. Do not combine both approaches.
 4.  **Use `openapi` to Register Routes:** Use the `openapi` instance (returned by `fromHono`) to register your `OpenAPIRoute` classes for different HTTP methods (`get`, `post`, `put`, `delete`, `patch`, `all`, `on`, `route`). These methods work similarly to Hono's routing methods but are extended with Chanfana's OpenAPI features.
 
 ### Extending Existing Hono Applications

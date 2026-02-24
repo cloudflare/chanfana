@@ -341,7 +341,7 @@ In this example, we create an abstract class `AuthenticatedRoute` that extends `
 
 For evolving APIs, versioning is often necessary to maintain backward compatibility while introducing new features or changes. Chanfana can be used to build versioned APIs by:
 
-*   **Using Base Paths:** Utilize the `base` option in `RouterOptions` to set version-specific base paths (e.g., `/api/v1`, `/api/v2`).
+*   **Using Base Paths:** With Hono, you can use either `new Hono().basePath('/api/v1')` (auto-detected by Chanfana) or the `base` option in `RouterOptions` to set version-specific base paths (e.g., `/api/v1`, `/api/v2`).
 *   **Nested Routers for Versions:** Organize routes for different API versions into nested routers mounted under version-specific paths.
 *   **Conditional Logic in Endpoints:** Implement version-specific logic within your endpoint `handle` methods based on request headers, path segments, or query parameters.
 *   **Separate OpenAPI Documents:** Generate separate OpenAPI documents for each API version by initializing Chanfana with different `RouterOptions` for each version.

@@ -409,6 +409,38 @@ expect(error.message).toBe("Required");
 expect(error.message).toBe("Invalid input: expected string, received undefined");
 ```
 
+### Issue: "base option is no longer needed when using Hono's basePath()"
+
+**Cause:** Both Hono's `basePath()` and chanfana's `base` option were provided to `fromHono()`
+**Solution:** Remove the `base` option. Chanfana auto-detects Hono's `basePath()` since v3.1.
+
+```typescript
+// Before (throws error in v3.1+)
+const app = new Hono().basePath("/api");
+fromHono(app, { base: "/api" });
+
+// After: just use basePath() — chanfana detects it
+const app = new Hono().basePath("/api");
+fromHono(app);
+
+// Or: just use chanfana's base option (calls basePath internally)
+fromHono(new Hono(), { base: "/api" });
+```
+
+### Issue: 'base must start with "/"' or 'base must not end with "/"'
+
+**Cause:** Invalid `base` format in `RouterOptions`
+**Solution:** Ensure `base` starts with `/` and does not end with `/`
+
+```typescript
+// Wrong
+fromHono(app, { base: "api" });    // Missing leading /
+fromHono(app, { base: "/api/" });  // Trailing /
+
+// Correct
+fromHono(app, { base: "/api" });
+```
+
 ### Issue: Sensitive data exposed in API responses
 
 **Cause:** No serializer defined

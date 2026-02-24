@@ -13,6 +13,7 @@ import type {
 import { OpenAPIHandler, type OpenAPIRouterType } from "../openapi";
 import type { OpenAPIRoute } from "../route";
 import type { RouterOptions } from "../types";
+import { validateBasePath } from "../utils";
 
 type MergeTypedResponse<T> =
   T extends Promise<infer T2>
@@ -71,7 +72,34 @@ export type HonoOpenAPIRouterType<
   // Hono must be defined last, for the overwrite method to have priority!
 } & Hono<E, S, BasePath>;
 
+/**
+ * Defensively reads Hono's base path from its internal `_basePath` property.
+ * This is not part of Hono's public API — if Hono changes this internal,
+ * the fallback is that users must pass the `base` option to fromHono() explicitly.
+ *
+ * @returns The detected base path, or undefined if not available or "/"
+ */
+function getHonoBasePath(router: any): string | undefined {
+  const bp = router?._basePath;
+  if (typeof bp !== "string" || bp === "/") {
+    return undefined;
+  }
+  if (bp.endsWith("/")) {
+    const normalized = bp.replace(/\/+$/, "");
+    console.warn(
+      `Hono basePath has a trailing slash ("${bp}"). ` +
+        `Use basePath("${normalized}") instead of basePath("${bp}") to avoid issues.`,
+    );
+    return normalized;
+  }
+  return bp;
+}
+
 export class HonoOpenAPIHandler extends OpenAPIHandler {
+  protected get routerHandlesBasePrefix(): boolean {
+    return true;
+  }
+
   getRequest(args: any[]) {
     return args[0].req.raw;
   }
@@ -91,9 +119,37 @@ export function fromHono<
   S extends Schema = M extends Hono<any, infer S, any> ? S : never,
   BasePath extends string = M extends Hono<any, any, infer BP> ? BP : never,
 >(router: M, options?: RouterOptions): HonoOpenAPIRouterType<E, S, BasePath> {
-  const openapiRouter = new HonoOpenAPIHandler(router, options);
+  // Validate base format early, before Hono's basePath() is called.
+  // The OpenAPIHandler constructor also validates, but basePath() runs first here.
+  if (options?.base) {
+    validateBasePath(options.base);
+  }
 
-  const proxy = new Proxy(router, {
+  // Detect pre-existing basePath on the Hono instance (e.g. new Hono().basePath("/api"))
+  const existingBase = getHonoBasePath(router);
+
+  if (existingBase && options?.base) {
+    throw new Error(
+      `Detected Hono basePath "${existingBase}" and chanfana base option "${options.base}". ` +
+        `As of chanfana 3.1, the base option is no longer needed when using Hono's basePath() — ` +
+        `the base path "${existingBase}" is detected automatically. ` +
+        `Please remove the base option from fromHono().`,
+    );
+  }
+
+  // If chanfana base option is provided (and no pre-existing basePath), apply it via Hono's basePath()
+  // so that both route matching and schema generation use the same prefix.
+  // If the router already has a basePath, use it as-is — routes already match at the prefixed path.
+  const basedRouter = options?.base ? router.basePath(options.base) : router;
+
+  // Read the effective base from the (possibly based) router for schema generation.
+  // This covers both cases: chanfana's base applied via basePath(), or pre-existing basePath.
+  const effectiveBase = getHonoBasePath(basedRouter);
+  const effectiveOptions = effectiveBase ? { ...options, base: effectiveBase } : options;
+
+  const openapiRouter = new HonoOpenAPIHandler(basedRouter, effectiveOptions);
+
+  const proxy = new Proxy(basedRouter, {
     get: (target: any, prop: string, ...args: any[]) => {
       const _result = openapiRouter.handleCommonProxy(target, prop, ...args);
       if (_result !== undefined) {
@@ -121,7 +177,7 @@ export function fromHono<
               return !excludePath.has(obj.path);
             });
 
-            router.route(route, subApp);
+            basedRouter.route(route, subApp);
             return proxy;
           }
 
