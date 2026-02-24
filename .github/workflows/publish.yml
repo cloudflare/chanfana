@@ -38,6 +38,7 @@ jobs:
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
+          version: npx changeset version && node scripts/sync-template-version.js
           publish: npx changeset publish
           title: "Version Packages"
           commit: "Version Packages"
