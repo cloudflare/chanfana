@@ -5,6 +5,18 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
   "bin": {
     "chanfana": "dist/cli.js"
   },
@@ -27,27 +39,26 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "keywords": [
-    "cloudflare",
-    "worker",
-    "workers",
-    "serverless",
-    "cloudflare workers",
-    "router",
     "openapi",
     "swagger",
     "openapi generator",
-    "cf",
-    "optional",
+    "validation",
+    "zod",
+    "hono",
+    "itty-router",
+    "cloudflare",
+    "cloudflare workers",
+    "d1",
+    "serverless",
+    "router",
     "middleware",
-    "parameters",
     "typescript",
-    "npm",
-    "package",
-    "cjs",
     "esm",
-    "umd",
-    "typed"
+    "cjs"
   ],
   "author": "Gabriel Massadas <gmassadas@cloudflare.com> (https://github.com/g4brym)",
   "license": "MIT",
