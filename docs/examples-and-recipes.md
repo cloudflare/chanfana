@@ -96,7 +96,7 @@ Let's build a complete example of a simple Task Management API using Hono, Chanf
 
 6.  **Apply the migration using `wrangler d1 migrations apply task-database --local` (or `--remote` for your deployed database).**
 
-7.  **Run the API using `wrangler dev` and access the documentation at `http://localhost:8787/api/docs`.**
+7.  **Run the API using `wrangler dev` and access the documentation at `http://localhost:8787/docs`.**
 
 This example sets up a fully functional Task Management API with CRUD operations, input validation, OpenAPI documentation, and D1 database persistence, all with minimal code thanks to Chanfana's predefined D1 endpoints.
 
@@ -600,15 +600,16 @@ This endpoint will still be accessible, but will not be shown in the schema.
 Before continuing, please learn more about [Reusing Descriptions by OpenAPI](https://learn.openapis.org/specification/components.html).
 
 To start reusing your schemas, all you need to do is call the `.openapi("schema name here")` after any schema you have
-defined. This includes `parameters`, `requestBody`, `responses` even `Enum`.
+defined. This includes `parameters`, `request body`, `responses` and more.
 
-!!! note
-
-    This is only available when using [chanfana types](../types.md#chanfana-types) or
-    [zod types](../types.md#zod-types)
-
+::: info
+This works with any Zod schema used in your endpoint definitions.
+:::
 
 ```ts
+import { OpenAPIRoute, contentJson } from 'chanfana';
+import { z } from 'zod';
+
 export class PutMetadata extends OpenAPIRoute {
   schema = {
     operationId: 'post-bucket-put-object-metadata',
@@ -616,13 +617,13 @@ export class PutMetadata extends OpenAPIRoute {
     summary: 'Update object metadata',
     request: {
       params: z.object({
-        bucket: z.string(), // Assuming bucket is a string
+        bucket: z.string(),
         key: z.string().describe('base64 encoded file key'),
       }),
+      body: contentJson(z.object({
+        customMetadata: z.record(z.string(), z.any())
+      }).openapi("Object metadata")),
     },
-    requestBody: z.object({
-      customMetadata: z.record(z.string(), z.any())
-    }).openapi("Object metadata")
   }
 
   // ...
@@ -690,7 +691,7 @@ You can now get a list of url parameters inside the getSchema function.
 This can be very helpful when auto generating schemas
 
 ```ts
-import { OpenAPIRoute } from './route'
+import { OpenAPIRoute } from 'chanfana'
 
 // Define route
 router.get("/v1/:account_id/gateways/:gateway_id", GetGateway);
@@ -718,12 +719,14 @@ be picked from a CI/CD pipeline.
 
 ```ts
 import fs from 'fs'
-import { openAPI } from '../src/router'
+
+// Import your chanfana router instance (returned by fromHono or fromIttyRouter)
+import { openapi } from './router'
 
 // Get the Schema from chanfana
-const schema = openAPI.schema
+const schema = openapi.schema
 
-// Optionaly: update the schema with some costumizations for publishing
+// Optionally: update the schema with some customizations for publishing
 
 // Write the final schema
 fs.writeFileSync('./public-api.json', JSON.stringify(schema, null, 2))

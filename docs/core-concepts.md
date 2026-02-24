@@ -39,7 +39,7 @@ Chanfana's architecture is designed to be extensible. While it provides adapters
 
 ## `OpenAPIRoute`: Building Blocks of Your API
 
-The `OpenAPIRoute` class is the central building block for defining your API endpoints in Chanfana. It's an abstract class that you extend to create concrete endpoint implementations.
+The `OpenAPIRoute` class is the central building block for defining your API endpoints in Chanfana. It's a base class that you extend to create endpoint implementations.
 
 **Key aspects of `OpenAPIRoute`:**
 
