@@ -1,7 +1,10 @@
 import { Hono } from "hono";
+import { HTTPException } from "hono/http-exception";
 import { AutoRouter } from "itty-router";
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 import { fromHono, fromIttyRouter } from "../../src";
+import { ApiException, NotFoundException } from "../../src/exceptions";
 import { OpenAPIRoute } from "../../src/route";
 import { buildRequest } from "../utils";
 
@@ -374,5 +377,270 @@ describe("routerOptions Hono with nested routers and base path", () => {
     const schemaResp = (await schemaReq.json()) as { paths: Record<string, any> };
     expect(schemaReq.status).toEqual(200);
     expect(schemaResp.paths["/api/v1/todo"]).toBeDefined();
+  });
+});
+
+// --- raiseOnError tests ---
+
+class EndpointWithValidation extends OpenAPIRoute {
+  schema = {
+    request: {
+      body: {
+        content: {
+          "application/json": {
+            schema: z.object({
+              name: z.string(),
+              age: z.number().int(),
+            }),
+          },
+        },
+      },
+    },
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.boolean() }),
+          },
+        },
+      },
+    },
+  };
+
+  async handle() {
+    const data = await this.getValidatedData();
+    return { success: true };
+  }
+}
+
+class EndpointThatThrowsNotFound extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.boolean() }),
+          },
+        },
+      },
+    },
+  };
+
+  async handle() {
+    throw new NotFoundException("Item not found");
+  }
+}
+
+class EndpointThatThrowsApiException extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.boolean() }),
+          },
+        },
+      },
+    },
+  };
+
+  async handle() {
+    throw new ApiException("Something went wrong");
+  }
+}
+
+class EndpointThatThrowsUnknownError extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.boolean() }),
+          },
+        },
+      },
+    },
+  };
+
+  async handle() {
+    throw new Error("Unexpected failure");
+  }
+}
+
+describe("Hono error handling", () => {
+  it("validation error flows through onError as HTTPException", async () => {
+    const app = new Hono();
+    let caughtError: unknown = null;
+
+    app.onError((err, c) => {
+      caughtError = err;
+      if (err instanceof HTTPException) {
+        return err.getResponse();
+      }
+      return c.json({ error: "Internal Server Error" }, 500);
+    });
+
+    const router = fromHono(app);
+    router.post("/items", EndpointWithValidation);
+
+    const request = await router.fetch(
+      new Request("http://localhost/items", {
+        method: "POST",
+        body: JSON.stringify({ name: 123 }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const resp = await request.json();
+
+    // Error should have flowed through onError as HTTPException
+    expect(caughtError).toBeInstanceOf(HTTPException);
+    expect((caughtError as HTTPException).status).toEqual(400);
+
+    // Response should still have chanfana's standard error format
+    expect(request.status).toEqual(400);
+    expect((resp as any).success).toEqual(false);
+    expect((resp as any).errors).toBeDefined();
+    expect(Array.isArray((resp as any).errors)).toBe(true);
+  });
+
+  it("NotFoundException flows through onError as HTTPException", async () => {
+    const app = new Hono();
+    let caughtError: unknown = null;
+
+    app.onError((err, c) => {
+      caughtError = err;
+      if (err instanceof HTTPException) {
+        return err.getResponse();
+      }
+      return c.json({ error: "Internal Server Error" }, 500);
+    });
+
+    const router = fromHono(app);
+    router.get("/items/:id", EndpointThatThrowsNotFound);
+
+    const request = await router.fetch(new Request("http://localhost/items/123"));
+
+    const resp = await request.json();
+
+    expect(caughtError).toBeInstanceOf(HTTPException);
+    expect((caughtError as HTTPException).status).toEqual(404);
+
+    expect(request.status).toEqual(404);
+    expect((resp as any).success).toEqual(false);
+    expect((resp as any).errors[0].code).toEqual(7002);
+    expect((resp as any).errors[0].message).toEqual("Item not found");
+  });
+
+  it("ApiException flows through onError as HTTPException", async () => {
+    const app = new Hono();
+    let caughtError: unknown = null;
+
+    app.onError((err, c) => {
+      caughtError = err;
+      if (err instanceof HTTPException) {
+        return err.getResponse();
+      }
+      return c.json({ error: "Internal Server Error" }, 500);
+    });
+
+    const router = fromHono(app);
+    router.get("/fail", EndpointThatThrowsApiException);
+
+    const request = await router.fetch(new Request("http://localhost/fail"));
+
+    const resp = await request.json();
+
+    expect(caughtError).toBeInstanceOf(HTTPException);
+    expect((caughtError as HTTPException).status).toEqual(500);
+
+    expect(request.status).toEqual(500);
+    expect((resp as any).success).toEqual(false);
+    expect((resp as any).errors[0].code).toEqual(7000);
+  });
+
+  it("unknown errors propagate as-is through onError (not HTTPException)", async () => {
+    const app = new Hono();
+    let caughtError: unknown = null;
+
+    app.onError((err, c) => {
+      caughtError = err;
+      return c.json({ error: "caught" }, 500);
+    });
+
+    const router = fromHono(app);
+    router.get("/crash", EndpointThatThrowsUnknownError);
+
+    const request = await router.fetch(new Request("http://localhost/crash"));
+
+    const resp = await request.json();
+
+    // Unknown error should NOT be wrapped in HTTPException
+    expect(caughtError).toBeInstanceOf(Error);
+    expect(caughtError).not.toBeInstanceOf(HTTPException);
+    expect((caughtError as Error).message).toEqual("Unexpected failure");
+
+    expect(request.status).toEqual(500);
+    expect((resp as any).error).toEqual("caught");
+  });
+
+  it("without onError, HTTPException still returns formatted response via Hono default handler", async () => {
+    const app = new Hono();
+    const router = fromHono(app);
+    router.post("/items", EndpointWithValidation);
+
+    // No app.onError() — Hono's default handler calls HTTPException.getResponse()
+    const request = await router.fetch(
+      new Request("http://localhost/items", {
+        method: "POST",
+        body: JSON.stringify({ name: 123 }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const resp = await request.json();
+
+    expect(request.status).toEqual(400);
+    expect((resp as any).success).toEqual(false);
+    expect((resp as any).errors).toBeDefined();
+  });
+});
+
+describe("itty-router error handling", () => {
+  it("validation error returns formatted response directly", async () => {
+    const router = fromIttyRouter(AutoRouter());
+    router.post("/items", EndpointWithValidation);
+
+    const request = await router.fetch(
+      new Request("http://localhost/items", {
+        method: "POST",
+        body: JSON.stringify({ name: 123 }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const resp = await request.json();
+
+    // itty-router has no onError, so errors are caught and formatted by execute()
+    expect(request.status).toEqual(400);
+    expect((resp as any).success).toEqual(false);
+    expect((resp as any).errors).toBeDefined();
+  });
+
+  it("NotFoundException returns formatted response directly", async () => {
+    const router = fromIttyRouter(AutoRouter());
+    router.get("/items/:id", EndpointThatThrowsNotFound);
+
+    const request = await router.fetch(new Request("http://localhost/items/123", { method: "GET" }));
+
+    const resp = await request.json();
+
+    expect(request.status).toEqual(404);
+    expect((resp as any).success).toEqual(false);
+    expect((resp as any).errors[0].code).toEqual(7002);
   });
 });

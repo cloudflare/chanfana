@@ -34,7 +34,10 @@ export class IttyRouterOpenAPIHandler extends OpenAPIHandler {
 }
 
 export function fromIttyRouter<M>(router: M, options?: RouterOptions): M & IttyRouterOpenAPIRouterType<M> {
-  const openapiRouter = new IttyRouterOpenAPIHandler(router, options);
+  // itty-router has no onError handler, so raiseOnError must always be disabled
+  // to ensure errors are caught and formatted by execute() instead of propagating unhandled.
+  const { raiseOnError: _ignored, ...safeOptions } = options || {};
+  const openapiRouter = new IttyRouterOpenAPIHandler(router, safeOptions);
 
   return new Proxy(router, {
     get: (target: any, prop: string, ...args: any[]) => {

@@ -1,9 +1,8 @@
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
-import type { ApiException } from "./exceptions";
 import { coerceInputs } from "./parameters";
 import type { AnyZodObject, OpenAPIRouteSchema, RouteOptions, ValidatedData } from "./types";
-import { jsonResp } from "./utils";
+import { formatChanfanaError, jsonResp } from "./utils";
 
 extendZodWithOpenApi(z);
 
@@ -112,32 +111,6 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     return schema;
   }
 
-  handleValidationError(errors: z.ZodIssue[]): Response {
-    return jsonResp(
-      {
-        errors: errors,
-        success: false,
-        result: {},
-      },
-      {
-        status: 400,
-      },
-    );
-
-    // In the future, errors will be handled as exceptions
-    // Errors caught here are always validation errors
-    // const updatedError: Array<object> = errors.map((err) => {
-    // 	// @ts-expect-error
-    // 	if ((err as ApiException).buildResponse) {
-    // 		// Error is already an internal exception
-    // 		return err;
-    // 	}
-    // 	return new InputValidationException(err.message, err.path);
-    // });
-    //
-    // throw new MultiException(updatedError as Array<ApiException>);
-  }
-
   async execute(...args: HandleArgs) {
     this.validatedData = undefined;
     this.unvalidatedData = undefined;
@@ -147,22 +120,13 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     try {
       resp = await this.handle(...args);
     } catch (e) {
-      if (e instanceof z.ZodError) {
-        return this.handleValidationError(e.issues);
+      if (this.params?.raiseOnError) {
+        throw e;
       }
 
-      // Handle ApiException
-      if ((e as ApiException).buildResponse) {
-        const apiError = e as ApiException;
-        return jsonResp(
-          {
-            success: false,
-            errors: apiError.buildResponse(),
-          },
-          {
-            status: apiError.status,
-          },
-        );
+      const errorResponse = formatChanfanaError(e);
+      if (errorResponse) {
+        return errorResponse;
       }
 
       throw e;

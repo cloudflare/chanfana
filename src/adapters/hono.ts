@@ -13,7 +13,7 @@ import type {
 import { OpenAPIHandler, type OpenAPIRouterType } from "../openapi";
 import type { OpenAPIRoute } from "../route";
 import type { RouterOptions } from "../types";
-import { validateBasePath } from "../utils";
+import { formatChanfanaError, validateBasePath } from "../utils";
 
 type MergeTypedResponse<T> =
   T extends Promise<infer T2>
@@ -100,6 +100,27 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
     return true;
   }
 
+  /**
+   * Wraps route handlers to catch chanfana errors (ZodError, ApiException)
+   * and convert them to Hono HTTPException instances. This allows errors to
+   * flow through Hono's onError handler while preserving chanfana's default
+   * error response format via HTTPException.getResponse().
+   */
+  protected wrapHandler(handler: (...args: any[]) => Promise<Response>): (...args: any[]) => Promise<Response> {
+    return async (...args: any[]) => {
+      try {
+        return await handler(...args);
+      } catch (e) {
+        const response = formatChanfanaError(e);
+        if (response) {
+          const { HTTPException } = await import("hono/http-exception");
+          throw new HTTPException(response.status as any, { res: response });
+        }
+        throw e;
+      }
+    };
+  }
+
   getRequest(args: any[]) {
     return args[0].req.raw;
   }
@@ -145,7 +166,7 @@ export function fromHono<
   // Read the effective base from the (possibly based) router for schema generation.
   // This covers both cases: chanfana's base applied via basePath(), or pre-existing basePath.
   const effectiveBase = getHonoBasePath(basedRouter);
-  const effectiveOptions = effectiveBase ? { ...options, base: effectiveBase } : options;
+  const effectiveOptions = { ...(effectiveBase ? { ...options, base: effectiveBase } : options), raiseOnError: true };
 
   const openapiRouter = new HonoOpenAPIHandler(basedRouter, effectiveOptions);
 

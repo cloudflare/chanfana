@@ -40,6 +40,17 @@ export class OpenAPIHandler {
     return false;
   }
 
+  /**
+   * Hook for adapters to wrap route handler functions.
+   * Called for each OpenAPIRoute handler during route registration.
+   * The base implementation returns the handler as-is.
+   * Subclasses (e.g. HonoOpenAPIHandler) can override this to add
+   * error conversion or other adapter-specific behavior.
+   */
+  protected wrapHandler(handler: (...args: any[]) => Promise<Response>): (...args: any[]) => Promise<Response> {
+    return handler;
+  }
+
   constructor(router: any, options?: RouterOptions) {
     if (!router) {
       throw new Error("Router is required");
@@ -230,13 +241,15 @@ export class OpenAPIHandler {
 
     return params.handlers.map((handler: any) => {
       if (handler.isRoute) {
-        return (...params: any[]) =>
+        const fn = (...params: any[]) =>
           new handler({
             router: this,
             route: parsedRoute,
             urlParams: urlParams,
+            raiseOnError: this.options?.raiseOnError,
             // raiseUnknownParameters: openapiConfig.raiseUnknownParameters,  TODO
           }).execute(...params);
+        return this.wrapHandler(fn);
       }
 
       return handler;

@@ -72,11 +72,13 @@ export interface RouterOptions {
   raiseUnknownParameters?: boolean;
   generateOperationIds?: boolean;
   openapiVersion?: "3" | "3.1";
+  raiseOnError?: boolean;
 }
 
 export interface RouteOptions {
   router: any;
   raiseUnknownParameters: boolean;
+  raiseOnError?: boolean;
   route: string;
   urlParams: Array<string>;
 }
