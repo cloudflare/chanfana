@@ -63,8 +63,8 @@
     "@biomejs/biome": "2.3.11",
     "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.8",
-    "@cloudflare/vitest-pool-workers": "^0.12.1",
-    "@cloudflare/workers-types": "4.20260111.0",
+    "@cloudflare/vitest-pool-workers": "^0.12.17",
+    "@cloudflare/workers-types": "4.20260303.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "25.0.6",
     "@vitest/coverage-istanbul": "^3.2.4",
@@ -75,13 +75,13 @@
     "typescript": "5.9.3",
     "vitepress": "^1.6.4",
     "vitest-openapi": "^1.0.3",
-    "wrangler": "4.58.0"
+    "wrangler": "4.68.1"
   },
   "dependencies": {
-    "@asteasolutions/zod-to-openapi": "^8.4.0",
+    "@asteasolutions/zod-to-openapi": "^8.4.1",
     "js-yaml": "^4.1.1",
     "openapi3-ts": "^4.5.0",
     "yargs-parser": "^22.0.0",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   }
 }
