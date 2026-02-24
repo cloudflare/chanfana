@@ -38,8 +38,9 @@ jobs:
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
-          publish: npm publish --access public --provenance
+          publish: npx changeset publish
           title: "Version Packages"
           commit: "Version Packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
