@@ -144,8 +144,7 @@ describe("routerOptions Hono", () => {
     });
     router.get("/todo", EndpointWithOperationId);
 
-    // Access schema via proxy (not in type definition but available at runtime)
-    const schema = (router as any).schema;
+    const schema = router.schema;
     expect(schema.paths?.["/api/todo"]).toBeDefined();
     expect(schema.paths?.["/api/todo"]?.get).toBeDefined();
   });
@@ -263,9 +262,8 @@ describe("routerOptions Hono with pre-existing basePath", () => {
     const router = fromHono(app);
     router.get("/todo", EndpointWithOperationId);
 
-    const schema = (router as any).schema;
-    expect(schema.paths?.["/api/todo"]).toBeDefined();
-    expect(schema.paths?.["/api/todo"]?.get).toBeDefined();
+    expect(router.schema.paths?.["/api/todo"]).toBeDefined();
+    expect(router.schema.paths?.["/api/todo"]?.get).toBeDefined();
   });
 
   it("hono with pre-existing basePath and no chanfana base - doc routes are prefixed", async () => {
@@ -286,57 +284,12 @@ describe("routerOptions Hono with pre-existing basePath", () => {
     expect(docsHtml).toContain("/api/openapi.json");
   });
 
-  it("hono with pre-existing basePath and chanfana base appends - route at combined path", async () => {
-    // User sets basePath on Hono, then passes additional base to chanfana
-    // Expected behavior: /api + /v1 = /api/v1
-    const app = new Hono().basePath("/api");
-    const router = fromHono(app, { base: "/v1" });
-    router.get("/todo", EndpointWithOperationId);
-
-    const request = await router.fetch(new Request("http://localhost/api/v1/todo"));
-    const resp = (await request.json()) as { msg: string };
-
-    expect(request.status).toEqual(200);
-    expect(resp.msg).toEqual("EndpointWithOperationId");
-  });
-
-  it("hono with pre-existing basePath and chanfana base appends - OpenAPI schema has combined path", async () => {
-    const app = new Hono().basePath("/api");
-    const router = fromHono(app, { base: "/v1" });
-    router.get("/todo", EndpointWithOperationId);
-
-    const schema = (router as any).schema;
-    // Schema should show /api/v1/todo, not just /v1/todo
-    expect(schema.paths?.["/api/v1/todo"]).toBeDefined();
-    expect(schema.paths?.["/api/v1/todo"]?.get).toBeDefined();
-    // Should NOT have /v1/todo (missing the pre-existing /api)
-    expect(schema.paths?.["/v1/todo"]).toBeUndefined();
-  });
-
-  it("hono with pre-existing basePath and chanfana base appends - doc routes at combined path", async () => {
-    const app = new Hono().basePath("/api");
-    const router = fromHono(app, { base: "/v1" });
-    router.get("/todo", EndpointWithOperationId);
-
-    // openapi.json should be at /api/v1/openapi.json
-    const openapiReq = await router.fetch(new Request("http://localhost/api/v1/openapi.json"));
-    expect(openapiReq.status).toEqual(200);
-    const openapiResp = (await openapiReq.json()) as { paths: Record<string, any> };
-    expect(openapiResp.paths["/api/v1/todo"]).toBeDefined();
-
-    // docs should be at /api/v1/docs and reference /api/v1/openapi.json
-    const docsReq = await router.fetch(new Request("http://localhost/api/v1/docs"));
-    expect(docsReq.status).toEqual(200);
-    const docsHtml = await docsReq.text();
-    expect(docsHtml).toContain("/api/v1/openapi.json");
-  });
-
-  it("hono with pre-existing basePath - options.base reflects effective base", async () => {
-    const app = new Hono().basePath("/api");
-    const router = fromHono(app, { base: "/v1" });
-
-    // options.base should reflect the full effective base path
-    expect(router.options.base).toEqual("/api/v1");
+  it("hono with pre-existing basePath and chanfana base throws error", () => {
+    // Using both Hono's basePath() and chanfana's base option is not allowed.
+    // Users should use one or the other to avoid double-prefixing.
+    expect(() => {
+      fromHono(new Hono().basePath("/api"), { base: "/v1" });
+    }).toThrow("base option is no longer needed");
   });
 
   it("hono with pre-existing basePath only - options.base reflects Hono base", async () => {
@@ -345,5 +298,81 @@ describe("routerOptions Hono with pre-existing basePath", () => {
 
     // options.base should reflect the Hono base path even when no chanfana base is provided
     expect(router.options.base).toEqual("/api");
+  });
+});
+
+describe("base path format validation", () => {
+  it("base without leading slash throws error", () => {
+    expect(() => {
+      fromIttyRouter(AutoRouter(), { base: "api" });
+    }).toThrow('base must start with "/"');
+  });
+
+  it("base with trailing slash throws error", () => {
+    expect(() => {
+      fromIttyRouter(AutoRouter(), { base: "/api/" });
+    }).toThrow('base must not end with "/"');
+  });
+
+  it("base without leading slash throws error for Hono", () => {
+    expect(() => {
+      fromHono(new Hono(), { base: "api" });
+    }).toThrow('base must start with "/"');
+  });
+
+  it("base with trailing slash throws error for Hono", () => {
+    expect(() => {
+      fromHono(new Hono(), { base: "/api/" });
+    }).toThrow('base must not end with "/"');
+  });
+
+  it("base of just slash throws error", () => {
+    expect(() => {
+      fromIttyRouter(AutoRouter(), { base: "/" });
+    }).toThrow('base must not end with "/"');
+  });
+
+  it("base of just slash throws error for Hono", () => {
+    expect(() => {
+      fromHono(new Hono(), { base: "/" });
+    }).toThrow('base must not end with "/"');
+  });
+});
+
+describe("routerOptions Hono openapi.yaml", () => {
+  it("hono with base defined - /api/openapi.yaml is accessible", async () => {
+    const router = fromHono(new Hono(), {
+      base: "/api",
+    });
+    router.get("/todo", EndpointWithOperationId);
+
+    const request = await router.fetch(new Request("http://localhost/api/openapi.yaml"));
+
+    expect(request.status).toEqual(200);
+    expect(request.headers.get("content-type")).toContain("text/yaml");
+    const text = await request.text();
+    expect(text).toContain("/api/todo");
+  });
+});
+
+describe("routerOptions Hono with nested routers and base path", () => {
+  it("nested router works with base path on outer router", async () => {
+    const innerRouter = fromHono(new Hono());
+    innerRouter.get("/todo", EndpointWithOperationId);
+
+    const router = fromHono(new Hono(), { base: "/api" });
+    router.route("/v1", innerRouter);
+
+    // Route should be accessible at /api/v1/todo
+    const request = await router.fetch(new Request("http://localhost/api/v1/todo"));
+    const resp = (await request.json()) as { msg: string };
+    expect(request.status).toEqual(200);
+    expect(resp.msg).toEqual("EndpointWithOperationId");
+
+    // Schema should reflect the full path
+    const schemaReq = await router.fetch(new Request("http://localhost/api/openapi.json"));
+    const schemaResp = (await schemaReq.json()) as { paths: Record<string, any> };
+    expect(schemaReq.status).toEqual(200);
+    expect(schemaResp.paths["/api/v1/todo"]).toBeDefined();
   });
 });

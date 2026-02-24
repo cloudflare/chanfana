@@ -301,6 +301,54 @@ After migrating, you'll benefit from:
 - **Better Performance:** Optimized validation logic
 - **Enhanced Type Safety:** Improved TypeScript inference
 
+## Hono Base Path Changes (v3.1)
+
+Chanfana v3.1 introduces improved handling of Hono's `basePath()` method. These changes affect how you configure base paths for Hono applications.
+
+### Auto-detection of Hono's `basePath()`
+
+Chanfana now automatically detects when a Hono instance was created with `basePath()`. You no longer need to pass the `base` option separately:
+
+```typescript
+// Before: Had to pass base to both Hono and chanfana
+const app = new Hono().basePath('/api');
+const router = fromHono(app, { base: '/api' }); // ❌ Now throws an error
+
+// After: Just use basePath() — chanfana detects it automatically
+const app = new Hono().basePath('/api');
+const router = fromHono(app); // ✅ Base path "/api" auto-detected
+```
+
+### `base` option now applies `basePath()` for Hono
+
+When using the `base` option with Hono (without a pre-existing `basePath()`), Chanfana now calls Hono's `basePath()` internally. This means routes actually match at the prefixed path, not just in the OpenAPI schema:
+
+```typescript
+const router = fromHono(new Hono(), { base: '/api' });
+router.get('/users', UserEndpoint); // Matches at /api/users
+```
+
+### Combining `basePath()` and `base` throws an error
+
+Using both Hono's `basePath()` and chanfana's `base` option now throws a descriptive error to prevent double-prefixing:
+
+```typescript
+// This throws an error with migration guidance:
+fromHono(new Hono().basePath('/api'), { base: '/v1' });
+```
+
+### Base path format validation
+
+The `base` option is now validated:
+- Must start with `/` (e.g., `/api` not `api`)
+- Must not end with `/` (e.g., `/api` not `/api/`)
+
+### Migration steps
+
+1. If you use `new Hono().basePath('/api')` with `fromHono(app, { base: '/api' })`, remove the `base` option from `fromHono()`.
+2. If you use `fromHono(app, { base: '/api' })` without `basePath()`, no changes needed — this now also configures Hono's route matching.
+3. Ensure your `base` values start with `/` and don't end with `/`.
+
 ## Need Help?
 
 If you encounter issues during migration:

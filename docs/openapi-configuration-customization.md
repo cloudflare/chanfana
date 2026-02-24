@@ -61,15 +61,32 @@ The `RouterOptions` object accepts the following properties to customize Chanfan
 *   **Type:** `string`
 *   **Default:** `undefined`
 
-The `base` option allows you to set a base path for all API routes managed by Chanfana. If provided, this base path will be prepended to all route paths when generating the OpenAPI document. This is useful when your API is served under a specific path prefix (e.g., `/api/v1`).
+The `base` option sets a base path for all API routes managed by Chanfana. When provided, this base path is prepended to all route paths in the generated OpenAPI document. This is useful when your API is served under a specific path prefix (e.g., `/api/v1`).
 
-**Example:**
+The `base` value must start with `/` and must not end with `/` (e.g., `/api/v1` is valid, `api/v1` and `/api/v1/` are not).
+
+**With Hono**, the `base` option also applies Hono's `basePath()` internally, so routes actually match at the prefixed path — not just in the schema. You can use either approach:
 
 ```typescript
-fromHono(app, { base: '/api/v1' });
+// Option 1: Use chanfana's base option (chanfana calls basePath internally)
+const router = fromHono(new Hono(), { base: '/api/v1' });
 
-openapi.get('/users', UserListEndpoint); // OpenAPI path will be /api/v1/users
-openapi.get('/users/:userId', UserGetEndpoint); // OpenAPI path will be /api/v1/users/{userId}
+// Option 2: Use Hono's basePath directly (chanfana auto-detects it)
+const router = fromHono(new Hono().basePath('/api/v1'));
+
+// Both result in:
+router.get('/users', UserListEndpoint);     // Route matches at /api/v1/users
+router.get('/users/:userId', UserGetEndpoint); // Route matches at /api/v1/users/{userId}
+```
+
+::: warning
+Do not combine both Hono's `basePath()` and chanfana's `base` option — this will throw an error. Use one or the other.
+:::
+
+**With itty-router**, `base` only affects the OpenAPI schema (not route matching). You must also pass the `base` to `AutoRouter` for route matching:
+
+```typescript
+const router = fromIttyRouter(AutoRouter({ base: '/api' }), { base: '/api' });
 ```
 
 ### `schema`: Customizing OpenAPI Document Information

@@ -3,12 +3,15 @@ import yaml from "js-yaml";
 import { z } from "zod";
 import type { OpenAPIRouteSchema, RouterOptions } from "./types";
 import { getReDocUI, getSwaggerUI } from "./ui";
+import { validateBasePath } from "./utils";
 import { OpenAPIRegistryMerger } from "./zod/registry";
 
 export type OpenAPIRouterType<M> = {
   original: M;
   options: RouterOptions;
   registry: OpenAPIRegistryMerger;
+  // biome-ignore lint/suspicious/noExplicitAny: schema is dynamically generated OpenAPI spec
+  schema: any;
 };
 
 /**
@@ -24,7 +27,28 @@ export class OpenAPIHandler {
 
   allowedMethods = ["get", "head", "post", "put", "delete", "patch"];
 
+  /**
+   * When true, the underlying router handles base path prefixing for route
+   * registration (e.g. Hono's basePath()). Doc route paths will be registered
+   * without the base prefix since the router adds it automatically.
+   * The base is still used for schema generation and HTML references.
+   *
+   * This is a getter (not a field) so that subclass overrides take effect
+   * even when accessed during the base class constructor (createDocsRoutes).
+   */
+  protected get routerHandlesBasePrefix(): boolean {
+    return false;
+  }
+
   constructor(router: any, options?: RouterOptions) {
+    if (!router) {
+      throw new Error("Router is required");
+    }
+
+    if (options?.base) {
+      validateBasePath(options.base);
+    }
+
     this.router = router;
     this.options = options || {};
     this.registry = new OpenAPIRegistryMerger();
@@ -33,9 +57,24 @@ export class OpenAPIHandler {
   }
 
   createDocsRoutes() {
+    const base = this.options?.base || "";
+    const openapiUrl = this.options?.openapi_url || "/openapi.json";
+
+    // When routerHandlesBasePrefix is true (e.g. Hono with basePath()),
+    // the router adds the base prefix to routes automatically, so we skip it
+    // in route registration paths. The full base+url is still used in HTML
+    // content so the browser can resolve the correct URL.
+    const routeBase = this.routerHandlesBasePrefix ? "" : base;
+
+    // Note: /docs and /redocs routes intentionally don't use routeBase.
+    // When routerHandlesBasePrefix is true (Hono), the router's basePath()
+    // already prefixes all registered routes automatically. When false
+    // (itty-router), doc routes have never been prefixed with base — this
+    // is pre-existing behavior. Only openapi.json/yaml use routeBase because
+    // itty-router needs the explicit prefix for schema endpoints.
     if (this.options?.docs_url !== null && this.options?.openapi_url !== null) {
       this.router.get(this.options?.docs_url || "/docs", () => {
-        return new Response(getSwaggerUI((this.options?.base || "") + (this.options?.openapi_url || "/openapi.json")), {
+        return new Response(getSwaggerUI(base + openapiUrl), {
           headers: {
             "content-type": "text/html; charset=UTF-8",
           },
@@ -46,7 +85,7 @@ export class OpenAPIHandler {
 
     if (this.options?.redoc_url !== null && this.options?.openapi_url !== null) {
       this.router.get(this.options?.redoc_url || "/redocs", () => {
-        return new Response(getReDocUI((this.options?.base || "") + (this.options?.openapi_url || "/openapi.json")), {
+        return new Response(getReDocUI(base + openapiUrl), {
           headers: {
             "content-type": "text/html; charset=UTF-8",
           },
@@ -56,7 +95,7 @@ export class OpenAPIHandler {
     }
 
     if (this.options?.openapi_url !== null) {
-      this.router.get(this.options?.openapi_url || "/openapi.json", () => {
+      this.router.get(routeBase + openapiUrl, () => {
         return new Response(JSON.stringify(this.getGeneratedSchema()), {
           headers: {
             "content-type": "application/json;charset=UTF-8",
@@ -65,7 +104,7 @@ export class OpenAPIHandler {
         });
       });
 
-      this.router.get((this.options?.openapi_url || "/openapi.json").replace(".json", ".yaml"), () => {
+      this.router.get(routeBase + openapiUrl.replace(".json", ".yaml"), () => {
         return new Response(yaml.dump(this.getGeneratedSchema()), {
           headers: {
             "content-type": "text/yaml;charset=UTF-8",
@@ -98,7 +137,7 @@ export class OpenAPIHandler {
     const path = params.nestedRouter.options?.base
       ? undefined
       : params.path
-        ? params.path
+        ? ((this.options.base || "") + params.path)
             .replaceAll(/\/+(\/|$)/g, "$1") // strip double & trailing splash
             .replaceAll(/:(\w+)/g, "{$1}") // convert parameters into openapi compliant
         : undefined; // ;
