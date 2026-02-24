@@ -1,0 +1,71 @@
+# Chanfana
+
+> OpenAPI 3 and 3.1 schema generator and validator for Hono, itty-router, and Cloudflare Workers.
+
+Chanfana automatically generates OpenAPI specs from Zod v4 schemas, validates requests, and provides auto CRUD endpoints with built-in D1 database support.
+
+## Quick Example
+
+```typescript
+import { Hono } from 'hono';
+import { fromHono, OpenAPIRoute, contentJson } from 'chanfana';
+import { z } from 'zod';
+
+class GetUser extends OpenAPIRoute {
+  schema = {
+    request: {
+      params: z.object({ id: z.number() }),
+    },
+    responses: {
+      "200": {
+        description: "User found",
+        ...contentJson(z.object({
+          success: z.boolean(),
+          result: z.object({ id: z.number(), name: z.string() }),
+        })),
+      },
+    },
+  };
+
+  async handle(c) {
+    const { params } = await this.getValidatedData<typeof this.schema>();
+    return { success: true, result: { id: params.id, name: "Alice" } };
+  }
+}
+
+const app = new Hono();
+const openapi = fromHono(app);
+openapi.get('/users/:id', GetUser);
+export default app;
+```
+
+## Key Concepts
+
+- **Zod v4 syntax**: Use `z.email()`, `z.uuid()`, `z.iso.datetime()` (not `z.string().email()`)
+- **Router adapters**: `fromHono(app)` for Hono, `fromIttyRouter(router)` for itty-router
+- **Auto CRUD**: `CreateEndpoint`, `ReadEndpoint`, `UpdateEndpoint`, `DeleteEndpoint`, `ListEndpoint`
+- **D1 CRUD**: `D1CreateEndpoint`, `D1ReadEndpoint`, `D1UpdateEndpoint`, `D1DeleteEndpoint`, `D1ListEndpoint`
+- **Exceptions**: `NotFoundException`, `InputValidationException`, `UnauthorizedException`, etc.
+- **Content helper**: `contentJson(zodSchema)` wraps schemas for `application/json` content
+- **Validated data**: `await this.getValidatedData<typeof this.schema>()` returns typed `{ params, query, body, headers }`
+- **Raw data**: `await this.getUnvalidatedData()` returns data before Zod defaults are applied
+
+## Package Contents for AI
+
+This package includes source code and documentation to help AI tools understand the library:
+
+- `AGENTS.md` — Comprehensive development guide: architecture, patterns, migration notes, testing
+- `skills/write-endpoints/SKILL.md` — Step-by-step coding skill for building endpoints with chanfana
+- `docs/` — Full user documentation (VitePress markdown)
+- `src/` — TypeScript source code for all modules
+
+## Documentation
+
+- Homepage: https://chanfana.pages.dev
+- GitHub: https://github.com/cloudflare/chanfana
+- Getting Started: docs/getting-started.md
+- Defining Endpoints: docs/endpoints/defining-endpoints.md
+- Auto CRUD Endpoints: docs/endpoints/auto/base.md
+- D1 Database Endpoints: docs/endpoints/auto/d1.md
+- Error Handling: docs/error-handling.md
+- Migration Guide: docs/migration-to-chanfana-3.md

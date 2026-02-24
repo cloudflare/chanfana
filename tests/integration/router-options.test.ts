@@ -409,7 +409,7 @@ class EndpointWithValidation extends OpenAPIRoute {
   };
 
   async handle() {
-    const data = await this.getValidatedData();
+    const _data = await this.getValidatedData();
     return { success: true };
   }
 }

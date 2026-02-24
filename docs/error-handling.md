@@ -195,7 +195,7 @@ If `getProductFromDatabase` returns `null`, a `NotFoundException` is thrown. Cha
     "errors": [
         {
             "code": 7002,
-            "message": "Not Found"
+            "message": "Product with ID 'abc123' not found"
         }
     ]
 }
@@ -391,7 +391,7 @@ if (maintenanceMode) {
 
 **Key features of `MultiException`:**
 
-*   **Extends `Error`:** Inherits from the standard JavaScript `Error` class.
+*   **Extends `ApiException`:** Inherits from the `ApiException` class.
 *   **`errors` Property:** (`Array<ApiException>`) An array of `ApiException` instances that are grouped together.
 *   **`status` Property:** (number, default: `400`) The highest HTTP status code among all contained exceptions (defaults to 400 if no exceptions are provided).
 *   **`isVisible` Property:** (boolean, default: `true`) `false` if any of the contained exceptions have `isVisible: false`.

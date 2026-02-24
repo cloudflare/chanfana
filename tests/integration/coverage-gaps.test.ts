@@ -295,7 +295,7 @@ describe("OpenAPI Handler - Non-Route Handler Passthrough", () => {
     // Register with a plain middleware function alongside the route
     // This exercises the `return handler` path (line 309 in openapi.ts)
     // when handler.isRoute is falsy
-    const middlewareFn = async (c: any, next: any) => {
+    const middlewareFn = async (_c: any, next: any) => {
       await next();
     };
 

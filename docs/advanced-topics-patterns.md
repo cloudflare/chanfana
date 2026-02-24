@@ -302,9 +302,9 @@ abstract class AuthenticatedRoute extends OpenAPIRoute {
 
     abstract isAuthenticated(c: AppContext): Promise<boolean>; // Abstract method to be implemented by subclasses
 
-    async execute(c: [AppContext]) { // Override execute to include beforeHandle
-        await this.beforeHandle(c[0]);
-        return super.execute(c);
+    async execute(...args: any[]) { // Override execute to include beforeHandle
+        await this.beforeHandle(args[0]);
+        return super.execute(...args);
     }
 }
 

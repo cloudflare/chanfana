@@ -5,12 +5,28 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
   "bin": {
     "chanfana": "dist/cli.js"
   },
   "files": [
     "dist",
+    "src",
     "docs/**/*.md",
+    "skills",
+    "AGENTS.md",
+    "llms.txt",
     "LICENSE",
     "README.md"
   ],
@@ -23,27 +39,26 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "keywords": [
-    "cloudflare",
-    "worker",
-    "workers",
-    "serverless",
-    "cloudflare workers",
-    "router",
     "openapi",
     "swagger",
     "openapi generator",
-    "cf",
-    "optional",
+    "validation",
+    "zod",
+    "hono",
+    "itty-router",
+    "cloudflare",
+    "cloudflare workers",
+    "d1",
+    "serverless",
+    "router",
     "middleware",
-    "parameters",
     "typescript",
-    "npm",
-    "package",
-    "cjs",
     "esm",
-    "umd",
-    "typed"
+    "cjs"
   ],
   "author": "Gabriel Massadas <gmassadas@cloudflare.com> (https://github.com/g4brym)",
   "license": "MIT",
@@ -56,28 +71,28 @@
     "url": "https://github.com/cloudflare/chanfana/issues"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.11",
+    "@biomejs/biome": "2.4.4",
     "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.8",
-    "@cloudflare/vitest-pool-workers": "^0.12.1",
-    "@cloudflare/workers-types": "4.20260111.0",
+    "@cloudflare/vitest-pool-workers": "^0.12.17",
+    "@cloudflare/workers-types": "4.20260303.0",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "25.0.6",
+    "@types/node": "25.3.0",
     "@vitest/coverage-istanbul": "^3.2.4",
-    "hono": "4.11.3",
+    "hono": "4.12.2",
     "itty-router": "5.0.22",
-    "pkg-pr-new": "^0.0.62",
+    "pkg-pr-new": "^0.0.63",
     "tsup": "8.5.1",
     "typescript": "5.9.3",
     "vitepress": "^1.6.4",
     "vitest-openapi": "^1.0.3",
-    "wrangler": "4.58.0"
+    "wrangler": "4.68.1"
   },
   "dependencies": {
-    "@asteasolutions/zod-to-openapi": "^8.4.0",
+    "@asteasolutions/zod-to-openapi": "^8.4.1",
     "js-yaml": "^4.1.1",
     "openapi3-ts": "^4.5.0",
     "yargs-parser": "^22.0.0",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   }
 }

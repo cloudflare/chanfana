@@ -10,7 +10,6 @@ export type OpenAPIRouterType<M> = {
   original: M;
   options: RouterOptions;
   registry: OpenAPIRegistryMerger;
-  // biome-ignore lint/suspicious/noExplicitAny: schema is dynamically generated OpenAPI spec
   schema: any;
 };
 

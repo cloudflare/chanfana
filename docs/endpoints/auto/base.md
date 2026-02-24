@@ -28,7 +28,7 @@ type MetaInput = {
 };
 
 type Model = {
-    tableName: string; // Optional, but recommended for database-backed endpoints
+    tableName: string; // Required, the database table name
     schema: AnyZodObject; // Zod schema defining the data model
     primaryKeys: Array<string>; // Array of primary key field names
     serializer?: (obj: object) => object; // Optional serializer function
@@ -39,7 +39,7 @@ type Model = {
 **Key properties of `Meta`:**
 
 *   **`model`:**  Describes the data model itself.
-    *   **`tableName` (optional):** The name of the database table (if your data is stored in a database). Useful for D1 endpoints.
+    *   **`tableName` (required):** The name of the database table. Used by D1 endpoints for SQL generation.
     *   **`schema` (required):** A Zod schema that defines the structure of your data model. This schema is used for schema generation and validation.
     *   **`primaryKeys` (required):** An array of strings representing the primary key fields of your data model. Used for identifying resources in `ReadEndpoint`, `UpdateEndpoint`, and `DeleteEndpoint`.
     *   **`serializer` (optional):** A function to serialize your data before sending it in responses. Useful for data transformation or formatting. If not provided, a default serializer that returns the object as is is used.
@@ -179,7 +179,7 @@ In this example:
 *   We override the `create` method to implement the logic for creating a product (in this example, just logging and returning the data).
 *   The `POST /products` route is registered with `CreateProduct`.
 
-`CreateEndpoint` automatically generates the OpenAPI schema for the request body (based on `productMeta.model.schema`) and the successful response (200 OK, returning the created object). It also handles validation of the request body.
+`CreateEndpoint` automatically generates the OpenAPI schema for the request body (based on `productMeta.model.schema`) and the successful response (201 Created, returning the created object). It also handles validation of the request body.
 
 ### Lifecycle Hooks in CreateEndpoint
 
@@ -242,7 +242,7 @@ The `before` hook runs before the `create` method, allowing you to transform or 
 **Example: Getting Product Details**
 
 ```typescript
-import type { Filters } from 'chanfana';
+import type { ListFilters } from 'chanfana';
 import { Hono } from 'hono';
 import { fromHono, ReadEndpoint, contentJson } from 'chanfana';
 import { z } from 'zod';
@@ -252,7 +252,7 @@ import { z } from 'zod';
 class GetProduct extends ReadEndpoint {
     _meta = productMeta;
 
-    async fetch(filters: Filters) {
+    async fetch(filters: ListFilters) {
         const productId = filters.filters[0].value; // Accessing the productId from filters
         // In a real application, you would fetch product from database based on productId
         const product = { id: productId, name: `Product ${productId}`, price: 99.99 }; // Simulate product data
@@ -280,7 +280,7 @@ In this example:
 `ReadEndpoint` supports `before` and `after` lifecycle hooks for pre- and post-processing:
 
 ```typescript
-import type { Filters, O } from 'chanfana';
+import type { ListFilters, O } from 'chanfana';
 import { z } from 'zod';
 
 // Define User Model
@@ -302,7 +302,7 @@ const userMeta = {
 class GetUser extends ReadEndpoint {
     _meta = userMeta;
 
-    async before(filters: Filters): Promise<Filters> {
+    async before(filters: ListFilters): Promise<ListFilters> {
         // Pre-processing: validate access permissions, log request
         console.log('Fetching user with filters:', filters);
         await checkUserPermissions(filters);
@@ -318,7 +318,7 @@ class GetUser extends ReadEndpoint {
         };
     }
 
-    async fetch(filters: Filters): Promise<O<typeof this._meta> | null> {
+    async fetch(filters: ListFilters): Promise<O<typeof this._meta> | null> {
         const userId = filters.filters[0].value;
         return await db.users.findById(userId);
     }
@@ -333,7 +333,7 @@ The `serializer` and `serializerSchema` properties in your `Meta` object allow y
 
 ```typescript
 import { Hono } from 'hono';
-import { fromHono, ReadEndpoint, type Filters } from 'chanfana';
+import { fromHono, ReadEndpoint, type ListFilters } from 'chanfana';
 import { z } from 'zod';
 
 // Internal model with sensitive fields
@@ -372,7 +372,7 @@ const secureMeta = {
 class GetUser extends ReadEndpoint {
     _meta = secureMeta;
 
-    async fetch(filters: Filters) {
+    async fetch(filters: ListFilters) {
         const userId = filters.filters[0].value;
         // Fetch user with all internal fields
         const user = await db.users.findById(userId);
