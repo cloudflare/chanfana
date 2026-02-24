@@ -86,6 +86,24 @@ This section provides solutions to common issues you might encounter while using
 
 ## Frequently Asked Questions (FAQ)
 
+**Q: Why are chanfana errors showing up as `HTTPException` in Hono's `onError`?**
+
+**A:** As of v3.1, chanfana automatically converts its errors (validation errors, `ApiException` subclasses) into Hono `HTTPException` instances so they flow through `app.onError`. This enables centralized error logging and custom formatting. Call `err.getResponse()` to get chanfana's standard JSON error response:
+
+```typescript
+import { HTTPException } from 'hono/http-exception';
+
+app.onError((err, c) => {
+    if (err instanceof HTTPException) {
+        return err.getResponse(); // Chanfana's formatted error
+    }
+    return c.json({ error: 'Internal Server Error' }, 500);
+});
+```
+
+See [Error Handling - Global Error Handling Strategies](./error-handling.md#global-error-handling-strategies) for details.
+
+---
 **Q: Can I use Chanfana with routers other than Hono and itty-router?**
 
 **A:** Chanfana is designed to be router-agnostic in principle. While it provides official adapters for Hono and itty-router, you can potentially create custom adapters for other routers. However, creating a custom adapter might require a deeper understanding of Chanfana's internals and the API of the target router.

@@ -174,6 +174,20 @@ The `raiseUnknownParameters` option controls whether Chanfana should perform str
 *   `true`: (Default) Strict validation is enabled. If the incoming request contains parameters that are **not** defined in your schema, Chanfana will consider it a validation error and return a `400 Bad Request` response. This is generally recommended for API robustness and security.
 *   `false`: Strict validation is disabled. Chanfana will only validate the parameters that are defined in your schema and ignore any unknown parameters in the request. This can be useful for backward compatibility or when you want to allow clients to send extra parameters that your API might not explicitly handle.
 
+### `raiseOnError`: Error Propagation to Router Error Handlers
+
+*   **Type:** `boolean`
+*   **Default:** `true` for Hono (set automatically by `fromHono`), `false` for itty-router
+
+The `raiseOnError` option controls whether chanfana re-throws errors instead of catching and formatting them internally.
+
+*   `true`: Errors are re-thrown from `execute()`, allowing the router's native error handler to process them. For Hono, chanfana converts errors to `HTTPException` instances that flow through `app.onError`.
+*   `false`: Errors are caught internally and formatted into JSON responses directly (the default for itty-router).
+
+**Note:** When using `fromHono()`, this option is always set to `true` automatically. When using `fromIttyRouter()`, this option is always stripped and defaults to `false`, since itty-router has no `onError` mechanism. You do not need to set this option manually.
+
+See [Error Handling - Global Error Handling Strategies](./error-handling.md#global-error-handling-strategies) for usage details.
+
 ## Customizing OpenAPI Schema Output
 
 While `RouterOptions` allows you to configure the overall OpenAPI document, you can also customize the schema output for individual endpoints and parameters using Zod's OpenAPI metadata features and Chanfana's parameter types (e.g., `Str`, `Num`, `Enumeration`).

@@ -46,7 +46,7 @@ class MyEndpoint {
 }
 ```
 
-When an `ApiException` is thrown within a Chanfana endpoint's `handle` method, Chanfana will automatically catch it and return an HTTP response with:
+When an `ApiException` is thrown within a Chanfana endpoint's `handle` method, Chanfana will automatically process it and return an HTTP response with:
 
 *   **Status Code:** `500 Internal Server Error` (by default, as defined in `ApiException.status`).
 *   **Response Body (JSON):**
@@ -330,15 +330,20 @@ When you call `...MyExceptionClass.schema()` it returns an OpenAPI response obje
 
 ## Global Error Handling Strategies
 
-While Chanfana provides structured exception handling within endpoints, you might also want to implement global error handling for your application to catch unhandled exceptions or perform centralized error logging and reporting.
+While Chanfana provides structured exception handling within endpoints, you can also implement global error handling for centralized error logging, monitoring, and custom response formatting.
 
-**Hono Example: Global Error Handler**
+### Hono: Automatic `onError` Integration
 
-In Hono, you can use the `app.onError` handler to catch unhandled exceptions:
+When using `fromHono()`, Chanfana automatically converts its errors (validation errors and `ApiException` subclasses) into Hono [`HTTPException`](https://hono.dev/docs/api/exception) instances. This means all chanfana errors flow through Hono's `app.onError` handler, enabling centralized error handling.
+
+The `HTTPException` wraps chanfana's standard JSON error response, accessible via `err.getResponse()`. If you don't define an `onError` handler, Hono's default behavior calls `err.getResponse()` automatically -- so the response format is the same as before, with no extra setup required.
+
+**Example: Centralized Error Logging with Hono**
 
 ```typescript
 import { Hono, type Context } from 'hono';
-import { fromHono, ApiException } from 'chanfana';
+import { HTTPException } from 'hono/http-exception';
+import { fromHono } from 'chanfana';
 
 export type Env = {
     // Example bindings, use your own
@@ -348,28 +353,39 @@ export type Env = {
 export type AppContext = Context<{ Bindings: Env }>
 
 const app = new Hono<{ Bindings: Env }>();
-const openapi = fromHono(app);
-
-openapi.get('/error', () => {
-    throw new Error("Something went terribly wrong!"); // Throw a standard error
-});
 
 app.onError((err, c) => {
-    console.error("Global error handler caught:", err); // Log the error
+    console.error("Global error handler caught:", err);
 
-    if (err instanceof ApiException) {
-        // If it's a Chanfana ApiException, let Chanfana handle the response
-        return c.json({ success: false, errors: err.buildResponse() }, err.status);
+    if (err instanceof HTTPException) {
+        // Chanfana errors arrive as HTTPException with the formatted response attached.
+        // Call getResponse() to return chanfana's standard error format.
+        return err.getResponse();
     }
 
-    // For other errors, return a generic 500 response
+    // For non-chanfana errors, return a generic 500 response
     return c.json({ success: false, errors: [{ code: 7000, message: "Internal Server Error" }] }, 500);
 });
+
+const openapi = fromHono(app);
+
+// Register your endpoints...
 
 export default app;
 ```
 
-In this example, `app.onError` catches any error thrown within Hono routes. It checks if the error is an instance of `ApiException`. If so, it uses `err.buildResponse()` and `err.status` to create the response. For other types of errors, it returns a generic 500 error response.
+In this example, `app.onError` receives all errors thrown within Hono routes:
+
+*   **Chanfana errors** (validation failures, `ApiException` subclasses like `NotFoundException`, `InputValidationException`, etc.) arrive as `HTTPException` instances. Calling `err.getResponse()` returns chanfana's standard JSON error response with the correct status code.
+*   **Non-chanfana errors** (raw `Error`, `TypeError`, etc.) arrive as-is, allowing you to handle them separately.
+
+::: tip
+Unknown errors that are not `ZodError` or `ApiException` subclasses are **not** wrapped in `HTTPException` -- they propagate to `onError` as-is.
+:::
+
+### itty-router: Internal Error Formatting
+
+itty-router does not have an `onError` mechanism. When using `fromIttyRouter()`, chanfana catches errors internally and formats them into JSON responses directly -- the same behavior as previous versions. No additional error handling setup is needed.
 
 ---
 
