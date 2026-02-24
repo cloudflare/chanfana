@@ -1,19 +1,19 @@
-name: Publish
+name: Release
 on:
-  workflow_dispatch:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
-  publish:
+  release:
     if: ${{ github.repository_owner == 'cloudflare' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: false
@@ -23,13 +23,24 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24.x
-          cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
+          cache: "npm"
+          registry-url: "https://registry.npmjs.org"
+
       - name: Install modules
-        run: npm install
+        run: npm install --frozen-lockfile
+
       - name: Run build
         run: npm run lint && npm run build
+
       - name: Run tests
         run: npm run test
-      - name: Publish to npm
-        run: npm publish --access public
+
+      - name: Create release PR or publish
+        uses: changesets/action@v1
+        with:
+          publish: npm publish --access public
+          title: "Version Packages"
+          commit: "Version Packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
