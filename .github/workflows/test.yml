@@ -1,6 +1,7 @@
 name: Test
 permissions:
   contents: read
+  pull-requests: write
 on:
   pull_request: {}
   push:
@@ -25,4 +26,10 @@ jobs:
       - run: npm install --frozen-lockfile
       - run: npm run build
       - run: npm run lint
-      - run: npm run test
+      - run: npm run test -- --coverage
+      - name: Coverage summary
+        if: always() && github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: coverage/coverage-summary.json
+          json-final-path: coverage/coverage-final.json

@@ -17,7 +17,7 @@
   "scripts": {
     "build": "rm -rf dist/ && tsc && tsup src/index.ts src/cli.ts --format cjs,esm --dts --config tsconfig.json --external Hono",
     "lint": "npx @biomejs/biome check || (npx @biomejs/biome check --write; exit 1)",
-    "test": "tsc && vitest run --root tests",
+    "test": "tsc && vitest run --config tests/vitest.config.mts",
     "docs:deploy": "npm run docs:build && wrangler pages deploy docs/.vitepress/dist/ --project-name chanfana --branch main",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
@@ -63,6 +63,7 @@
     "@cloudflare/workers-types": "4.20260111.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "25.0.6",
+    "@vitest/coverage-istanbul": "^3.2.4",
     "hono": "4.11.3",
     "itty-router": "5.0.22",
     "pkg-pr-new": "^0.0.62",
