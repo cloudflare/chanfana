@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { contentJson } from "../contentTypes";
 import { InputValidationException, NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
@@ -36,10 +37,12 @@ export class UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
       responses: {
         "200": {
           description: "Returns the updated Object",
-          ...contentJson({
-            success: Boolean,
-            result: this.meta.model.serializerSchema,
-          }),
+          ...contentJson(
+            z.object({
+              success: z.boolean(),
+              result: this.meta.model.serializerSchema,
+            }),
+          ),
           ...this.schema?.responses?.[200],
         },
         ...InputValidationException.schema(),

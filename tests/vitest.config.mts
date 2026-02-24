@@ -13,6 +13,11 @@ export default defineWorkersConfig({
         wrangler: {
           configPath: "./wrangler.toml",
         },
+        miniflare: {
+          d1Databases: {
+            DB: "00000000-0000-0000-0000-000000000000",
+          },
+        },
       },
     },
   },

@@ -1,154 +1,17 @@
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
-import type {
-  AnyZodObject,
-  EnumerationParameterType,
-  ParameterType,
-  RegexParameterType,
-  RouteParameter,
-} from "./types";
-import { legacyTypeIntoZod } from "./zod/utils";
+import type { AnyZodObject, RouteParameter } from "./types";
 
 extendZodWithOpenApi(z);
-export function convertParams<M = z.ZodType>(field: any, params: any): M {
-  params = params || {};
-  if (params.required === false) field = field.optional();
 
-  if (params.description) field = field.describe(params.description);
-
-  if (params.default) field = field.default(params.default);
-
-  if (params.example) {
-    field = field.openapi({ example: params.example });
-  }
-
-  if (params.format) {
-    field = field.openapi({ format: params.format });
-  }
-
-  return field;
-}
-
-export function Arr(innerType: any, params?: ParameterType): z.ZodArray<any> {
-  return convertParams(legacyTypeIntoZod(innerType).array(), params);
-}
-
-export function Obj(fields: object, params?: ParameterType): z.ZodObject<any> {
-  const parsed: Record<string, any> = {};
-  for (const [key, value] of Object.entries(fields)) {
-    parsed[key] = legacyTypeIntoZod(value);
-  }
-
-  return convertParams(z.object(parsed), params);
-}
-
-export function Num(params?: ParameterType): z.ZodNumber {
-  return convertParams<z.ZodNumber>(z.number(), params).openapi({
-    type: "number",
-  });
-}
-
-export function Int(params?: ParameterType): z.ZodNumber {
-  return convertParams<z.ZodNumber>(z.number().int(), params).openapi({
-    type: "integer",
-  });
-}
-
-export function Str(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.string(), params);
-}
-
-export function DateTime(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(
-    z.iso.datetime({
-      error: "Must be in the following format: YYYY-mm-ddTHH:MM:ssZ",
-    }),
-    params,
-  );
-}
-
-export function Regex(params: RegexParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.string().regex(params.pattern, params.patternError || "Invalid"), params);
-}
-
-export function Email(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.email(), params);
-}
-
-export function Uuid(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.uuid(), params);
-}
-
-export function Hostname(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(
-    z
-      .string()
-      .regex(
-        /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/,
-      ),
-    params,
-  );
-}
-
-export function Ipv4(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.ipv4(), params);
-}
-
-export function Ipv6(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.ipv6(), params);
-}
-
-export function Ip(params?: ParameterType): z.ZodString | z.ZodUnion<[z.ZodString, z.ZodString]> {
-  return convertParams<z.ZodString | z.ZodUnion<[z.ZodString, z.ZodString]>>(z.union([z.ipv4(), z.ipv6()]), params);
-}
-
-export function DateOnly(params?: ParameterType): z.ZodString {
-  return convertParams<z.ZodString>(z.iso.date(), params);
-}
-
-export function Bool(params?: ParameterType): z.ZodBoolean {
-  return convertParams<z.ZodBoolean>(z.boolean(), params).openapi({
-    type: "boolean",
-  });
-}
-
-export function Enumeration(params: EnumerationParameterType): z.ZodEnum<any> {
-  let { values } = params;
-  const originalValues = { ...values };
-
-  if (Array.isArray(values)) values = Object.fromEntries(values.map((x) => [x, x]));
-
-  const originalKeys: [string, ...string[]] = Object.keys(values) as [string, ...string[]];
-
-  if (params.enumCaseSensitive === false) {
-    values = Object.keys(values).reduce((accumulator, key) => {
-      // @ts-expect-error
-      accumulator[key.toLowerCase()] = values[key];
-      return accumulator;
-    }, {});
-  }
-
-  const keys: [string, ...string[]] = Object.keys(values) as [string, ...string[]];
-
-  let field;
-  if ([undefined, true].includes(params.enumCaseSensitive)) {
-    field = z.enum(keys);
-  } else {
-    field = z.preprocess((val) => String(val).toLowerCase(), z.enum(keys)).openapi({ enum: originalKeys });
-  }
-
-  field = field.transform((val) => values[val]);
-
-  const result = convertParams<z.ZodEnum<any>>(field, params);
-
-  // Keep retro compatibility
-  //@ts-expect-error
-  result.values = originalValues;
-
-  return result;
-}
-
-// Helper function to unwrap optional/nullable types and check instanceof
+/**
+ * Helper function to unwrap optional/nullable types and check instanceof.
+ * Handles Zod's wrapper types like ZodOptional, ZodNullable, ZodDefault.
+ *
+ * @param schema - The Zod schema to check
+ * @param ZodClass - The Zod class to check against
+ * @returns True if the unwrapped schema is an instance of ZodClass
+ */
 function unwrapAndCheck(schema: any, ZodClass: any): boolean {
   let current = schema;
   // Check first before unwrapping (important for arrays which also have .unwrap())
@@ -165,7 +28,22 @@ function unwrapAndCheck(schema: any, ZodClass: any): boolean {
   return false;
 }
 
-// This should only be used for query, params, headers and cookies
+/**
+ * Coerces input data to match expected Zod schema types.
+ * Handles query strings, path params, headers, and cookies.
+ *
+ * Transformations:
+ * - Empty strings → null
+ * - Duplicate keys → arrays
+ * - String "true"/"false" → boolean (for ZodBoolean)
+ * - Numeric strings → numbers (for ZodNumber)
+ * - Numeric strings → BigInt (for ZodBigInt)
+ * - Date strings → Date objects (for ZodDate)
+ *
+ * @param data - The input data (URLSearchParams or plain object)
+ * @param schema - Optional Zod schema to guide coercion
+ * @returns Coerced data object or null if empty
+ */
 export function coerceInputs(data: Record<string, any>, schema?: RouteParameter): Record<string, any> | null {
   // For older node versions, searchParams is just an object without the size property
   if (data.size === 0 || (data.size === undefined && typeof data === "object" && Object.keys(data).length === 0)) {
@@ -196,20 +74,24 @@ export function coerceInputs(data: Record<string, any>, schema?: RouteParameter)
       innerType = schema;
     }
 
-    // Soft transform query strings into arrays
-    if (innerType) {
+    // Soft transform query strings into expected types
+    if (innerType && params[key] !== null) {
       if (unwrapAndCheck(innerType, z.ZodArray) && !Array.isArray(params[key])) {
         params[key] = [params[key]];
-      } else if (unwrapAndCheck(innerType, z.ZodBoolean)) {
-        const _val = (params[key] as string).toLowerCase().trim();
+      } else if (unwrapAndCheck(innerType, z.ZodBoolean) && typeof params[key] === "string") {
+        const _val = params[key].toLowerCase().trim();
         if (_val === "true" || _val === "false") {
           params[key] = _val === "true";
         }
-      } else if (unwrapAndCheck(innerType, z.ZodNumber)) {
+      } else if (unwrapAndCheck(innerType, z.ZodNumber) && typeof params[key] === "string") {
         params[key] = Number.parseFloat(params[key]);
-      } else if (unwrapAndCheck(innerType, z.ZodBigInt)) {
-        params[key] = Number.parseInt(params[key], 10);
-      } else if (unwrapAndCheck(innerType, z.ZodDate)) {
+      } else if (unwrapAndCheck(innerType, z.ZodBigInt) && typeof params[key] === "string") {
+        try {
+          params[key] = BigInt(params[key]);
+        } catch {
+          // If BigInt conversion fails, leave as string for Zod to handle validation
+        }
+      } else if (unwrapAndCheck(innerType, z.ZodDate) && typeof params[key] === "string") {
         params[key] = new Date(params[key]);
       }
     }

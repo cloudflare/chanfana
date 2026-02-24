@@ -444,7 +444,8 @@ export class ToDoList extends MyProjectRoute {
 ### Describing a binary file:
 
 ```ts
-import { OpenAPIRoute, Str } from 'chanfana'
+import { OpenAPIRoute } from 'chanfana'
+import { z } from 'zod'
 import { Context } from 'hono'
 
 export class ToDoList extends OpenAPIRoute {
@@ -455,7 +456,7 @@ export class ToDoList extends OpenAPIRoute {
         description: 'PDF response',
         content: {
           'application/pdf': {
-            schema: Str({ format: 'binary' }),
+            schema: z.string().openapi({ format: 'binary' }),
           },
         },
       },
@@ -471,7 +472,8 @@ export class ToDoList extends OpenAPIRoute {
 ### Describing multiple content types:
 
 ```ts
-import { OpenAPIRoute, Str } from 'chanfana'
+import { OpenAPIRoute } from 'chanfana'
+import { z } from 'zod'
 import { Context } from 'hono'
 
 export class ToDoList extends OpenAPIRoute {
@@ -487,7 +489,7 @@ export class ToDoList extends OpenAPIRoute {
             }),
           },
           'audio/mpeg': {
-            schema: Str({ format: 'binary' }),
+            schema: z.string().openapi({ format: 'binary' }),
           },
         },
       },
@@ -505,7 +507,8 @@ export class ToDoList extends OpenAPIRoute {
 ### Describing response headers:
 
 ```ts
-import { OpenAPIRoute, Str } from 'chanfana'
+import { OpenAPIRoute } from 'chanfana'
+import { z } from 'zod'
 import { Context } from 'hono'
 
 export class ToDoList extends OpenAPIRoute {
@@ -517,7 +520,7 @@ export class ToDoList extends OpenAPIRoute {
           'application/json': {
             schema: z.object({
               series: z.object({
-                timestamps: z.string().date().array(),
+                timestamps: z.iso.date().array(),
                 values: z.number().array(),
               })
             }),
@@ -525,7 +528,7 @@ export class ToDoList extends OpenAPIRoute {
         },
         headers: {
           'x-bar': 'header-example',
-          'x-foo': new Str({required: false}),
+          'x-foo': z.string().optional(),
         },
       },
     },
@@ -541,7 +544,7 @@ export class ToDoList extends OpenAPIRoute {
 ### Describing response headers with zod:
 
 ```ts
-import { OpenAPIRoute, Str } from 'chanfana'
+import { OpenAPIRoute } from 'chanfana'
 import { Context } from 'hono'
 
 export class ToDoList extends OpenAPIRoute {
@@ -553,7 +556,7 @@ export class ToDoList extends OpenAPIRoute {
           'application/json': {
             schema: z.object({
               series: z.object({
-                timestamps: z.string().date().array(),
+                timestamps: z.iso.date().array(),
                 values: z.number().array(),
               })
             }),

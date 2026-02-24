@@ -84,7 +84,7 @@ const schema = z.object({
 - `z.string().ip({ version: "v4" })` → `z.ipv4()`
 - `z.string().ip({ version: "v6" })` → `z.ipv6()`
 
-**Note:** If you're using chanfana's parameter helpers like `Email()`, `Uuid()`, `DateTime()`, `DateOnly()`, etc., these have already been updated internally and require no changes from you.
+**Note:** Chanfana's parameter helpers (`Email()`, `Uuid()`, `DateTime()`, etc.) have been removed in v3. See [Parameter Helper Functions Removed](#parameter-helper-functions-removed-breaking) below for migration instructions.
 
 ### Native Enums (BREAKING)
 
@@ -190,21 +190,72 @@ class MyEndpoint extends OpenAPIRoute {
 }
 ```
 
-## Non-Breaking Changes
+## Parameter Helper Functions Removed (BREAKING)
 
-### IP Validation (Internal Only)
+All parameter helper functions have been removed from Chanfana. You must now use native Zod schemas directly.
 
-Chanfana's `Ipv4()`, `Ipv6()`, and `Ip()` parameter helpers have been updated to use Zod v4's new top-level IP validation functions. This is an internal change that improves tree-shakeability, but the API remains the same.
+**Removed functions:**
+- `Str()`, `Num()`, `Int()`, `Bool()`
+- `DateTime()`, `DateOnly()`
+- `Email()`, `Uuid()`, `Hostname()`
+- `Ipv4()`, `Ipv6()`, `Ip()`
+- `Regex()`, `Enumeration()`
+- `convertParams()`
 
-**You don't need to change anything in your code** - these helpers work exactly as before:
+### Migration Guide
+
+Replace the helper functions with their Zod equivalents:
+
+| Old Helper | New Zod Equivalent |
+|------------|-------------------|
+| `Str()` | `z.string()` |
+| `Num()` | `z.number()` |
+| `Int()` | `z.number().int()` |
+| `Bool()` | `z.boolean()` |
+| `DateTime()` | `z.iso.datetime()` |
+| `DateOnly()` | `z.iso.date()` |
+| `Email()` | `z.email()` |
+| `Uuid()` | `z.uuid()` |
+| `Ipv4()` | `z.ipv4()` |
+| `Ipv6()` | `z.ipv6()` |
+| `Ip()` | `z.union([z.ipv4(), z.ipv6()])` |
+| `Hostname()` | `z.string().regex(/^(([a-zA-Z0-9]\|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]\|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/)` |
+| `Regex({ pattern })` | `z.string().regex(pattern)` |
+| `Enumeration({ values })` | `z.enum([...])` |
+
+**Example migration:**
 
 ```typescript
-import { Ipv4, Ipv6, Ip } from 'chanfana';
+// Before
+import { Str, Int, Email, Enumeration } from 'chanfana';
 
-// All of these still work the same way
-const ipv4Schema = Ipv4({ description: 'IPv4 address' });
-const ipv6Schema = Ipv6({ description: 'IPv6 address' });
-const anyIpSchema = Ip({ description: 'IPv4 or IPv6 address' });
+const schema = z.object({
+  name: Str({ description: 'User name', example: 'John' }),
+  age: Int({ description: 'User age', default: 18 }),
+  email: Email(),
+  status: Enumeration({ values: ['active', 'inactive'], default: 'active' }),
+});
+
+// After
+import { z } from 'zod';
+
+const schema = z.object({
+  name: z.string().describe('User name').openapi({ example: 'John' }),
+  age: z.number().int().default(18).describe('User age'),
+  email: z.email(),
+  status: z.enum(['active', 'inactive']).default('active'),
+});
+```
+
+For case-insensitive enumerations:
+
+```typescript
+// Before
+Enumeration({ values: ['json', 'csv'], enumCaseSensitive: false })
+
+// After
+z.preprocess((val) => String(val).toLowerCase(), z.enum(['json', 'csv']))
+  .openapi({ enum: ['json', 'csv'] })
 ```
 
 ## Removed Exports
@@ -382,6 +433,56 @@ app.onError((err, c) => {
 The `handleValidationError()` method has been removed from `OpenAPIRoute`. If you were overriding this method to customize validation error formatting, use Hono's `app.onError` handler instead to customize error responses centrally.
 
 **No changes to itty-router behavior.**
+
+## Migrating to Chanfana 3.1
+
+### `contentJson()` Requires Zod Schemas (BREAKING)
+
+`contentJson()` no longer accepts plain objects or JavaScript constructors. It now requires a Zod schema:
+
+```typescript
+// Before (Chanfana v2/v3.0)
+contentJson({ success: Boolean, result: { id: String } })
+
+// After (Chanfana v3.1)
+import { z } from 'zod';
+import { contentJson } from 'chanfana';
+
+contentJson(z.object({ success: z.boolean(), result: z.object({ id: z.string() }) }))
+```
+
+### `raiseUnknownParameters` Now Enforced
+
+The `raiseUnknownParameters` router option was previously accepted but not enforced. It is now fully functional. If you had this option set to `true`, unknown query/path/header parameters will now cause 400 validation errors.
+
+```typescript
+// If you see unexpected 400 errors after upgrading, check your router options:
+const router = fromHono(app, {
+  raiseUnknownParameters: false, // Set to false to allow unknown parameters
+});
+```
+
+### D1 Endpoint Security Improvements
+
+Several D1 endpoint behaviors have changed for security:
+
+- **Delete and Update operations** now only apply primary key filters to WHERE clauses. If you relied on filtering by non-primary-key fields, that will no longer work.
+- **Database error messages** are no longer exposed in responses. Use the `constraintsMessages` property to map constraint violations to user-friendly errors.
+- **`per_page` is now capped** at 100 by default (configurable via `maxPerPage` class property).
+
+### New Exception Types
+
+Chanfana 3.1 adds a full set of HTTP exception classes. Consider replacing generic `ApiException` usage with specific types:
+
+| Exception | Status | Use Case |
+|-----------|--------|----------|
+| `UnauthorizedException` | 401 | Authentication failures |
+| `ForbiddenException` | 403 | Authorization failures |
+| `ConflictException` | 409 | Duplicate resources |
+| `TooManyRequestsException` | 429 | Rate limiting (sets `Retry-After` header) |
+| `ServiceUnavailableException` | 503 | Maintenance mode (sets `Retry-After` header) |
+
+See [Error Handling](./error-handling.md) for the full list.
 
 ## Need Help?
 
