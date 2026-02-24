@@ -124,3 +124,5 @@ docs/site
 .wrangler
 docs/.vitepress/cache
 tests/schema.json
+template/node_modules/
+template/package-lock.json
