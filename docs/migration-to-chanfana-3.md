@@ -349,6 +349,40 @@ The `base` option is now validated:
 2. If you use `fromHono(app, { base: '/api' })` without `basePath()`, no changes needed — this now also configures Hono's route matching.
 3. Ensure your `base` values start with `/` and don't end with `/`.
 
+## Hono Error Handling Changes (v3.2)
+
+Chanfana v3.2 changes how errors are handled when using the Hono adapter.
+
+### Errors now flow through Hono's `onError`
+
+Previously, chanfana caught all errors (validation errors, `ApiException` subclasses) internally and returned formatted JSON responses directly. Hono's `app.onError` handler never saw these errors.
+
+Now, chanfana converts these errors into Hono `HTTPException` instances and re-throws them, so they flow through `app.onError`. The `HTTPException` wraps chanfana's standard JSON error response, accessible via `err.getResponse()`.
+
+**If you don't have an `onError` handler:** No action needed. Hono's default handler calls `HTTPException.getResponse()`, which returns the same formatted response as before.
+
+**If you have an `onError` handler:** You will now receive chanfana errors (validation failures, `NotFoundException`, etc.) as `HTTPException` instances. Update your handler to check for `HTTPException`:
+
+```typescript
+import { HTTPException } from 'hono/http-exception';
+
+app.onError((err, c) => {
+    if (err instanceof HTTPException) {
+        // Chanfana error -- return the pre-formatted response
+        return err.getResponse();
+    }
+
+    // Handle other errors
+    return c.json({ error: 'Internal Server Error' }, 500);
+});
+```
+
+### `handleValidationError()` removed
+
+The `handleValidationError()` method has been removed from `OpenAPIRoute`. If you were overriding this method to customize validation error formatting, use Hono's `app.onError` handler instead to customize error responses centrally.
+
+**No changes to itty-router behavior.**
+
 ## Need Help?
 
 If you encounter issues during migration:

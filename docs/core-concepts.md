@@ -86,6 +86,7 @@ Data validation is automatically performed by Chanfana based on the request sche
 Chanfana provides a structured approach to error handling. When validation fails or when exceptions occur within your `handle` method, Chanfana aims to return informative and consistent error responses.
 
 *   **Automatic Validation Error Responses:** As mentioned above, validation errors are automatically caught and transformed into `400 Bad Request` responses with detailed error messages.
+*   **Hono `onError` Integration:** When using Hono, chanfana errors are converted to `HTTPException` instances and flow through Hono's `app.onError` handler for centralized logging and custom formatting. See [Error Handling - Global Error Handling Strategies](./error-handling.md#global-error-handling-strategies) for details.
 *   **Exception Handling:** You can throw custom exceptions within your `handle` method to signal specific error conditions. Chanfana provides base exception classes like `ApiException`, `InputValidationException`, and `NotFoundException` that you can use or extend to create your own API-specific exceptions. These exceptions can be configured to automatically generate appropriate error responses and OpenAPI schema definitions for error responses.
 *   **Consistent Error Format:** Chanfana encourages a consistent error response format (typically JSON) to make it easier for clients to handle errors from your API.
 

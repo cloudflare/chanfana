@@ -112,6 +112,30 @@ export default app;
 
 In this example, we have an existing Hono route `/legacy-route` that is not managed by Chanfana. We then initialize Chanfana using `fromHono` and register a new route `/new-route` using `OpenAPIRoute` and `openapi.get()`. Both routes will coexist in the same Hono application. Only the `/new-route` will have OpenAPI documentation and validation.
 
+### Error Handling with Hono
+
+When using `fromHono()`, chanfana automatically converts its errors (validation errors and `ApiException` subclasses) into Hono `HTTPException` instances. This means errors flow through Hono's `app.onError` handler for centralized logging, monitoring, or custom error formatting.
+
+If you don't define an `onError` handler, Hono's default handler calls `HTTPException.getResponse()` which returns chanfana's standard JSON error response -- no setup needed.
+
+```typescript
+import { HTTPException } from 'hono/http-exception';
+
+app.onError((err, c) => {
+    console.error(err); // Log all errors centrally
+
+    if (err instanceof HTTPException) {
+        return err.getResponse(); // Chanfana's formatted error response
+    }
+
+    return c.json({ error: 'Internal Server Error' }, 500);
+});
+
+const openapi = fromHono(app);
+```
+
+See [Error Handling - Global Error Handling Strategies](./error-handling.md#global-error-handling-strategies) for more details.
+
 ### `HonoOpenAPIRouterType`
 
 The `fromHono` function returns an object of type `HonoOpenAPIRouterType`. This type is an intersection of `Hono` and `OpenAPIRouterType`, extending the standard Hono application instance with Chanfana's OpenAPI routing methods and properties.

@@ -384,54 +384,45 @@ export default app;
 
 ## Custom Error Handling
 
-In order to customize the zod error formats, just overwrite the `handleValidationError` function in your endpoint class
+### Hono: Centralized Error Handling with `onError`
+
+When using Hono, chanfana errors (validation errors, `ApiException` subclasses) are automatically converted to `HTTPException` instances and flow through Hono's `app.onError` handler. This is the recommended way to customize error responses:
 
 ```ts
-import { OpenAPIRoute } from 'chanfana'
-import { Context } from 'hono'
+import { Hono } from 'hono'
+import { HTTPException } from 'hono/http-exception'
+import { fromHono } from 'chanfana'
 
-export class ToDoList extends OpenAPIRoute {
-  schema = {
-    // ...
+const app = new Hono()
+
+app.onError((err, c) => {
+  // Log all errors centrally
+  console.error(err)
+
+  if (err instanceof HTTPException) {
+    // Chanfana error -- customize or return the default response
+    return err.getResponse()
   }
 
-  handleValidationError(errors: z.ZodIssue[]): Response {
-    return Response.json({
-      errors: errors,
-      success: false,
-      result: {},
-    }, {
-      status: 400,
-    })
-  }
+  return c.json({ error: 'Internal Server Error' }, 500)
+})
 
-  async handle(c: Context) {
-    // ...
-  }
-}
+const openapi = fromHono(app)
 ```
 
-### Reusing errors handlers across the project
+### Reusing error handlers across the project
 
-First define a generic class that extends `OpenAPIRoute`, in this function define you cross endpoint functions
+Define a base class that extends `OpenAPIRoute` with shared logic:
 
 ```ts
 import { OpenAPIRoute } from "chanfana";
 
 class MyProjectRoute extends OpenAPIRoute {
-  handleValidationError(errors: z.ZodIssue[]): Response {
-    return Response.json({
-      errors: errors,
-      success: false,
-      result: {},
-    }, {
-      status: 400,
-    })
-  }
+  // Add shared methods, authentication checks, etc.
 }
 ```
 
-Then, in your endpoint extend from the new class
+Then, in your endpoint extend from the new class:
 
 ```ts
 import { MyProjectRoute } from './route'
