@@ -190,11 +190,10 @@ See [Error Handling - Global Error Handling Strategies](./error-handling.md#glob
 
 ## Customizing OpenAPI Schema Output
 
-While `RouterOptions` allows you to configure the overall OpenAPI document, you can also customize the schema output for individual endpoints and parameters using Zod's OpenAPI metadata features and Chanfana's parameter types (e.g., `Str`, `Num`, `Enumeration`).
+While `RouterOptions` allows you to configure the overall OpenAPI document, you can also customize the schema output for individual endpoints and parameters using Zod's OpenAPI metadata features.
 
 *   **`describe()`:** Use Zod's `describe()` method to add descriptions to your schema fields, which will be included in the OpenAPI documentation.
 *   **`openapi()`:** Use Zod's `openapi()` method to provide OpenAPI-specific metadata, such as examples, formats, and other schema extensions.
-*   **Chanfana Parameter Type Options:**  Options like `description`, `example`, `format`, `required`, and `default` in Chanfana's parameter types (`Str`, `Num`, `Enumeration`, etc.) are directly translated into OpenAPI schema properties.
 
 Refer to the [Zod-to-OpenAPI documentation](https://github.com/asteasolutions/zod-to-openapi) and [Zod documentation](https://zod.dev/) for more details on schema customization options.
 

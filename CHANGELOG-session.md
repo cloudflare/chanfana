@@ -62,7 +62,44 @@
      - `Enumeration({ values })` → `z.enum([...])`
    - For OpenAPI metadata, use `.openapi()` or `.describe()` methods
 
-### Bug Fixes
+### Bug Fixes (Stability Review Pass)
+
+10. **D1: Fixed unscoped DELETE/UPDATE when no primary key filters match** (`src/endpoints/d1/base.ts`)
+    - `buildPrimaryKeyFilters()` now throws if no primary key filters are found, preventing catastrophic unscoped queries
+
+11. **D1: Fixed shared exception instance in `handleDbError`** (`src/endpoints/d1/base.ts`)
+    - Previously: `constraintsMessages` values were thrown directly, sharing mutable Error state across concurrent requests
+    - Now: Exceptions are cloned via `new InputValidationException(template.message, template.path)`
+
+12. **D1: Fixed empty `updatedData` producing invalid SQL** (`src/endpoints/d1/update.ts`)
+    - Returns existing object unchanged when no fields to update, instead of generating `UPDATE table SET WHERE ...`
+
+13. **D1: `D1ReadEndpoint` now uses `buildPrimaryKeyFilters`** (`src/endpoints/d1/read.ts`)
+    - Previously used `buildSafeFilters` which allowed arbitrary filter fields; now consistent with delete/update
+
+14. **D1: `D1DeleteEndpoint` now uses shared `handleDbError`** (`src/endpoints/d1/delete.ts`)
+    - Consistent error handling across all D1 endpoints; also adds `constraintsMessages` support to delete
+
+15. **D1: LIKE wildcards now escaped in search queries** (`src/endpoints/d1/list.ts`)
+    - `%` and `_` characters in search values are now escaped to prevent unintended pattern matching
+
+16. **`TooManyRequestsException` and `ServiceUnavailableException` now set `Retry-After` header** (`src/utils.ts`)
+    - The `retryAfter` property is now surfaced as an HTTP `Retry-After` response header per RFC 6585/7231
+
+17. **Schema generation errors now propagate** (`src/openapi.ts`)
+    - Previously: errors were silently swallowed and a stub schema returned
+    - Now: errors propagate so developers see them during development
+
+18. **Removed dead `handleValidationError()` method** (`src/route.ts`)
+    - Was defined but never called; migration guide already documented its removal
+
+19. **Removed unused `D1EndpointConfig` interface** (`src/endpoints/d1/base.ts`)
+    - Was exported but never implemented by any class
+
+20. **`D1ListEndpoint.maxPerPage` now configurable** (`src/endpoints/d1/list.ts`)
+    - Was hardcoded to 100; now a class property that can be overridden
+
+### Bug Fixes (Original)
 
 1. **CreateEndpoint: Fixed response schema reference** (`src/endpoints/create.ts`)
    - Changed from `...this.schema?.responses?.[200]` to `...this.schema?.responses?.[201]`
@@ -144,10 +181,7 @@
 3. **D1ListEndpoint: Parallel Query Execution**
    - Data and count queries now run in parallel with `Promise.all()`
 
-4. **openapi.ts: Added error handling for schema generation**
-   - Returns a minimal valid schema on generation failure instead of crashing
-
-5. **openapi.ts: Added sanitizeOperationId()**
+4. **openapi.ts: Added sanitizeOperationId()**
    - Ensures operationIds are valid by removing special characters
 
 6. **openapi.ts: Added constructor validation**

@@ -295,7 +295,7 @@ if (startDate > endDate) {
 *   **`status`:** `429 Too Many Requests`
 *   **`code`:** `7008`
 *   **`default_message`:** `"Too Many Requests"`
-*   **`retryAfter`:** Optional number of seconds until the user can retry
+*   **`retryAfter`:** Optional number of seconds until the user can retry. When provided, chanfana automatically sets the `Retry-After` HTTP response header.
 
 ```typescript
 import { TooManyRequestsException } from 'chanfana';
@@ -304,6 +304,7 @@ import { TooManyRequestsException } from 'chanfana';
 if (rateLimitExceeded) {
     throw new TooManyRequestsException("Rate limit exceeded", 60); // Retry after 60 seconds
 }
+// Response will include header: Retry-After: 60
 ```
 
 ### `InternalServerErrorException`: Server Errors (500)
@@ -345,7 +346,7 @@ try {
 *   **`status`:** `503 Service Unavailable`
 *   **`code`:** `7011`
 *   **`default_message`:** `"Service Unavailable"`
-*   **`retryAfter`:** Optional number of seconds until the service is available
+*   **`retryAfter`:** Optional number of seconds until the service is available. When provided, chanfana automatically sets the `Retry-After` HTTP response header.
 
 ```typescript
 import { ServiceUnavailableException } from 'chanfana';
@@ -354,6 +355,7 @@ import { ServiceUnavailableException } from 'chanfana';
 if (maintenanceMode) {
     throw new ServiceUnavailableException("Service under maintenance", 300); // Retry after 5 minutes
 }
+// Response will include header: Retry-After: 300
 ```
 
 ### `GatewayTimeoutException`: Upstream Server Timeout (504)

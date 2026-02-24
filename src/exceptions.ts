@@ -237,9 +237,11 @@ export class TooManyRequestsException extends ApiException {
 }
 
 /**
- * Exception for internal server errors (500).
- * Used when an unexpected error occurs on the server.
- * Note: By default, isVisible is false to prevent leaking internal details.
+ * Exception for unexpected server errors (500).
+ * Unlike the base ApiException (also 500, code 7000), this class defaults to isVisible=false,
+ * meaning the error message is hidden from clients and replaced with "Internal Error".
+ * Use this for errors that should be logged but not exposed to end users.
+ * Use the base ApiException when the error message is safe to expose.
  */
 export class InternalServerErrorException extends ApiException {
   isVisible = false;

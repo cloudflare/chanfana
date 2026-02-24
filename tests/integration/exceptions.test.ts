@@ -483,12 +483,82 @@ describe("New Exceptions in Route Handler", () => {
     }
   }
 
+  class ThrowInternalServerErrorEndpoint extends OpenAPIRoute {
+    schema = {
+      responses: { "200": { description: "Success", ...contentJson(z.object({ success: z.boolean() })) } },
+    };
+    async handle() {
+      throw new InternalServerErrorException("secret database details");
+    }
+  }
+
+  class ThrowUnprocessableEntityEndpoint extends OpenAPIRoute {
+    schema = {
+      responses: { "200": { description: "Success", ...contentJson(z.object({ success: z.boolean() })) } },
+    };
+    async handle() {
+      throw new UnprocessableEntityException("Invalid date range", ["body", "startDate"]);
+    }
+  }
+
+  class ThrowMethodNotAllowedEndpoint extends OpenAPIRoute {
+    schema = {
+      responses: { "200": { description: "Success", ...contentJson(z.object({ success: z.boolean() })) } },
+    };
+    async handle() {
+      throw new MethodNotAllowedException("Use POST instead");
+    }
+  }
+
+  class ThrowBadGatewayEndpoint extends OpenAPIRoute {
+    schema = {
+      responses: { "200": { description: "Success", ...contentJson(z.object({ success: z.boolean() })) } },
+    };
+    async handle() {
+      throw new BadGatewayException("Upstream error");
+    }
+  }
+
+  class ThrowGatewayTimeoutEndpoint extends OpenAPIRoute {
+    schema = {
+      responses: { "200": { description: "Success", ...contentJson(z.object({ success: z.boolean() })) } },
+    };
+    async handle() {
+      throw new GatewayTimeoutException("Upstream timeout");
+    }
+  }
+
+  class ThrowTooManyRequestsWithRetryEndpoint extends OpenAPIRoute {
+    schema = {
+      responses: { "200": { description: "Success", ...contentJson(z.object({ success: z.boolean() })) } },
+    };
+    async handle() {
+      throw new TooManyRequestsException("Rate limited", 120);
+    }
+  }
+
+  class ThrowServiceUnavailableWithRetryEndpoint extends OpenAPIRoute {
+    schema = {
+      responses: { "200": { description: "Success", ...contentJson(z.object({ success: z.boolean() })) } },
+    };
+    async handle() {
+      throw new ServiceUnavailableException("Maintenance", 300);
+    }
+  }
+
   const router = fromIttyRouter(AutoRouter());
   router.get("/unauthorized", ThrowUnauthorizedEndpoint);
   router.get("/forbidden", ThrowForbiddenEndpoint);
   router.get("/conflict", ThrowConflictEndpoint);
   router.get("/too-many-requests", ThrowTooManyRequestsEndpoint);
   router.get("/service-unavailable", ThrowServiceUnavailableEndpoint);
+  router.get("/internal-server-error", ThrowInternalServerErrorEndpoint);
+  router.get("/unprocessable-entity", ThrowUnprocessableEntityEndpoint);
+  router.get("/method-not-allowed", ThrowMethodNotAllowedEndpoint);
+  router.get("/bad-gateway", ThrowBadGatewayEndpoint);
+  router.get("/gateway-timeout", ThrowGatewayTimeoutEndpoint);
+  router.get("/too-many-requests-retry", ThrowTooManyRequestsWithRetryEndpoint);
+  router.get("/service-unavailable-retry", ThrowServiceUnavailableWithRetryEndpoint);
 
   it("should return 401 for UnauthorizedException", async () => {
     const request = await router.fetch(buildRequest({ method: "GET", path: "/unauthorized" }));
@@ -538,5 +608,72 @@ describe("New Exceptions in Route Handler", () => {
     expect(resp.success).toBe(false);
     expect(resp.errors[0].code).toBe(7011);
     expect(resp.errors[0].message).toBe("Under maintenance");
+  });
+
+  it("should return 500 and hide message for InternalServerErrorException", async () => {
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/internal-server-error" }));
+    const resp = await request.json();
+
+    expect(request.status).toEqual(500);
+    expect(resp.success).toBe(false);
+    expect(resp.errors[0].code).toBe(7009);
+    // Message should be hidden (isVisible=false)
+    expect(resp.errors[0].message).toBe("Internal Error");
+    expect(resp.errors[0].message).not.toBe("secret database details");
+  });
+
+  it("should return 422 with path for UnprocessableEntityException", async () => {
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/unprocessable-entity" }));
+    const resp = await request.json();
+
+    expect(request.status).toEqual(422);
+    expect(resp.success).toBe(false);
+    expect(resp.errors[0].code).toBe(7007);
+    expect(resp.errors[0].message).toBe("Invalid date range");
+    expect(resp.errors[0].path).toEqual(["body", "startDate"]);
+  });
+
+  it("should return 405 for MethodNotAllowedException", async () => {
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/method-not-allowed" }));
+    const resp = await request.json();
+
+    expect(request.status).toEqual(405);
+    expect(resp.success).toBe(false);
+    expect(resp.errors[0].code).toBe(7005);
+    expect(resp.errors[0].message).toBe("Use POST instead");
+  });
+
+  it("should return 502 for BadGatewayException", async () => {
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/bad-gateway" }));
+    const resp = await request.json();
+
+    expect(request.status).toEqual(502);
+    expect(resp.success).toBe(false);
+    expect(resp.errors[0].code).toBe(7010);
+    expect(resp.errors[0].message).toBe("Upstream error");
+  });
+
+  it("should return 504 for GatewayTimeoutException", async () => {
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/gateway-timeout" }));
+    const resp = await request.json();
+
+    expect(request.status).toEqual(504);
+    expect(resp.success).toBe(false);
+    expect(resp.errors[0].code).toBe(7012);
+    expect(resp.errors[0].message).toBe("Upstream timeout");
+  });
+
+  it("should set Retry-After header for TooManyRequestsException", async () => {
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/too-many-requests-retry" }));
+
+    expect(request.status).toEqual(429);
+    expect(request.headers.get("Retry-After")).toBe("120");
+  });
+
+  it("should set Retry-After header for ServiceUnavailableException", async () => {
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/service-unavailable-retry" }));
+
+    expect(request.status).toEqual(503);
+    expect(request.headers.get("Retry-After")).toBe("300");
   });
 });

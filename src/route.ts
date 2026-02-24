@@ -141,24 +141,6 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
   }
 
   /**
-   * Formats validation errors into a standardized response.
-   * @param errors - Array of Zod validation issues
-   * @returns JSON response with validation errors
-   */
-  handleValidationError(errors: z.ZodIssue[]): Response {
-    return jsonResp(
-      {
-        errors: errors,
-        success: false,
-        result: {},
-      },
-      {
-        status: 400,
-      },
-    );
-  }
-
-  /**
    * Main execution method called by the router.
    * Handles validation, error catching, and response formatting.
    *
@@ -192,11 +174,6 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     // Auto-convert plain objects to JSON responses
     if (resp !== null && resp !== undefined && !(resp instanceof Response) && typeof resp === "object") {
       return jsonResp(resp);
-    }
-
-    // Validate return type - if not null/undefined and not Response, it's invalid
-    if (resp !== null && resp !== undefined && !(resp instanceof Response)) {
-      throw new Error(`Invalid return type from handle(): expected Response or object, got ${typeof resp}`);
     }
 
     return resp;

@@ -9,6 +9,7 @@ import {
   D1ReadEndpoint,
   D1UpdateEndpoint,
   fromIttyRouter,
+  InputValidationException,
 } from "../../src";
 
 // User schema for testing - id is optional because it's auto-generated
@@ -501,6 +502,225 @@ describe("D1 Endpoints", () => {
       const result = await env.DB.prepare("SELECT COUNT(*) as count FROM users").first();
       expect(result?.count).toBe(3);
     });
+
+    it("should safely handle SQL injection in filter values", async () => {
+      const response = await router.fetch(
+        new Request("https://example.com/api/users?name=' OR '1'='1'; DROP TABLE users;--", {
+          method: "GET",
+        }),
+        env,
+      );
+
+      expect(response.status).toBe(200);
+      const data = (await response.json()) as any;
+      expect(data.result).toHaveLength(0);
+
+      // Verify table still exists
+      const result = await env.DB.prepare("SELECT COUNT(*) as count FROM users").first();
+      expect(result?.count).toBe(3);
+    });
+  });
+
+  describe("Pagination", () => {
+    beforeEach(async () => {
+      await seedTestData();
+    });
+
+    it("should return page 2 results", async () => {
+      const response = await router.fetch(
+        new Request("https://example.com/api/users?per_page=2&page=2", {
+          method: "GET",
+        }),
+        env,
+      );
+
+      const data = (await response.json()) as any;
+
+      expect(response.status).toBe(200);
+      expect(data.result).toHaveLength(1);
+      expect(data.result_info.page).toBe(2);
+      expect(data.result_info.total_count).toBe(3);
+    });
+
+    it("should return empty results for page beyond total", async () => {
+      const response = await router.fetch(
+        new Request("https://example.com/api/users?per_page=2&page=100", {
+          method: "GET",
+        }),
+        env,
+      );
+
+      const data = (await response.json()) as any;
+
+      expect(response.status).toBe(200);
+      expect(data.result).toHaveLength(0);
+      expect(data.result_info.total_count).toBe(3);
+    });
+  });
+
+  describe("LIKE wildcard escaping", () => {
+    beforeEach(async () => {
+      await setupDatabase();
+      // Insert users with wildcard characters in names
+      await env.DB.prepare(
+        "INSERT INTO users (name, email, age) VALUES ('100% complete', 'percent@example.com', 25)",
+      ).run();
+      await env.DB.prepare(
+        "INSERT INTO users (name, email, age) VALUES ('user_one', 'underscore@example.com', 30)",
+      ).run();
+      await env.DB.prepare(
+        "INSERT INTO users (name, email, age) VALUES ('normal user', 'normal@example.com', 35)",
+      ).run();
+    });
+
+    it("should escape % in search queries", async () => {
+      const response = await router.fetch(
+        new Request("https://example.com/api/users?search=100%25", {
+          method: "GET",
+        }),
+        env,
+      );
+
+      const data = (await response.json()) as any;
+      expect(response.status).toBe(200);
+      // Should only match the literal "100%" user, not all users
+      expect(data.result).toHaveLength(1);
+      expect(data.result[0].name).toBe("100% complete");
+    });
+  });
+});
+
+describe("D1 Endpoints with constraintsMessages", () => {
+  class UserCreateWithConstraintsEndpoint extends D1CreateEndpoint {
+    _meta = {
+      model: {
+        tableName: "users",
+        schema: UserSchema,
+        primaryKeys: ["id"],
+      },
+    };
+    dbName = "DB";
+    constraintsMessages = {
+      "users.email": new InputValidationException("Email already exists", ["body", "email"]),
+    };
+  }
+
+  const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+  router.post("/constrained-users", UserCreateWithConstraintsEndpoint);
+
+  beforeEach(async () => {
+    await env.DB.prepare("DROP TABLE IF EXISTS users").run();
+    await env.DB.prepare(`
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        age INTEGER
+      )
+    `).run();
+  });
+
+  it("should return custom error for UNIQUE constraint violation", async () => {
+    // First create
+    await router.fetch(
+      new Request("https://example.com/api/constrained-users", {
+        method: "POST",
+        body: JSON.stringify({ name: "First", email: "dup@example.com" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+      env,
+    );
+
+    // Duplicate
+    const response = await router.fetch(
+      new Request("https://example.com/api/constrained-users", {
+        method: "POST",
+        body: JSON.stringify({ name: "Second", email: "dup@example.com" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+      env,
+    );
+
+    const data = (await response.json()) as any;
+
+    expect(response.status).toBe(400);
+    expect(data.success).toBe(false);
+    expect(data.errors[0].message).toBe("Email already exists");
+    expect(data.errors[0].path).toEqual(["body", "email"]);
+  });
+});
+
+describe("D1 UpdateEndpoint empty update", () => {
+  // Schema where status has a default
+  const StatusUserSchema = z.object({
+    id: z.number().optional(),
+    name: z.string(),
+    email: z.string(),
+    status: z.string().optional().default("active"),
+  });
+
+  class StatusUserUpdateEndpoint extends D1UpdateEndpoint {
+    _meta = {
+      model: {
+        tableName: "status_users",
+        schema: StatusUserSchema,
+        primaryKeys: ["id"],
+      },
+    };
+    dbName = "DB";
+  }
+
+  class StatusUserReadEndpoint extends D1ReadEndpoint {
+    _meta = {
+      model: {
+        tableName: "status_users",
+        schema: StatusUserSchema,
+        primaryKeys: ["id"],
+      },
+    };
+    dbName = "DB";
+  }
+
+  const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+  router.put("/status-users/:id", StatusUserUpdateEndpoint);
+  router.get("/status-users/:id", StatusUserReadEndpoint);
+
+  beforeEach(async () => {
+    await env.DB.prepare("DROP TABLE IF EXISTS status_users").run();
+    await env.DB.prepare(`
+      CREATE TABLE status_users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        status TEXT DEFAULT 'active'
+      )
+    `).run();
+    await env.DB.prepare(
+      "INSERT INTO status_users (name, email, status) VALUES ('Alice', 'alice@example.com', 'inactive')",
+    ).run();
+  });
+
+  it("should not overwrite existing values with defaults on partial update", async () => {
+    // Update only the name, sending the required fields
+    const response = await router.fetch(
+      new Request("https://example.com/api/status-users/1", {
+        method: "PUT",
+        body: JSON.stringify({ name: "Alice Updated", email: "alice@example.com" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+      env,
+    );
+
+    expect(response.status).toBe(200);
+
+    // Verify the status was not overwritten with default "active"
+    const readResponse = await router.fetch(
+      new Request("https://example.com/api/status-users/1", { method: "GET" }),
+      env,
+    );
+    const readData = (await readResponse.json()) as any;
+    expect(readData.result.status).toBe("inactive");
+    expect(readData.result.name).toBe("Alice Updated");
   });
 });
 

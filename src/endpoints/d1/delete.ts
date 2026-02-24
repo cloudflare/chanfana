@@ -1,7 +1,7 @@
-import { ApiException } from "../../exceptions";
+import type { InputValidationException } from "../../exceptions";
 import { DeleteEndpoint } from "../delete";
 import type { Filters, Logger, O } from "../types";
-import { buildPrimaryKeyFilters, buildWhereClause, getD1Binding, validateTableName } from "./base";
+import { buildPrimaryKeyFilters, buildWhereClause, getD1Binding, handleDbError, validateTableName } from "./base";
 
 /**
  * D1-specific DeleteEndpoint implementation.
@@ -13,6 +13,8 @@ export class D1DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> 
   dbName = "DB";
   /** Optional logger for debugging and error tracking */
   logger?: Logger;
+  /** Custom error messages for UNIQUE constraint violations. Keys are constraint names (e.g., "users.email") */
+  constraintsMessages: Record<string, InputValidationException> = {};
 
   /**
    * Gets the D1 database binding from the worker environment.
@@ -103,12 +105,7 @@ export class D1DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> 
 
       return oldObj;
     } catch (e: unknown) {
-      const error = e as Error;
-      if (this.logger) {
-        this.logger.error(`Database error during delete ${tableName}: ${error.message}`);
-      }
-      // Sanitize error message - don't expose internal DB details
-      throw new ApiException("Database operation failed");
+      handleDbError(e as Error, this.constraintsMessages, this.logger, `delete ${tableName}`);
     }
   }
 }

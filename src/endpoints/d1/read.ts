@@ -1,6 +1,6 @@
 import { ReadEndpoint } from "../read";
 import type { ListFilters, Logger, O } from "../types";
-import { buildSafeFilters, buildWhereClause, getD1Binding, validateTableName } from "./base";
+import { buildPrimaryKeyFilters, buildWhereClause, getD1Binding, validateTableName } from "./base";
 
 /**
  * D1-specific ReadEndpoint implementation.
@@ -38,8 +38,8 @@ export class D1ReadEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     const tableName = validateTableName(this.meta.model.tableName);
     const validColumns = this.getValidColumns();
 
-    // Build safe filters with validated column names
-    const safeFilters = buildSafeFilters(filters.filters, validColumns);
+    // Build safe filters restricted to primary key columns
+    const safeFilters = buildPrimaryKeyFilters(filters, this._meta.model.primaryKeys, validColumns);
     const whereClause = buildWhereClause(safeFilters.conditions);
 
     const sql = `SELECT * FROM ${tableName} ${whereClause} LIMIT 1`;

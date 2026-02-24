@@ -112,6 +112,21 @@ class FalsyDefaultsEndpoint extends OpenAPIRoute {
   }
 }
 
+// Test endpoint that returns a string (should pass through to router)
+class StringReturnEndpoint extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+      },
+    },
+  };
+
+  async handle() {
+    return "hello world";
+  }
+}
+
 // Test endpoint with raiseUnknownParameters behavior
 class StrictParamsEndpoint extends OpenAPIRoute {
   schema = {
@@ -161,6 +176,15 @@ describe("Response Type Handling", () => {
 
     // Note: itty-router wraps null returns, so we get a Response object
     // This behavior depends on the router implementation
+    expect(request).toBeDefined();
+  });
+
+  it("should allow string return from handle()", async () => {
+    const router2 = fromIttyRouter(AutoRouter());
+    router2.get("/string-return", StringReturnEndpoint);
+
+    const request = await router2.fetch(buildRequest({ method: "GET", path: "/string-return" }));
+    // String returns should pass through to the router without throwing
     expect(request).toBeDefined();
   });
 });
@@ -234,6 +258,22 @@ describe("raiseUnknownParameters", () => {
     const resp = await request.json();
 
     expect(request.status).toEqual(200);
+    expect(resp.allowed).toBe("test");
+  });
+
+  it("should allow unknown query params even with raiseUnknownParameters true (known limitation)", async () => {
+    // raiseUnknownParameters only makes the top-level schema strict ({ query, params, headers, body })
+    // It does NOT make the inner query/params schemas strict, so unknown query params pass through.
+    const router = fromIttyRouter(AutoRouter(), { raiseUnknownParameters: true });
+    router.get("/strict-reject", StrictParamsEndpoint);
+
+    const request = await router.fetch(
+      buildRequest({ method: "GET", path: "/strict-reject?allowed=test&unknown=ignored" }),
+    );
+
+    // Unknown query parameters within the query schema are NOT rejected
+    expect(request.status).toEqual(200);
+    const resp = await request.json();
     expect(resp.allowed).toBe("test");
   });
 });

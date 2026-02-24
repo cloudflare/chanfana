@@ -46,15 +46,22 @@ export function formatChanfanaError(e: unknown): Response | null {
 
   // ApiException: check by shape to avoid circular dependency with exceptions.ts
   if (e instanceof Error && "buildResponse" in e && typeof (e as any).buildResponse === "function") {
-    const apiError = e as unknown as { buildResponse: () => any; status: number };
-    return jsonResp(
-      {
+    const apiError = e as unknown as { buildResponse: () => any; status: number; retryAfter?: number };
+    const headers: Record<string, string> = {
+      "content-type": "application/json;charset=UTF-8",
+    };
+    if (apiError.retryAfter !== undefined) {
+      headers["Retry-After"] = String(apiError.retryAfter);
+    }
+    return new Response(
+      JSON.stringify({
         success: false,
         errors: apiError.buildResponse(),
         result: {},
-      },
+      }),
       {
         status: apiError.status,
+        headers,
       },
     );
   }

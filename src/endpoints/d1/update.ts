@@ -93,6 +93,11 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
     const updateColumns = Object.keys(filters.updatedData);
     const updateValues = Object.values(filters.updatedData);
 
+    // If no fields to update, return the existing object unchanged
+    if (updateColumns.length === 0) {
+      return _oldObj as O<typeof this._meta>;
+    }
+
     // Build SET clause with proper parameter indices (starting after condition params)
     const setClause = updateColumns
       .map((col, i) => {

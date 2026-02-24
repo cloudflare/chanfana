@@ -154,32 +154,18 @@ export class OpenAPIHandler {
    * @returns The complete OpenAPI specification object
    */
   getGeneratedSchema() {
-    try {
-      const GeneratorClass = this.options?.openapiVersion === "3" ? OpenApiGeneratorV3 : OpenApiGeneratorV31;
-      const generator = new GeneratorClass(this.registry.definitions);
+    const GeneratorClass = this.options?.openapiVersion === "3" ? OpenApiGeneratorV3 : OpenApiGeneratorV31;
+    const generator = new GeneratorClass(this.registry.definitions);
 
-      return generator.generateDocument({
-        openapi: this.options?.openapiVersion === "3" ? "3.0.3" : "3.1.0",
-        info: {
-          version: this.options?.schema?.info?.version || "1.0.0",
-          title: this.options?.schema?.info?.title || "OpenAPI",
-          ...this.options?.schema?.info,
-        },
-        ...this.options?.schema,
-      });
-    } catch (error) {
-      console.error("Failed to generate OpenAPI schema:", error);
-      // Return a minimal valid schema on error
-      return {
-        openapi: this.options?.openapiVersion === "3" ? "3.0.3" : "3.1.0",
-        info: {
-          title: "Error",
-          version: "0.0.0",
-          description: "Schema generation failed",
-        },
-        paths: {},
-      };
-    }
+    return generator.generateDocument({
+      openapi: this.options?.openapiVersion === "3" ? "3.0.3" : "3.1.0",
+      info: {
+        version: this.options?.schema?.info?.version || "1.0.0",
+        title: this.options?.schema?.info?.title || "OpenAPI",
+        ...this.options?.schema?.info,
+      },
+      ...this.options?.schema,
+    });
   }
 
   /**

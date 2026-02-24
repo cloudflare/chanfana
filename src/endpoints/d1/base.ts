@@ -1,29 +1,17 @@
-import { ApiException, type InputValidationException } from "../../exceptions";
+import { ApiException, InputValidationException } from "../../exceptions";
 import type { FilterCondition, Filters, Logger } from "../types";
 
 /**
  * SQL identifier validation regex.
- * Allows alphanumeric characters, underscores, and must start with a letter or underscore.
+ * Intentionally restrictive for D1/SQLite — rejects schema-qualified names (e.g., "schema.table")
+ * and quoted identifiers. Only allows alphanumeric characters and underscores.
  */
 const SQL_IDENTIFIER_REGEX = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
 /**
  * Valid ORDER BY direction values
  */
-const VALID_ORDER_DIRECTIONS = new Set(["ASC", "DESC"]);
-
-/**
- * Base configuration and utilities for D1 database endpoints.
- * Provides SQL injection prevention, DB binding management, and common query building utilities.
- */
-export interface D1EndpointConfig {
-  /** Name of the D1 database binding in the worker environment. Defaults to "DB" */
-  dbName: string;
-  /** Optional logger for debugging and error tracking */
-  logger?: Logger;
-  /** Custom error messages for UNIQUE constraint violations. Keys are constraint names (e.g., "users.email") */
-  constraintsMessages: Record<string, InputValidationException>;
-}
+const VALID_ORDER_DIRECTIONS = new Set(["asc", "desc"]);
 
 /**
  * Result from getSafeFilters - contains validated SQL conditions and parameters
@@ -96,11 +84,11 @@ export function validateColumnName(columnName: string, validColumns?: string[]):
  * Validates and normalizes an ORDER BY direction.
  *
  * @param direction - The direction string to validate
- * @returns "ASC" or "DESC"
+ * @returns "asc" or "desc"
  */
-export function validateOrderDirection(direction: string | undefined): "ASC" | "DESC" {
-  const normalized = (direction || "ASC").toUpperCase().trim();
-  return VALID_ORDER_DIRECTIONS.has(normalized) ? (normalized as "ASC" | "DESC") : "ASC";
+export function validateOrderDirection(direction: string | undefined): "asc" | "desc" {
+  const normalized = (direction || "asc").toLowerCase().trim();
+  return VALID_ORDER_DIRECTIONS.has(normalized) ? (normalized as "asc" | "desc") : "asc";
 }
 
 /**
@@ -176,6 +164,10 @@ export function buildPrimaryKeyFilters(
   // Filter to only include primary key fields
   const primaryKeyFilters = filters.filters.filter((f) => primaryKeys.includes(f.field));
 
+  if (primaryKeyFilters.length === 0) {
+    throw new ApiException("No primary key filters provided — refusing to execute unscoped query");
+  }
+
   return buildSafeFilters(primaryKeyFilters, validColumns, startParamIndex);
 }
 
@@ -231,7 +223,9 @@ export function handleDbError(
     if (match?.[1]) {
       const constraintName = match[1].trim();
       if (constraintsMessages[constraintName]) {
-        throw constraintsMessages[constraintName];
+        // Clone the exception to avoid sharing mutable state across concurrent requests
+        const template = constraintsMessages[constraintName];
+        throw new InputValidationException(template.message, template.path);
       }
     }
   }
@@ -257,9 +251,9 @@ export function buildWhereClause(conditions: string[]): string {
  * Builds a safe ORDER BY clause.
  *
  * @param column - Validated column name
- * @param direction - Validated direction ("ASC" or "DESC")
+ * @param direction - Validated direction ("asc" or "desc")
  * @returns ORDER BY clause string
  */
-export function buildOrderByClause(column: string, direction: "ASC" | "DESC"): string {
+export function buildOrderByClause(column: string, direction: "asc" | "desc"): string {
   return `ORDER BY ${column} ${direction}`;
 }

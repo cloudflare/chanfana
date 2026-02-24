@@ -84,7 +84,7 @@ const schema = z.object({
 - `z.string().ip({ version: "v4" })` → `z.ipv4()`
 - `z.string().ip({ version: "v6" })` → `z.ipv6()`
 
-**Note:** If you're using chanfana's parameter helpers like `Email()`, `Uuid()`, `DateTime()`, `DateOnly()`, etc., these have already been updated internally and require no changes from you.
+**Note:** Chanfana's parameter helpers (`Email()`, `Uuid()`, `DateTime()`, etc.) have been removed in v3. See [Parameter Helper Functions Removed](#parameter-helper-functions-removed-breaking) below for migration instructions.
 
 ### Native Enums (BREAKING)
 
@@ -433,6 +433,56 @@ app.onError((err, c) => {
 The `handleValidationError()` method has been removed from `OpenAPIRoute`. If you were overriding this method to customize validation error formatting, use Hono's `app.onError` handler instead to customize error responses centrally.
 
 **No changes to itty-router behavior.**
+
+## Migrating to Chanfana 3.1
+
+### `contentJson()` Requires Zod Schemas (BREAKING)
+
+`contentJson()` no longer accepts plain objects or JavaScript constructors. It now requires a Zod schema:
+
+```typescript
+// Before (Chanfana v2/v3.0)
+contentJson({ success: Boolean, result: { id: String } })
+
+// After (Chanfana v3.1)
+import { z } from 'zod';
+import { contentJson } from 'chanfana';
+
+contentJson(z.object({ success: z.boolean(), result: z.object({ id: z.string() }) }))
+```
+
+### `raiseUnknownParameters` Now Enforced
+
+The `raiseUnknownParameters` router option was previously accepted but not enforced. It is now fully functional. If you had this option set to `true`, unknown query/path/header parameters will now cause 400 validation errors.
+
+```typescript
+// If you see unexpected 400 errors after upgrading, check your router options:
+const router = fromHono(app, {
+  raiseUnknownParameters: false, // Set to false to allow unknown parameters
+});
+```
+
+### D1 Endpoint Security Improvements
+
+Several D1 endpoint behaviors have changed for security:
+
+- **Delete and Update operations** now only apply primary key filters to WHERE clauses. If you relied on filtering by non-primary-key fields, that will no longer work.
+- **Database error messages** are no longer exposed in responses. Use the `constraintsMessages` property to map constraint violations to user-friendly errors.
+- **`per_page` is now capped** at 100 by default (configurable via `maxPerPage` class property).
+
+### New Exception Types
+
+Chanfana 3.1 adds a full set of HTTP exception classes. Consider replacing generic `ApiException` usage with specific types:
+
+| Exception | Status | Use Case |
+|-----------|--------|----------|
+| `UnauthorizedException` | 401 | Authentication failures |
+| `ForbiddenException` | 403 | Authorization failures |
+| `ConflictException` | 409 | Duplicate resources |
+| `TooManyRequestsException` | 429 | Rate limiting (sets `Retry-After` header) |
+| `ServiceUnavailableException` | 503 | Maintenance mode (sets `Retry-After` header) |
+
+See [Error Handling](./error-handling.md) for the full list.
 
 ## Need Help?
 

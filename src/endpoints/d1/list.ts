@@ -21,6 +21,8 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
   dbName = "DB";
   /** Optional logger for debugging and error tracking */
   logger?: Logger;
+  /** Maximum number of results per page. Override to change the limit. */
+  maxPerPage = 100;
 
   /**
    * Gets the D1 database binding from the worker environment.
@@ -57,7 +59,7 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     const validColumns = this.getValidColumns();
 
     // Safe pagination defaults
-    const perPage = Math.min(Math.max(1, Number(filters?.options?.per_page) || 20), 100);
+    const perPage = Math.min(Math.max(1, Number(filters?.options?.per_page) || 20), this.maxPerPage);
     const page = Math.max(1, Number(filters?.options?.page) || 1);
     const limit = perPage;
     const offset = Math.max(0, (page - 1) * perPage);
@@ -73,11 +75,13 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
         const validatedSearchFields = this.searchFields.map((col) => validateColumnName(col, validColumns));
 
         const searchCondition = validatedSearchFields
-          .map((col) => `UPPER(${col}) LIKE UPPER(?${conditionsParams.length + 1})`)
+          .map((col) => `UPPER(${col}) LIKE UPPER(?${conditionsParams.length + 1}) ESCAPE '\\'`)
           .join(" OR ");
 
         conditions.push(`(${searchCondition})`);
-        conditionsParams.push(`%${f.value}%`);
+        // Escape LIKE wildcards to prevent unintended pattern matching
+        const escaped = String(f.value).replace(/[%_]/g, "\\$&");
+        conditionsParams.push(`%${escaped}%`);
       } else if (f.operator === "EQ") {
         // Validate filter column
         const validatedColumn = validateColumnName(f.field, validColumns);
