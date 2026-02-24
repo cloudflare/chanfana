@@ -10,7 +10,11 @@
   },
   "files": [
     "dist",
+    "src",
     "docs/**/*.md",
+    "skills",
+    "AGENTS.md",
+    "llms.txt",
     "LICENSE",
     "README.md"
   ],

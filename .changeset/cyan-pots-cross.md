@@ -28,12 +28,16 @@
 - **D1: Read endpoint uses primary key filters** — Consistent with delete/update behavior
 - **D1: Delete uses shared `handleDbError`** — Consistent error handling and `constraintsMessages` support
 - **D1: Escape LIKE wildcards** — `%` and `_` in search values no longer cause unintended pattern matching
+- **D1: Column names validated against model schema** — Only fields defined in the Zod schema are accepted in SQL queries
 - **Schema generation errors propagate** — No longer silently swallowed
 - **CreateEndpoint response schema** — Fixed reference from status 200 to 201
 - **Falsy default values** — `0`, `false`, and `""` are now correctly applied as defaults
 - **BigInt coercion** — Uses `BigInt()` directly instead of `parseInt()` to avoid precision loss
+- **Boolean coercion null guard** — Prevents errors when coercing null values to boolean
 - **HEAD requests** — No longer attempt to parse request body
 - **YAML URL generation** — Only replaces trailing `.json` in URL
+- **ApiException import** — Changed from `import type` to value import for proper `instanceof` checks
+- **ReadEndpoint & ListEndpoint response schema** — Added `InputValidationException` to documented 400 responses
 - **Removed dead code** — `handleValidationError()` and `D1EndpointConfig` interface removed
 
 ### Improvements
@@ -42,5 +46,6 @@
 - **Configurable `maxPerPage`** — `D1ListEndpoint.maxPerPage` is a class property that can be overridden
 - **Normalized ORDER BY direction** — Returns lowercase `"asc"`/`"desc"` for consistency
 - **`sanitizeOperationId()`** — Ensures operationIds are valid by removing special characters
+- **Router constructor validation** — `OpenAPIHandler` throws if router argument is missing
 - **Comprehensive JSDoc** — Added to all exception classes, D1 endpoint methods, and OpenAPI handler methods
 - **Error responses include `result: {}`** — Consistent shape with success responses
