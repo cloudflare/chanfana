@@ -40,6 +40,7 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
         ...InputValidationException.schema(),
         ...this.schema?.responses,
       },
+      ...(this._meta.tags ? { tags: this._meta.tags } : {}),
       ...this.schema,
     };
   }

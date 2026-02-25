@@ -1083,3 +1083,123 @@ describe("UpdateEndpoint with Zod 4 Optional Defaults", () => {
     expect(resp.result.bio).toBe("Original bio"); // Should remain unchanged
   });
 });
+
+describe("Auto endpoint tags via _meta", () => {
+  const TagSchema = z.object({
+    id: z.number().int(),
+    name: z.string(),
+  });
+
+  class TaggedCreateEndpoint extends CreateEndpoint {
+    _meta = {
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+      tags: ["Items"],
+    };
+    async create(data: any) {
+      return data;
+    }
+  }
+
+  class TaggedReadEndpoint extends ReadEndpoint {
+    _meta = {
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+      tags: ["Items"],
+    };
+    async fetch() {
+      return { id: 1, name: "test" };
+    }
+  }
+
+  class TaggedUpdateEndpoint extends UpdateEndpoint {
+    _meta = {
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+      tags: ["Items"],
+    };
+    async getObject() {
+      return { id: 1, name: "test" };
+    }
+    async update(oldObj: any, _filters: any) {
+      return oldObj;
+    }
+  }
+
+  class TaggedDeleteEndpoint extends DeleteEndpoint {
+    _meta = {
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+      tags: ["Items"],
+    };
+    async getObject() {
+      return { id: 1, name: "test" };
+    }
+    async remove() {
+      return { id: 1, name: "test" };
+    }
+  }
+
+  class TaggedListEndpoint extends ListEndpoint {
+    _meta = {
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+      tags: ["Items"],
+    };
+    async list() {
+      return { result: [] };
+    }
+  }
+
+  class UntaggedCreateEndpoint extends CreateEndpoint {
+    _meta = {
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+    };
+    async create(data: any) {
+      return data;
+    }
+  }
+
+  it("should include tags from _meta in the OpenAPI schema", () => {
+    const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+    router.post("/items", TaggedCreateEndpoint);
+    router.get("/items", TaggedListEndpoint);
+    router.get("/items/:id", TaggedReadEndpoint);
+    router.put("/items/:id", TaggedUpdateEndpoint);
+    router.delete("/items/:id", TaggedDeleteEndpoint);
+
+    const schema = router.schema;
+
+    expect(schema.paths?.["/api/items"]?.post?.tags).toEqual(["Items"]);
+    expect(schema.paths?.["/api/items"]?.get?.tags).toEqual(["Items"]);
+    expect(schema.paths?.["/api/items/{id}"]?.get?.tags).toEqual(["Items"]);
+    expect(schema.paths?.["/api/items/{id}"]?.put?.tags).toEqual(["Items"]);
+    expect(schema.paths?.["/api/items/{id}"]?.delete?.tags).toEqual(["Items"]);
+  });
+
+  it("should not include tags when _meta has no tags", () => {
+    const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+    router.post("/items", UntaggedCreateEndpoint);
+
+    const schema = router.schema;
+
+    expect(schema.paths?.["/api/items"]?.post?.tags).toBeUndefined();
+  });
+
+  it("should allow schema.tags to override _meta.tags", () => {
+    class OverriddenTagsEndpoint extends CreateEndpoint {
+      _meta = {
+        model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+        tags: ["FromMeta"],
+      };
+      schema = {
+        tags: ["FromSchema"],
+      };
+      async create(data: any) {
+        return data;
+      }
+    }
+
+    const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+    router.post("/items", OverriddenTagsEndpoint);
+
+    const schema = router.schema;
+
+    expect(schema.paths?.["/api/items"]?.post?.tags).toEqual(["FromSchema"]);
+  });
+});

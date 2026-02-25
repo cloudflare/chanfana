@@ -44,6 +44,7 @@ export type MetaInput = {
   model: Model;
   fields?: AnyZodObject;
   pathParameters?: Array<string>;
+  tags?: Array<string>;
 };
 
 export type Meta = {

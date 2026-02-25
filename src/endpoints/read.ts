@@ -50,6 +50,7 @@ export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> exte
         ...NotFoundException.schema(),
         ...this.schema?.responses,
       },
+      ...(this._meta.tags ? { tags: this._meta.tags } : {}),
       ...this.schema,
     };
   }
