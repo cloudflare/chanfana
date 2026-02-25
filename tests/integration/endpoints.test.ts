@@ -1081,6 +1081,121 @@ describe("ListEndpoint Advanced Features", () => {
   });
 });
 
+describe("ListEndpoint Custom Pagination Parameter Names", () => {
+  const mockCustomPaginationDB: Record<number, any> = {};
+
+  beforeEach(() => {
+    for (let i = 1; i <= 10; i++) {
+      mockCustomPaginationDB[i] = { id: i, title: `Item ${i}`, score: i * 10 };
+    }
+  });
+
+  const ItemSchema = z.object({
+    id: z.number().int(),
+    title: z.string(),
+    score: z.number().int(),
+  });
+
+  class CustomPaginationListEndpoint extends ListEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+      },
+    };
+
+    pageFieldName = "p";
+    perPageFieldName = "limit";
+    orderByFieldName = "sort";
+    orderByDirectionFieldName = "direction";
+    orderByFields = ["title", "score"];
+
+    async list(filters: ListFilters) {
+      const items = Object.values(mockCustomPaginationDB);
+
+      // Apply ordering via custom field names
+      if (filters.options.sort) {
+        const field = filters.options.sort as string;
+        const dir = (filters.options.direction as string) || "asc";
+        items.sort((a: any, b: any) => {
+          if (a[field] < b[field]) return dir === "asc" ? -1 : 1;
+          if (a[field] > b[field]) return dir === "asc" ? 1 : -1;
+          return 0;
+        });
+      }
+
+      // Apply pagination via custom field names
+      const page = Number(filters.options.p) || 1;
+      const perPage = Number(filters.options.limit) || 20;
+      const start = (page - 1) * perPage;
+      const end = start + perPage;
+
+      return {
+        result: items.slice(start, end),
+      };
+    }
+  }
+
+  const customPaginationRouter = fromIttyRouter(AutoRouter());
+  customPaginationRouter.get("/items", CustomPaginationListEndpoint);
+
+  it("should accept custom pagination parameter names in requests", async () => {
+    const request = await customPaginationRouter.fetch(
+      buildRequest({ method: "GET", path: "/items?p=2&limit=3&sort=score&direction=asc" }),
+    );
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    expect(resp.success).toBe(true);
+    expect(resp.result.length).toBe(3);
+    // Sorted by score asc: items 1-10. Page 2 with limit 3 should return items 4-6
+    expect(resp.result[0].id).toBe(4);
+    expect(resp.result[2].id).toBe(6);
+  });
+
+  it("should accept custom ordering parameter names in requests", async () => {
+    const request = await customPaginationRouter.fetch(
+      buildRequest({ method: "GET", path: "/items?sort=score&direction=desc&limit=3" }),
+    );
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    expect(resp.result.length).toBe(3);
+    // Sorted by score descending: items 10, 9, 8
+    expect(resp.result[0].score).toBe(100);
+    expect(resp.result[1].score).toBe(90);
+    expect(resp.result[2].score).toBe(80);
+  });
+
+  it("should use custom field names in OpenAPI schema", async () => {
+    const schemaReq = await customPaginationRouter.fetch(buildRequest({ method: "GET", path: "/openapi.json" }));
+    const schema = await schemaReq.json();
+
+    const queryParams = schema.paths["/items"].get.parameters.filter((p: any) => p.in === "query");
+    const paramNames = queryParams.map((p: any) => p.name);
+
+    expect(paramNames).toContain("p");
+    expect(paramNames).toContain("limit");
+    expect(paramNames).toContain("sort");
+    expect(paramNames).toContain("direction");
+    // Should NOT contain the default names
+    expect(paramNames).not.toContain("page");
+    expect(paramNames).not.toContain("per_page");
+    expect(paramNames).not.toContain("order_by");
+    expect(paramNames).not.toContain("order_by_direction");
+  });
+
+  it("should not treat custom option fields as filters", async () => {
+    // "p" and "limit" should be routed to options, not filters
+    const request = await customPaginationRouter.fetch(buildRequest({ method: "GET", path: "/items?p=1&limit=5" }));
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    expect(resp.result.length).toBe(5);
+  });
+});
+
 describe("UpdateEndpoint with Zod 4 Optional Defaults", () => {
   const mockZod4DB: Record<string, any> = {};
 

@@ -48,19 +48,14 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
    */
   async list(filters: {
     filters?: Array<{ field: string; operator: string; value: unknown }>;
-    options?: {
-      per_page?: number;
-      page?: number;
-      order_by?: string;
-      order_by_direction?: string;
-    };
+    options?: Record<string, unknown>;
   }) {
     const tableName = validateTableName(this.meta.model.tableName);
     const validColumns = this.getValidColumns();
 
-    // Safe pagination defaults
-    const perPage = Math.min(Math.max(1, Number(filters?.options?.per_page) || 20), this.maxPerPage);
-    const page = Math.max(1, Number(filters?.options?.page) || 1);
+    // Safe pagination defaults — use custom field names for option keys
+    const perPage = Math.min(Math.max(1, Number(filters?.options?.[this.perPageFieldName]) || 20), this.maxPerPage);
+    const page = Math.max(1, Number(filters?.options?.[this.pageFieldName]) || 1);
     const limit = perPage;
     const offset = Math.max(0, (page - 1) * perPage);
 
@@ -102,10 +97,16 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     const fallbackColumn =
       typeof this.defaultOrderBy === "string" && this.defaultOrderBy !== "undefined" ? this.defaultOrderBy : primaryKey;
 
-    // Get validated order column
-    const orderColumn = validateOrderByColumn(filters?.options?.order_by, orderByFields, fallbackColumn);
+    // Get validated order column — use custom field names for option keys
+    const orderColumn = validateOrderByColumn(
+      filters?.options?.[this.orderByFieldName] as string | undefined,
+      orderByFields,
+      fallbackColumn,
+    );
 
-    const orderDirection = validateOrderDirection(filters?.options?.order_by_direction);
+    const orderDirection = validateOrderDirection(
+      filters?.options?.[this.orderByDirectionFieldName] as string | undefined,
+    );
     const orderByClause = buildOrderByClause(orderColumn, orderDirection);
 
     // Build final SQL
