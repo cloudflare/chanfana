@@ -50,13 +50,10 @@ Available skills:
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/chanfana/tree/main/template)
 
-Or copy the starter template manually:
+Or scaffold it locally with the `create-cloudflare` CLI:
 
 ```bash
-cp -r template my-api && cd my-api
-npm install
-npm run db:migrate:local
-npm run dev
+npm create cloudflare@latest -- --template https://github.com/cloudflare/chanfana/tree/main/template
 ```
 
 The template includes a complete Task API with Hono, D1, and Zod v4 — full CRUD endpoints, a custom endpoint example, integration tests, and auto-generated docs at `/api/docs`.

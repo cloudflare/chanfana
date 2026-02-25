@@ -9,9 +9,33 @@ Before you begin, ensure you have the following installed:
 *   **Node.js** (version 18 or later recommended) and **npm** (Node Package Manager) or **yarn**.
 *   **A text editor or IDE** (like VS Code) for writing code.
 
+## Quick Start with the Template
+
+The fastest way to get started is with the official Chanfana template — a complete Task API with Hono, D1, and Zod v4 including full CRUD endpoints, a custom endpoint example, integration tests, and auto-generated docs at `/api/docs`.
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/chanfana/tree/main/template)
+
+Or scaffold it locally with the `create-cloudflare` CLI:
+
+```bash
+npm create cloudflare@latest -- --template https://github.com/cloudflare/chanfana/tree/main/template
+```
+
+Then run the project:
+
+```bash
+npm install
+npm run db:migrate:local
+npm run dev
+```
+
+Once running, open http://localhost:8787/api/docs to explore the auto-generated API documentation.
+
+See [`template/README.md`](https://github.com/cloudflare/chanfana/blob/main/template/README.md) for full setup instructions.
+
 ## Installation
 
-Installing Chanfana is straightforward using npm or yarn:
+To add Chanfana to an existing project:
 
 **Using npm:**
 
@@ -210,18 +234,6 @@ Now, let's do the same with itty-router.
 1.  **Navigate to the documentation URL.** Open your browser to `/docs` (e.g., `http://localhost:3000/docs`).
 
 2.  **Explore the Swagger UI.**  You'll see the Swagger UI, now documenting your itty-router API endpoint.
-
-## Using the Template
-
-For an even faster start, Chanfana provides a template that sets up a Cloudflare Worker project with OpenAPI documentation out of the box.
-
-**Create a new project using the template:**
-
-```bash
-npm create cloudflare@latest -- --type openapi
-```
-
-Follow the prompts to set up your project. This template includes Chanfana, Hono, and a basic endpoint structure, ready for you to expand upon.
 
 ---
 

@@ -2,10 +2,10 @@
 
 A starter Cloudflare Worker using **Chanfana** (OpenAPI), **Hono**, **D1**, and **Zod v4**.
 
-Copy this directory to start a new project:
+Scaffold a new project with the `create-cloudflare` CLI:
 
 ```bash
-cp -r template my-api && cd my-api
+npm create cloudflare@latest -- --template https://github.com/cloudflare/chanfana/tree/main/template
 ```
 
 ## Setup
@@ -16,7 +16,7 @@ npm install
 
 # Create the D1 database
 npx wrangler d1 create tasks-db
-# Copy the returned database_id into wrangler.toml
+# Copy the returned database_id into wrangler.jsonc
 
 # Run the migration locally
 npm run db:migrate:local
