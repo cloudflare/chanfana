@@ -9,6 +9,7 @@ import {
   type ListResult,
   MetaGenerator,
   type MetaInput,
+  metaSchemaProps,
   type O,
 } from "./types";
 
@@ -88,7 +89,7 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
         ...InputValidationException.schema(),
         ...this.schema?.responses,
       },
-      ...(this._meta.tags ? { tags: this._meta.tags } : {}),
+      ...metaSchemaProps(this._meta),
       ...this.schema,
     };
   }

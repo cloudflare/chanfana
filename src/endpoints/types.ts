@@ -50,6 +50,7 @@ export type MetaInput = {
 export type Meta = {
   model: ModelComplete;
   fields: AnyZodObject;
+  tags?: Array<string>;
 };
 
 export type O<M extends MetaInput> = z.infer<M["model"]["schema"]>;
@@ -67,6 +68,13 @@ export function MetaGenerator(meta: MetaInput) {
       ...meta.model,
     },
     pathParameters: meta.pathParameters ?? null,
+    tags: meta.tags,
+  };
+}
+
+export function metaSchemaProps(meta: MetaInput): Record<string, unknown> {
+  return {
+    ...(meta.tags?.length ? { tags: meta.tags } : {}),
   };
 }
 

@@ -25,6 +25,7 @@ type MetaInput = {
     model: Model;
     fields?: AnyZodObject; // Optional, defaults to model.schema
     pathParameters?: Array<string>; // Optional, to explicitly define path parameters
+    tags?: Array<string>; // Optional, OpenAPI tags for grouping operations
 };
 
 type Model = {
@@ -46,6 +47,7 @@ type Model = {
     *   **`serializerSchema` (optional):** A Zod schema for the serialized output. If a `serializer` is provided, you should also provide a `serializerSchema` to document the serialized response structure correctly. If not provided, defaults to `model.schema`.
 *   **`fields` (optional):**  A Zod schema that represents all possible fields of your data model. If not provided, it defaults to `model.schema`. You can use `fields` to define a broader schema than `model.schema` if needed, for example, if your database table has more columns than you want to expose in your API.
 *   **`pathParameters` (optional):** An array of strings to explicitly define the path parameters for the endpoint. This is particularly useful in nested route scenarios where the URL parameters might not directly correspond to the model's primary keys in a one-to-one manner within each route segment.  If not provided, Chanfana will infer path parameters from the primary keys defined in your `model`.
+*   **`tags` (optional):** An array of strings representing OpenAPI tags for the endpoint. Tags are used to group operations in generated documentation (e.g., Swagger UI). If `tags` is also defined in the endpoint's `schema` property, `schema.tags` takes precedence over `_meta.tags`.
 
 **Addressing Primary Key Validation in Nested Routes:**
 
@@ -744,6 +746,13 @@ You can customize auto endpoints by:
     *   `searchFieldName` - Customize the search query parameter name (defaults to `'search'`)
 *   **Using `serializer` and `serializerSchema` in `Meta`:** Transform output data and hide sensitive fields before sending responses.
 *   **Using `pathParameters` in `Meta`:** Explicitly define path parameters, especially for nested routes with composite primary keys.
+*   **Using `tags` in `Meta`:** Group related endpoints under OpenAPI tags without needing a separate `schema` property:
+    ```typescript
+    const productMeta = {
+        model: { schema: ProductSchema, primaryKeys: ['id'], tableName: 'products' },
+        tags: ['Products'],
+    };
+    ```
 *   **Extending auto endpoint classes:** You can create your own custom base endpoint classes that extend `CreateEndpoint`, `ReadEndpoint`, etc., to add reusable logic or modify default behavior.
 
 ## When to Use Auto Endpoints

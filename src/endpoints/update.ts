@@ -7,6 +7,7 @@ import {
   type Filters,
   MetaGenerator,
   type MetaInput,
+  metaSchemaProps,
   type O,
   type UpdatedData,
   type UpdateFilters,
@@ -49,7 +50,7 @@ export class UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
         ...NotFoundException.schema(),
         ...this.schema?.responses,
       },
-      ...(this._meta.tags ? { tags: this._meta.tags } : {}),
+      ...metaSchemaProps(this._meta),
       ...this.schema,
     };
   }
