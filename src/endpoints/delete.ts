@@ -2,7 +2,7 @@ import { z } from "zod";
 import { contentJson } from "../contentTypes";
 import { NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
-import { type FilterCondition, type Filters, MetaGenerator, type MetaInput, type O } from "./types";
+import { type FilterCondition, type Filters, MetaGenerator, type MetaInput, metaSchemaProps, type O } from "./types";
 
 export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
   // @ts-expect-error
@@ -42,6 +42,7 @@ export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> ex
         ...NotFoundException.schema(),
         ...this.schema?.responses,
       },
+      ...metaSchemaProps(this._meta),
       ...this.schema,
     };
   }

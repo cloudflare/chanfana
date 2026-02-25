@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { CreateEndpoint, DeleteEndpoint, fromIttyRouter, ListEndpoint, ReadEndpoint, UpdateEndpoint } from "../../src";
 import type { Filters, ListFilters, UpdateFilters } from "../../src/endpoints/types";
+import { MetaGenerator } from "../../src/endpoints/types";
 import { buildRequest } from "../utils";
 
 // Mock database for testing
@@ -1081,5 +1082,147 @@ describe("UpdateEndpoint with Zod 4 Optional Defaults", () => {
     expect(resp.result.status).toBe("active"); // Should be updated
     expect(resp.result.age).toBe(50); // Should NOT be reset to default
     expect(resp.result.bio).toBe("Original bio"); // Should remain unchanged
+  });
+});
+
+describe("Auto endpoint tags via _meta", () => {
+  const TagSchema = z.object({
+    id: z.number().int(),
+    name: z.string(),
+  });
+
+  class TaggedCreateEndpoint extends CreateEndpoint {
+    _meta = {
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+      tags: ["Items"],
+    };
+  }
+
+  class TaggedReadEndpoint extends ReadEndpoint {
+    _meta = {
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+      tags: ["Items"],
+    };
+  }
+
+  class TaggedUpdateEndpoint extends UpdateEndpoint {
+    _meta = {
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+      tags: ["Items"],
+    };
+  }
+
+  class TaggedDeleteEndpoint extends DeleteEndpoint {
+    _meta = {
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+      tags: ["Items"],
+    };
+  }
+
+  class TaggedListEndpoint extends ListEndpoint {
+    _meta = {
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+      tags: ["Items"],
+    };
+  }
+
+  class UntaggedCreateEndpoint extends CreateEndpoint {
+    _meta = {
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+    };
+  }
+
+  it("should include tags from _meta in the OpenAPI schema", () => {
+    const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+    router.post("/items", TaggedCreateEndpoint);
+    router.get("/items", TaggedListEndpoint);
+    router.get("/items/:id", TaggedReadEndpoint);
+    router.put("/items/:id", TaggedUpdateEndpoint);
+    router.delete("/items/:id", TaggedDeleteEndpoint);
+
+    const schema = router.schema;
+
+    expect(schema.paths?.["/api/items"]?.post?.tags).toEqual(["Items"]);
+    expect(schema.paths?.["/api/items"]?.get?.tags).toEqual(["Items"]);
+    expect(schema.paths?.["/api/items/{id}"]?.get?.tags).toEqual(["Items"]);
+    expect(schema.paths?.["/api/items/{id}"]?.put?.tags).toEqual(["Items"]);
+    expect(schema.paths?.["/api/items/{id}"]?.delete?.tags).toEqual(["Items"]);
+  });
+
+  it("should not include tags when _meta has no tags", () => {
+    const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+    router.post("/items", UntaggedCreateEndpoint);
+
+    const schema = router.schema;
+
+    expect(schema.paths?.["/api/items"]?.post?.tags).toBeUndefined();
+  });
+
+  it("should allow schema.tags to override _meta.tags", () => {
+    class OverriddenTagsEndpoint extends CreateEndpoint {
+      _meta = {
+        model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+        tags: ["FromMeta"],
+      };
+      schema = {
+        tags: ["FromSchema"],
+      };
+    }
+
+    const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+    router.post("/items", OverriddenTagsEndpoint);
+
+    const schema = router.schema;
+
+    expect(schema.paths?.["/api/items"]?.post?.tags).toEqual(["FromSchema"]);
+  });
+
+  it("should include empty tags array when explicitly set", () => {
+    class EmptyTagsEndpoint extends CreateEndpoint {
+      _meta = {
+        model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+        tags: [],
+      };
+    }
+
+    const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+    router.post("/items", EmptyTagsEndpoint);
+
+    const schema = router.schema;
+
+    expect(schema.paths?.["/api/items"]?.post?.tags).toBeUndefined();
+  });
+
+  it("should support multiple tags", () => {
+    class MultiTagEndpoint extends CreateEndpoint {
+      _meta = {
+        model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+        tags: ["Items", "Admin"],
+      };
+    }
+
+    const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+    router.post("/items", MultiTagEndpoint);
+
+    const schema = router.schema;
+
+    expect(schema.paths?.["/api/items"]?.post?.tags).toEqual(["Items", "Admin"]);
+  });
+
+  it("should propagate tags through MetaGenerator", () => {
+    const meta = MetaGenerator({
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+      tags: ["Items"],
+    });
+
+    expect(meta.tags).toEqual(["Items"]);
+  });
+
+  it("should propagate undefined tags through MetaGenerator when omitted", () => {
+    const meta = MetaGenerator({
+      model: { tableName: "items", schema: TagSchema, primaryKeys: ["id"] },
+    });
+
+    expect(meta.tags).toBeUndefined();
   });
 });

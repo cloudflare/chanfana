@@ -326,6 +326,7 @@ const userMeta = {
         serializerSchema: UserSchema.omit({ passwordHash: true }), // Optional: Schema for serialized output
     },
     pathParameters: ['id'],              // Optional: Explicit path params for nested routes
+    tags: ['Users'],                     // Optional: OpenAPI tags for grouping operations
 };
 ```
 
@@ -771,6 +772,7 @@ class GetUser extends OpenAPIRoute {
 - [ ] `_meta.model.primaryKeys` is an array of primary key field names
 - [ ] `_meta.model.tableName` is set (required for D1 endpoints)
 - [ ] Nested routes use `pathParameters` in meta for composite primary keys
+- [ ] `_meta.tags` is set to group related endpoints under OpenAPI tags
 - [ ] ListEndpoint has `filterFields`, `searchFields`, `orderByFields` configured as needed
 
 **D1 Endpoints:**

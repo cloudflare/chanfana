@@ -115,7 +115,7 @@ expect(resp.errors[0].code).toBe(7001);
 
 **OpenAPIRoute lifecycle**: `execute()` → reset caches → `handle()` → catch errors → auto-JSON-wrap response
 
-**Auto endpoints** (`CreateEndpoint`, `ReadEndpoint`, etc.) require a `_meta` property with `model.schema` (Zod), `model.primaryKeys`, and `model.tableName` (for D1). Support `before()`/`after()` hooks.
+**Auto endpoints** (`CreateEndpoint`, `ReadEndpoint`, etc.) require a `_meta` property with `model.schema` (Zod), `model.primaryKeys`, and `model.tableName` (for D1). Optional `tags` for OpenAPI grouping. Support `before()`/`after()` hooks.
 
 **Router adapters** (`fromHono`, `fromIttyRouter`) return a Proxy that intercepts route registration to capture OpenAPI metadata, then delegates to the underlying router.
 
