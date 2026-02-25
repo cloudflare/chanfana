@@ -191,6 +191,10 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     let resp;
     try {
       resp = await this.handle(...args);
+
+      if (this.params?.validateResponse) {
+        resp = await this.validateResponse(resp);
+      }
     } catch (rawError) {
       if (this.params?.passthroughErrors) {
         throw rawError;
@@ -213,6 +217,70 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     // Auto-convert plain objects to JSON responses
     if (resp !== null && resp !== undefined && !(resp instanceof Response) && typeof resp === "object") {
       return jsonResp(resp);
+    }
+
+    return resp;
+  }
+
+  /**
+   * Finds the Zod schema for a response with the given status code.
+   * Falls back to the "default" response if no exact match is found.
+   * @param statusCode - HTTP status code to look up
+   * @returns Zod schema for the response body, or undefined if not found
+   */
+  getResponseSchema(statusCode: number): z.ZodType | undefined {
+    const schema = this.getSchemaZod();
+    const responses = schema.responses;
+    if (!responses) return undefined;
+
+    const responseConfig = responses[String(statusCode)] ?? responses.default;
+    if (!responseConfig) return undefined;
+
+    const jsonContent = responseConfig.content?.["application/json"];
+    if (!jsonContent?.schema) return undefined;
+
+    // Skip non-Zod schemas (e.g. empty {} from default response)
+    const zodSchema = jsonContent.schema;
+    if (!(zodSchema instanceof z.ZodType)) return undefined;
+
+    return zodSchema;
+  }
+
+  /**
+   * Validates a response body against the response schema.
+   * For plain objects, parses through Zod to strip unknown fields.
+   * For Response objects with JSON content, reads the body, parses, and reconstructs.
+   * @param resp - The response from handle()
+   * @returns The validated/stripped response
+   */
+  async validateResponse(resp: any): Promise<any> {
+    if (resp === null || resp === undefined) return resp;
+
+    if (resp instanceof Response) {
+      const contentType = resp.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) return resp;
+
+      const responseSchema = this.getResponseSchema(resp.status);
+      if (!responseSchema) return resp;
+
+      const body = await resp.json();
+      const parsed = await responseSchema.parseAsync(body);
+
+      // Reconstruct the Response with validated body and original status/headers
+      const newHeaders = new Headers(resp.headers);
+      return new Response(JSON.stringify(parsed), {
+        status: resp.status,
+        statusText: resp.statusText,
+        headers: newHeaders,
+      });
+    }
+
+    if (typeof resp === "object") {
+      // Plain objects are auto-converted to 200 JSON responses
+      const responseSchema = this.getResponseSchema(200);
+      if (!responseSchema) return resp;
+
+      return await responseSchema.parseAsync(resp);
     }
 
     return resp;

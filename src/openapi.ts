@@ -300,6 +300,7 @@ export class OpenAPIHandler {
             route: parsedRoute,
             urlParams: urlParams,
             raiseOnError: this.options?.raiseOnError,
+            validateResponse: this.options?.validateResponse,
             raiseUnknownParameters: this.options?.raiseUnknownParameters,
             passthroughErrors: this.options?.passthroughErrors,
           }).execute(...params);

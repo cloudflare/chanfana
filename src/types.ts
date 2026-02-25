@@ -76,6 +76,8 @@ export interface RouterOptions {
   openapiVersion?: "3" | "3.1";
   raiseOnError?: boolean;
   passthroughErrors?: boolean;
+  /** When enabled, response bodies are parsed through their Zod schema to strip unknown fields */
+  validateResponse?: boolean;
 }
 
 export interface RouteOptions {
@@ -83,6 +85,7 @@ export interface RouteOptions {
   raiseUnknownParameters: boolean;
   raiseOnError?: boolean;
   passthroughErrors?: boolean;
+  validateResponse?: boolean;
   route: string;
   urlParams: Array<string>;
 }

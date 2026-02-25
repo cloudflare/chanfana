@@ -783,3 +783,217 @@ describe("itty-router error handling", () => {
     expect((resp as any).errors[0].code).toEqual(7002);
   });
 });
+
+// --- validateResponse tests ---
+
+class EndpointWithExtraFields extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(
+          z.object({
+            id: z.number(),
+            name: z.string(),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    // Return extra fields that are not in the schema
+    return {
+      id: 1,
+      name: "Test",
+      secret: "should-be-stripped",
+      internal_notes: "also-stripped",
+    };
+  }
+}
+
+class EndpointReturningResponse extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "201": {
+        description: "Created",
+        ...contentJson(
+          z.object({
+            success: z.boolean(),
+            result: z.object({
+              id: z.number(),
+              title: z.string(),
+            }),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    return Response.json(
+      {
+        success: true,
+        result: {
+          id: 42,
+          title: "New Item",
+          passwordHash: "secret123",
+        },
+      },
+      { status: 201 },
+    );
+  }
+}
+
+class EndpointWithNoResponseSchema extends OpenAPIRoute {
+  async handle() {
+    return { data: "anything", extra: "allowed" };
+  }
+}
+
+class EndpointReturningInvalidData extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(
+          z.object({
+            id: z.number(),
+            name: z.string(),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    // Missing required "name" field
+    return { id: 1 };
+  }
+}
+
+describe("validateResponse option", () => {
+  describe("itty-router with validateResponse enabled", () => {
+    it("should strip unknown fields from plain object responses", async () => {
+      const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+      router.get("/items/:id", EndpointWithExtraFields);
+
+      const request = await router.fetch(buildRequest({ method: "GET", path: "/items/1" }));
+      const resp = await request.json();
+
+      expect(request.status).toBe(200);
+      expect(resp.id).toBe(1);
+      expect(resp.name).toBe("Test");
+      expect(resp.secret).toBeUndefined();
+      expect(resp.internal_notes).toBeUndefined();
+    });
+
+    it("should strip unknown fields from Response object bodies", async () => {
+      const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+      router.post("/items", EndpointReturningResponse);
+
+      const request = await router.fetch(
+        new Request("http://localhost/items", {
+          method: "POST",
+          body: JSON.stringify({}),
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+      const resp = await request.json();
+
+      expect(request.status).toBe(201);
+      expect(resp.success).toBe(true);
+      expect(resp.result.id).toBe(42);
+      expect(resp.result.title).toBe("New Item");
+      expect(resp.result.passwordHash).toBeUndefined();
+    });
+
+    it("should pass through responses when no response schema is defined", async () => {
+      const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+      router.get("/items", EndpointWithNoResponseSchema);
+
+      const request = await router.fetch(buildRequest({ method: "GET", path: "/items" }));
+      const resp = await request.json();
+
+      expect(request.status).toBe(200);
+      expect(resp.data).toBe("anything");
+      expect(resp.extra).toBe("allowed");
+    });
+
+    it("should throw validation error when response is missing required fields", async () => {
+      const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+      router.get("/items/:id", EndpointReturningInvalidData);
+
+      // With itty-router (raiseOnError is always false), ZodError is caught and formatted
+      const request = await router.fetch(buildRequest({ method: "GET", path: "/items/1" }));
+      const resp = await request.json();
+
+      expect(request.status).toBe(400);
+      expect(resp.success).toBe(false);
+      expect(resp.errors).toBeDefined();
+    });
+  });
+
+  describe("itty-router without validateResponse (default)", () => {
+    it("should NOT strip unknown fields when validateResponse is not set", async () => {
+      const router = fromIttyRouter(AutoRouter());
+      router.get("/items/:id", EndpointWithExtraFields);
+
+      const request = await router.fetch(buildRequest({ method: "GET", path: "/items/1" }));
+      const resp = await request.json();
+
+      expect(request.status).toBe(200);
+      expect(resp.id).toBe(1);
+      expect(resp.name).toBe("Test");
+      // Extra fields should still be present
+      expect(resp.secret).toBe("should-be-stripped");
+      expect(resp.internal_notes).toBe("also-stripped");
+    });
+  });
+
+  describe("Hono with validateResponse enabled", () => {
+    it("should strip unknown fields from plain object responses", async () => {
+      const app = new Hono();
+      app.onError((err, c) => {
+        if (err instanceof HTTPException) {
+          return err.getResponse();
+        }
+        return c.json({ error: "Internal Server Error" }, 500);
+      });
+
+      const router = fromHono(app, { validateResponse: true });
+      router.get("/items/:id", EndpointWithExtraFields);
+
+      const request = await router.fetch(new Request("http://localhost/items/1", { method: "GET" }));
+      const resp = (await request.json()) as any;
+
+      expect(request.status).toBe(200);
+      expect(resp.id).toBe(1);
+      expect(resp.name).toBe("Test");
+      expect(resp.secret).toBeUndefined();
+      expect(resp.internal_notes).toBeUndefined();
+    });
+
+    it("should raise validation error for invalid response data", async () => {
+      const app = new Hono();
+      let caughtError: unknown = null;
+
+      app.onError((err, c) => {
+        caughtError = err;
+        if (err instanceof HTTPException) {
+          return err.getResponse();
+        }
+        return c.json({ error: "Internal Server Error" }, 500);
+      });
+
+      const router = fromHono(app, { validateResponse: true });
+      router.get("/items/:id", EndpointReturningInvalidData);
+
+      const request = await router.fetch(new Request("http://localhost/items/1", { method: "GET" }));
+
+      // Hono has raiseOnError: true, so the ZodError is wrapped as HTTPException
+      expect(caughtError).toBeDefined();
+      expect(request.status).toBe(400);
+    });
+  });
+});
