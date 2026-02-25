@@ -30,7 +30,7 @@ export class Hello extends OpenAPIRoute {
     },
   };
 
-  async handle(c: any) {
+  async handle(_c: any) {
     const data = await this.getValidatedData<typeof this.schema>();
     const { name } = data.query;
 
