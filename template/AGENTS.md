@@ -31,7 +31,7 @@ test/
   tasks.test.ts            # Integration tests for all endpoints
 migrations/
   0001_create_tasks/up.sql # D1 CREATE TABLE
-wrangler.toml              # Worker config with D1 binding
+wrangler.jsonc             # Worker config with D1 binding
 ```
 
 ## Code Style

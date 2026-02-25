@@ -1,0 +1,12 @@
+{
+  "name": "chanfana-template",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-01-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "tasks-db",
+      "database_id": "LOCAL" // Replace with your D1 database ID after running: wrangler d1 create tasks-db
+    }
+  ]
+}
