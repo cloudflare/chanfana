@@ -3,10 +3,10 @@
  * dependency pinned to the just-bumped version.
  *
  * Usage (in publish.yml):
- *   version: npx changeset version && node scripts/sync-template-version.js
+ *   version: bash scripts/version.sh
  */
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const rootPkg = require("../package.json");
 const templatePkgPath = path.join(__dirname, "..", "template", "package.json");
@@ -21,5 +21,5 @@ if (oldRange === newRange) {
 }
 
 templatePkg.dependencies.chanfana = newRange;
-fs.writeFileSync(templatePkgPath, JSON.stringify(templatePkg, null, 2) + "\n");
+fs.writeFileSync(templatePkgPath, `${JSON.stringify(templatePkg, null, 2)}\n`);
 console.log(`Updated template chanfana dep: ${oldRange} → ${newRange}`);
