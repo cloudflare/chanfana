@@ -159,7 +159,9 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
 
     objs = {
       ...objs,
-      result: objs.result.map(this.meta.model.serializer),
+      result: objs.result.map((item) =>
+        this.meta.model.serializer(item, { filters: filters.filters, options: filters.options }),
+      ),
     };
 
     return {

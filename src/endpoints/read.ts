@@ -112,7 +112,7 @@ export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> exte
 
     return {
       success: true,
-      result: this.meta.model.serializer(obj),
+      result: this.meta.model.serializer(obj, { filters: filters.filters, options: filters.options }),
     };
   }
 }

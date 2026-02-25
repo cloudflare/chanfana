@@ -664,6 +664,96 @@ describe("Serializer and SerializerSchema", () => {
   });
 });
 
+describe("Serializer with context", () => {
+  const ItemSchema = z.object({
+    id: z.number().int(),
+    name: z.string(),
+    category: z.string(),
+    secret: z.string().optional(),
+  });
+
+  const mockContextDB: Record<number, any> = {
+    1: { id: 1, name: "Item 1", category: "A", secret: "hidden1" },
+    2: { id: 2, name: "Item 2", category: "B", secret: "hidden2" },
+  };
+
+  // Serializer that uses context to decide what to strip
+  const contextSerializer = (obj: any, context?: any) => {
+    // If filtering by category, include the secret; otherwise strip it
+    const hasFilter = context?.filters?.some((f: any) => f.field === "category");
+    if (hasFilter) {
+      return obj;
+    }
+    const { secret, ...rest } = obj;
+    return rest;
+  };
+
+  class ContextReadEndpoint extends ReadEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+        serializer: contextSerializer,
+      },
+    };
+
+    async fetch(_filters: ListFilters) {
+      const id = _filters.filters.find((f) => f.field === "id")?.value;
+      return mockContextDB[id as number] || null;
+    }
+  }
+
+  class ContextListEndpoint extends ListEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+        serializer: contextSerializer,
+      },
+    };
+    filterFields = ["category"];
+
+    async list(_filters: ListFilters) {
+      return { result: Object.values(mockContextDB) };
+    }
+  }
+
+  const contextRouter = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+  contextRouter.get("/ctx-items", ContextListEndpoint);
+  contextRouter.get("/ctx-items/:id", ContextReadEndpoint);
+
+  it("should pass context with filters to list serializer", async () => {
+    const request = await contextRouter.fetch(buildRequest({ method: "GET", path: "/api/ctx-items?category=A" }));
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    // Has category filter, so secret should be included
+    expect(resp.result[0].secret).toBeDefined();
+  });
+
+  it("should pass empty filters to list serializer when no filter params", async () => {
+    const request = await contextRouter.fetch(buildRequest({ method: "GET", path: "/api/ctx-items" }));
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    // No filter, so secret should be stripped
+    expect(resp.result[0].secret).toBeUndefined();
+    expect(resp.result[0].name).toBe("Item 1");
+  });
+
+  it("should pass context with filters to read serializer", async () => {
+    const request = await contextRouter.fetch(buildRequest({ method: "GET", path: "/api/ctx-items/1" }));
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    // Read endpoint passes id filter, which is not "category", so secret should be stripped
+    expect(resp.result.secret).toBeUndefined();
+    expect(resp.result.name).toBe("Item 1");
+  });
+});
+
 describe("PathParameters in Nested Routes", () => {
   const mockNestedDB: Record<string, any> = {};
 

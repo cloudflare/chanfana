@@ -30,11 +30,16 @@ export type UpdatedData = {
   updatedData: Record<string, any>;
 };
 
+export type SerializerContext = {
+  filters?: Array<FilterCondition>;
+  options?: Record<string, unknown>;
+};
+
 export type Model = {
   tableName: string;
   schema: AnyZodObject;
   primaryKeys: Array<string>;
-  serializer?: (obj: object) => object;
+  serializer?: (obj: object, context?: SerializerContext) => object;
   serializerSchema?: AnyZodObject;
 };
 
@@ -63,7 +68,7 @@ export function MetaGenerator(meta: MetaInput) {
   return {
     fields: meta.fields ?? meta.model.schema,
     model: {
-      serializer: (obj: any): any => obj,
+      serializer: (obj: any, _context?: SerializerContext): any => obj,
       serializerSchema: meta.model.schema,
       ...meta.model,
     },

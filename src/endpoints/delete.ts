@@ -106,7 +106,7 @@ export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> ex
 
     return {
       success: true,
-      result: this.meta.model.serializer(obj),
+      result: this.meta.model.serializer(obj, { filters: filters.filters }),
     };
   }
 }
