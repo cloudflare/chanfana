@@ -75,12 +75,14 @@ export interface RouterOptions {
   generateOperationIds?: boolean;
   openapiVersion?: "3" | "3.1";
   raiseOnError?: boolean;
+  passthroughErrors?: boolean;
 }
 
 export interface RouteOptions {
   router: any;
   raiseUnknownParameters: boolean;
   raiseOnError?: boolean;
+  passthroughErrors?: boolean;
   route: string;
   urlParams: Array<string>;
 }

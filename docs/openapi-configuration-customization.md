@@ -188,6 +188,42 @@ The `raiseOnError` option controls whether chanfana re-throws errors instead of 
 
 See [Error Handling - Global Error Handling Strategies](./error-handling.md#global-error-handling-strategies) for usage details.
 
+### `passthroughErrors`: Bypass Chanfana Error Handling
+
+*   **Type:** `boolean`
+*   **Default:** `false`
+
+The `passthroughErrors` option disables all of chanfana's error handling. When set to `true`, errors thrown during `handle()` (or during request validation) propagate as-is to the framework's error handler — chanfana does not catch, format, or wrap them in any way.
+
+*   `true`: Errors are re-thrown immediately from `execute()` without any processing. The `handleError()` hook, `formatChanfanaError()`, and Hono's `HTTPException` wrapping are all skipped. Raw exceptions (`ApiException`, `ZodError`, `Error`, etc.) reach Hono's `app.onError` directly.
+*   `false`: (Default) Chanfana handles errors normally — formatting them into JSON responses or wrapping them as `HTTPException` for Hono.
+
+**Example:**
+
+```typescript
+import { Hono } from 'hono';
+import { fromHono, NotFoundException } from 'chanfana';
+
+const app = new Hono();
+
+app.onError((err, c) => {
+    // Errors arrive as raw exceptions — NotFoundException, ZodError, etc.
+    // No HTTPException wrapping, no chanfana JSON formatting.
+    if (err instanceof NotFoundException) {
+        return c.json({ ok: false, message: err.message }, 404);
+    }
+    return c.json({ ok: false, message: 'Internal Server Error' }, 500);
+});
+
+const openapi = fromHono(app, { passthroughErrors: true });
+```
+
+::: tip
+This option is most useful with Hono, where `app.onError` provides centralized error handling. With itty-router (which has no `onError` mechanism), enabling `passthroughErrors` causes errors to propagate unhandled.
+:::
+
+See [Error Handling - Bypassing Chanfana's Error Formatting](./error-handling.md#bypassing-chanfanas-error-formatting) for a detailed walkthrough.
+
 ## Customizing OpenAPI Schema Output
 
 While `RouterOptions` allows you to configure the overall OpenAPI document, you can also customize the schema output for individual endpoints and parameters using Zod's OpenAPI metadata features.

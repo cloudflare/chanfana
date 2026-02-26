@@ -560,6 +560,10 @@ The returned value is used for all subsequent error handling:
 - If `raiseOnError` is true (Hono adapter), the returned error is re-thrown to Hono's `onError`.
 - Otherwise, chanfana's `formatChanfanaError` is called on the returned error.
 
+::: tip
+When [`passthroughErrors`](./openapi-configuration-customization.md#passthrougherrors-bypass-chanfana-error-handling) is enabled, the `handleError()` hook is skipped entirely — errors propagate raw from `handle()` without any transformation.
+:::
+
 **Example: Custom error wrapping for Hono**
 
 A common pattern is wrapping `ApiException` in a custom error class so that it bypasses chanfana's built-in formatter and reaches Hono's `onError`, where you can apply your own response format:
@@ -671,6 +675,63 @@ In this example, `app.onError` receives all errors thrown within Hono routes:
 ::: tip
 Unknown errors that are not `ZodError` or `ApiException` subclasses are **not** wrapped in `HTTPException` -- they propagate to `onError` as-is.
 :::
+
+#### Bypassing Chanfana's Error Formatting
+
+If you want errors to propagate to Hono's `onError` without chanfana touching them at all — no `handleError()` hook, no JSON formatting, no `HTTPException` wrapping — use the [`passthroughErrors`](./openapi-configuration-customization.md#passthrougherrors-bypass-chanfana-error-handling) option:
+
+```typescript
+import { Hono, type Context } from 'hono';
+import { fromHono, NotFoundException, ApiException } from 'chanfana';
+import { ZodError } from 'zod';
+
+export type Env = {
+    // Example bindings, use your own
+    DB: D1Database
+    BUCKET: R2Bucket
+}
+export type AppContext = Context<{ Bindings: Env }>
+
+const app = new Hono<{ Bindings: Env }>();
+
+app.onError((err, c) => {
+    console.error("Raw error:", err);
+
+    // Chanfana exceptions arrive as-is — not wrapped in HTTPException
+    if (err instanceof ApiException) {
+        return c.json({
+            ok: false,
+            code: err.code,
+            message: err.message,
+        }, err.status as any);
+    }
+
+    // Validation errors arrive as raw ZodError
+    if (err instanceof ZodError) {
+        return c.json({
+            ok: false,
+            validationErrors: err.issues,
+        }, 400);
+    }
+
+    return c.json({ ok: false, message: 'Internal Server Error' }, 500);
+});
+
+const openapi = fromHono(app, { passthroughErrors: true });
+```
+
+With `passthroughErrors: true`, chanfana's entire error pipeline is bypassed:
+
+1. **`handleError()` hook** — skipped entirely
+2. **`formatChanfanaError()`** — skipped entirely
+3. **`HTTPException` wrapping** (Hono adapter) — skipped entirely
+
+This means `err instanceof HTTPException` will **not** match chanfana errors in your `onError` handler. You handle the raw exception types directly (`ApiException`, `ZodError`, `Error`, etc.).
+
+This is useful when you want to:
+- Apply your own error response format instead of chanfana's standard `{ success, errors, result }` shape
+- Integrate with a shared error handler that doesn't understand `HTTPException`
+- Handle `ZodError` validation failures with your own logic
 
 ### itty-router: Internal Error Formatting
 

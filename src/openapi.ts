@@ -301,6 +301,7 @@ export class OpenAPIHandler {
             urlParams: urlParams,
             raiseOnError: this.options?.raiseOnError,
             raiseUnknownParameters: this.options?.raiseUnknownParameters,
+            passthroughErrors: this.options?.passthroughErrors,
           }).execute(...params);
         return this.wrapHandler(fn);
       }
