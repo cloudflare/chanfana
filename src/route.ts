@@ -1,6 +1,6 @@
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
-import { InputValidationException, MultiException } from "./exceptions";
+import { InputValidationException, MultiException, ResponseValidationException } from "./exceptions";
 import { coerceInputs } from "./parameters";
 import type { AnyZodObject, OpenAPIRouteSchema, RouteOptions, ValidatedData } from "./types";
 import { formatChanfanaError, jsonResp } from "./utils";
@@ -191,6 +191,15 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     let resp;
     try {
       resp = await this.handle(...args);
+
+      if (this.params?.validateResponse) {
+        try {
+          resp = await this.validateResponse(resp);
+        } catch (validationError) {
+          console.error("[chanfana] Response validation failed:", validationError);
+          throw new ResponseValidationException();
+        }
+      }
     } catch (rawError) {
       if (this.params?.passthroughErrors) {
         throw rawError;
@@ -213,6 +222,79 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     // Auto-convert plain objects to JSON responses
     if (resp !== null && resp !== undefined && !(resp instanceof Response) && typeof resp === "object") {
       return jsonResp(resp);
+    }
+
+    return resp;
+  }
+
+  /**
+   * Finds the Zod schema for a response with the given status code.
+   * Falls back to the "default" response if no exact match is found.
+   * @param statusCode - HTTP status code to look up
+   * @returns Zod schema for the response body, or undefined if not found
+   */
+  getResponseSchema(statusCode: number): z.ZodType | undefined {
+    const schema = this.getSchemaZod();
+    const responses = schema.responses;
+    if (!responses) return undefined;
+
+    const responseConfig = responses[String(statusCode)] ?? responses.default;
+    if (!responseConfig) return undefined;
+
+    const jsonContent = responseConfig.content?.["application/json"];
+    if (!jsonContent?.schema) return undefined;
+
+    // Skip non-Zod schemas (e.g. empty {} from default response)
+    const zodSchema = jsonContent.schema;
+    if (!(zodSchema instanceof z.ZodType)) return undefined;
+
+    return zodSchema;
+  }
+
+  /**
+   * Validates a response body against the response schema.
+   * For plain objects, parses through Zod to strip unknown fields and validate types.
+   * For Response objects with JSON content, clones the body, parses, and reconstructs
+   * with corrected headers (Content-Length/Transfer-Encoding are removed).
+   * Responses without a matching Zod schema (including non-JSON responses) are passed through unchanged.
+   * @param resp - The response from handle()
+   * @returns The validated/stripped response
+   * @throws ZodError if the response body fails schema validation
+   */
+  async validateResponse(resp: any): Promise<any> {
+    if (resp === null || resp === undefined) return resp;
+
+    if (resp instanceof Response) {
+      const contentType = resp.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) return resp;
+
+      const responseSchema = this.getResponseSchema(resp.status);
+      if (!responseSchema) return resp;
+
+      // Clone before consuming the body stream so the original remains readable on failure
+      const cloned = resp.clone();
+      const body = await cloned.json();
+      const parsed = await responseSchema.parseAsync(body);
+
+      // Reconstruct the Response with validated body and original status/headers.
+      // Delete Content-Length and Transfer-Encoding since the body size may have changed
+      // after stripping unknown fields.
+      const newHeaders = new Headers(resp.headers);
+      newHeaders.delete("content-length");
+      newHeaders.delete("transfer-encoding");
+      return new Response(JSON.stringify(parsed), {
+        status: resp.status,
+        statusText: resp.statusText,
+        headers: newHeaders,
+      });
+    }
+
+    if (typeof resp === "object") {
+      // Plain objects are auto-converted to 200 JSON responses
+      const responseSchema = this.getResponseSchema(200);
+      if (!responseSchema) return resp;
+
+      return await responseSchema.parseAsync(resp);
     }
 
     return resp;

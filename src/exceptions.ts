@@ -288,3 +288,16 @@ export class GatewayTimeoutException extends ApiException {
   status = 504;
   code = 7012;
 }
+
+/**
+ * Exception for response validation errors (500).
+ * Used when a handler's response doesn't match its declared Zod response schema.
+ * This is a server-side bug (the handler produced invalid data), not a client error.
+ * Error details are hidden from clients (isVisible=false) and logged via console.error.
+ */
+export class ResponseValidationException extends ApiException {
+  isVisible = false;
+  default_message = "Response Validation Error";
+  status = 500;
+  code = 7013;
+}

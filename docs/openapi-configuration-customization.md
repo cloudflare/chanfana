@@ -224,6 +224,82 @@ This option is most useful with Hono, where `app.onError` provides centralized e
 
 See [Error Handling - Bypassing Chanfana's Error Formatting](./error-handling.md#bypassing-chanfanas-error-formatting) for a detailed walkthrough.
 
+### `validateResponse`: Response Body Validation
+
+*   **Type:** `boolean`
+*   **Default:** `false`
+
+The `validateResponse` option enables runtime validation of response bodies against their declared Zod schemas. When enabled, every response from `handle()` is parsed through the matching Zod response schema before being sent to the client.
+
+This provides two key benefits:
+
+1.  **Data leak prevention:** Unknown fields are stripped from responses, so internal properties (e.g., `passwordHash`, `internalNotes`) never accidentally reach the client.
+2.  **Handler bug detection:** If a handler returns data missing required fields or with wrong types, the mismatch is caught immediately instead of silently returning malformed responses.
+
+**Example:**
+
+```typescript
+import { Hono } from 'hono';
+import { fromHono, OpenAPIRoute, contentJson } from 'chanfana';
+import { z } from 'zod';
+
+class GetUserEndpoint extends OpenAPIRoute {
+    schema = {
+        responses: {
+            "200": {
+                description: "User details",
+                ...contentJson(z.object({
+                    id: z.number(),
+                    name: z.string(),
+                })),
+            },
+        },
+    };
+
+    async handle(c) {
+        const user = await db.getUser(1);
+        // Even if `user` contains { id: 1, name: "Alice", passwordHash: "..." },
+        // the response will only include { id: 1, name: "Alice" }
+        return user;
+    }
+}
+
+const app = new Hono();
+const router = fromHono(app, { validateResponse: true });
+router.get("/user/:id", GetUserEndpoint);
+```
+
+**How it works:**
+
+| Response type | Behavior |
+|---|---|
+| Plain object | Validated against the `200` response schema |
+| `Response` with `application/json` | Body is cloned, validated against the schema matching `resp.status`, and reconstructed with corrected headers |
+| `Response` with non-JSON content type | Passed through unchanged |
+| No Zod schema defined for the status code | Passed through unchanged |
+| `null` or `undefined` | Passed through unchanged |
+
+**When validation fails** (e.g., a required field is missing from the response), chanfana:
+
+1.  Logs the full error details via `console.error` for server-side debugging.
+2.  Returns a `500 Internal Server Error` response with error code `7013`. The error message is hidden from clients (`isVisible: false`) to avoid leaking internal schema details.
+
+```json
+{
+    "success": false,
+    "errors": [{ "code": 7013, "message": "Internal Error" }],
+    "result": {}
+}
+```
+
+::: tip
+Response validation failures are **server-side bugs** (the handler doesn't match its declared schema), which is why they return `500` — not `400`. Check `console.error` output for the specific Zod validation issues.
+:::
+
+::: warning
+This option adds a parsing step to every response. For most APIs the overhead is negligible, but for extremely high-throughput endpoints returning large payloads you may want to enable it selectively or only in development/staging.
+:::
+
 ## Customizing OpenAPI Schema Output
 
 While `RouterOptions` allows you to configure the overall OpenAPI document, you can also customize the schema output for individual endpoints and parameters using Zod's OpenAPI metadata features.

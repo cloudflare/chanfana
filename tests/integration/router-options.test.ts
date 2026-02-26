@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { fromHono, fromIttyRouter } from "../../src";
 import { contentJson } from "../../src/contentTypes";
-import { ApiException, MultiException, NotFoundException } from "../../src/exceptions";
+import { ApiException, MultiException, NotFoundException, ResponseValidationException } from "../../src/exceptions";
 import { OpenAPIRoute } from "../../src/route";
 import { buildRequest } from "../utils";
 
@@ -781,5 +781,446 @@ describe("itty-router error handling", () => {
     expect(request.status).toEqual(404);
     expect((resp as any).success).toEqual(false);
     expect((resp as any).errors[0].code).toEqual(7002);
+  });
+});
+
+// --- validateResponse tests ---
+
+class EndpointWithExtraFields extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(
+          z.object({
+            id: z.number(),
+            name: z.string(),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    // Return extra fields that are not in the schema
+    return {
+      id: 1,
+      name: "Test",
+      secret: "should-be-stripped",
+      internal_notes: "also-stripped",
+    };
+  }
+}
+
+class EndpointReturningResponse extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "201": {
+        description: "Created",
+        ...contentJson(
+          z.object({
+            success: z.boolean(),
+            result: z.object({
+              id: z.number(),
+              title: z.string(),
+            }),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    return Response.json(
+      {
+        success: true,
+        result: {
+          id: 42,
+          title: "New Item",
+          passwordHash: "secret123",
+        },
+      },
+      { status: 201 },
+    );
+  }
+}
+
+class EndpointWithNoResponseSchema extends OpenAPIRoute {
+  async handle() {
+    return { data: "anything", extra: "allowed" };
+  }
+}
+
+class EndpointReturningHtml extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(
+          z.object({
+            id: z.number(),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    return new Response("<h1>Hello</h1>", {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    });
+  }
+}
+
+class EndpointReturningNull extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(
+          z.object({
+            id: z.number(),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    return null;
+  }
+}
+
+class EndpointWithDefaultResponseSchema extends OpenAPIRoute {
+  schema = {
+    responses: {
+      default: {
+        description: "Default response",
+        ...contentJson(
+          z.object({
+            status: z.string(),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    return { status: "ok", debug: "should-be-stripped" };
+  }
+}
+
+class EndpointReturningUnmatchedStatus extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(
+          z.object({
+            id: z.number(),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    // Return 202 (only 200 is defined in schema) to test fallback passthrough
+    return Response.json({ id: 1, extra: "data" }, { status: 202 });
+  }
+}
+
+class EndpointWithResponseDefaults extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(
+          z.object({
+            id: z.number(),
+            status: z.string().default("active"),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    // Only return id; the "status" field should get its default from Zod
+    return { id: 1 };
+  }
+}
+
+class EndpointReturningInvalidData extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(
+          z.object({
+            id: z.number(),
+            name: z.string(),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    // Missing required "name" field
+    return { id: 1 };
+  }
+}
+
+describe("validateResponse option", () => {
+  describe("itty-router with validateResponse enabled", () => {
+    it("should strip unknown fields from plain object responses", async () => {
+      const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+      router.get("/items/:id", EndpointWithExtraFields);
+
+      const request = await router.fetch(buildRequest({ method: "GET", path: "/items/1" }));
+      const resp = await request.json();
+
+      expect(request.status).toBe(200);
+      expect(resp.id).toBe(1);
+      expect(resp.name).toBe("Test");
+      expect(resp.secret).toBeUndefined();
+      expect(resp.internal_notes).toBeUndefined();
+    });
+
+    it("should strip unknown fields from Response object bodies", async () => {
+      const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+      router.post("/items", EndpointReturningResponse);
+
+      const request = await router.fetch(
+        new Request("http://localhost/items", {
+          method: "POST",
+          body: JSON.stringify({}),
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+      const resp = await request.json();
+
+      expect(request.status).toBe(201);
+      expect(resp.success).toBe(true);
+      expect(resp.result.id).toBe(42);
+      expect(resp.result.title).toBe("New Item");
+      expect(resp.result.passwordHash).toBeUndefined();
+    });
+
+    it("should pass through responses when no response schema is defined", async () => {
+      const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+      router.get("/items", EndpointWithNoResponseSchema);
+
+      const request = await router.fetch(buildRequest({ method: "GET", path: "/items" }));
+      const resp = await request.json();
+
+      expect(request.status).toBe(200);
+      expect(resp.data).toBe("anything");
+      expect(resp.extra).toBe("allowed");
+    });
+
+    it("should return 500 when response is missing required fields", async () => {
+      const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+      router.get("/items/:id", EndpointReturningInvalidData);
+
+      const request = await router.fetch(buildRequest({ method: "GET", path: "/items/1" }));
+      const resp = await request.json();
+
+      // Response validation failure is a server-side bug → 500, not 400
+      expect(request.status).toBe(500);
+      expect(resp.success).toBe(false);
+      expect(resp.errors[0].code).toBe(7013);
+      expect(resp.errors[0].message).toBe("Internal Error");
+    });
+  });
+
+  it("should pass through non-JSON Response objects unchanged", async () => {
+    const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+    router.get("/html", EndpointReturningHtml);
+
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/html" }));
+
+    expect(request.status).toBe(200);
+    expect(request.headers.get("content-type")).toBe("text/html");
+    const body = await request.text();
+    expect(body).toBe("<h1>Hello</h1>");
+  });
+
+  it("should handle null responses without errors", async () => {
+    const app = new Hono();
+    let caughtError: unknown = null;
+
+    app.onError((err, c) => {
+      caughtError = err;
+      return c.json({ error: "Internal Server Error" }, 500);
+    });
+
+    const router = fromHono(app, { validateResponse: true });
+    router.get("/null", EndpointReturningNull);
+
+    const request = await router.fetch(new Request("http://localhost/null", { method: "GET" }));
+
+    // null passes through validateResponse without throwing;
+    // no error should reach onError (Hono may return 404 for null responses)
+    expect(caughtError).toBeNull();
+    expect(request.status).not.toBe(500);
+  });
+
+  it("should fall back to the default response schema", async () => {
+    const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+    router.get("/default", EndpointWithDefaultResponseSchema);
+
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/default" }));
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    expect(resp.status).toBe("ok");
+    expect(resp.debug).toBeUndefined();
+  });
+
+  it("should pass through when status code has no matching schema", async () => {
+    const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+    router.get("/unmatched", EndpointReturningUnmatchedStatus);
+
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/unmatched" }));
+    const resp = await request.json();
+
+    // 202 has no schema and no "default" → passed through unchanged (extra not stripped)
+    expect(request.status).toBe(202);
+    expect(resp.id).toBe(1);
+    expect(resp.extra).toBe("data");
+  });
+
+  it("should apply Zod defaults to response fields", async () => {
+    const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+    router.get("/defaults", EndpointWithResponseDefaults);
+
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/defaults" }));
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    expect(resp.id).toBe(1);
+    expect(resp.status).toBe("active");
+  });
+
+  describe("validateResponse with passthroughErrors", () => {
+    it("should propagate raw ResponseValidationException to Hono onError", async () => {
+      const app = new Hono();
+      let caughtError: unknown = null;
+
+      app.onError((err, c) => {
+        caughtError = err;
+        return c.json({ error: "caught" }, 500);
+      });
+
+      const router = fromHono(app, { validateResponse: true, passthroughErrors: true });
+      router.get("/items/:id", EndpointReturningInvalidData);
+
+      const request = await router.fetch(new Request("http://localhost/items/1", { method: "GET" }));
+
+      // With passthroughErrors, the raw ResponseValidationException reaches onError (not HTTPException)
+      expect(caughtError).toBeInstanceOf(ResponseValidationException);
+      expect(caughtError).not.toBeInstanceOf(HTTPException);
+      expect(request.status).toBe(500);
+    });
+  });
+
+  describe("itty-router without validateResponse (default)", () => {
+    it("should NOT strip unknown fields when validateResponse is not set", async () => {
+      const router = fromIttyRouter(AutoRouter());
+      router.get("/items/:id", EndpointWithExtraFields);
+
+      const request = await router.fetch(buildRequest({ method: "GET", path: "/items/1" }));
+      const resp = await request.json();
+
+      expect(request.status).toBe(200);
+      expect(resp.id).toBe(1);
+      expect(resp.name).toBe("Test");
+      // Extra fields should still be present
+      expect(resp.secret).toBe("should-be-stripped");
+      expect(resp.internal_notes).toBe("also-stripped");
+    });
+  });
+
+  describe("Hono with validateResponse enabled", () => {
+    it("should strip unknown fields from plain object responses", async () => {
+      const app = new Hono();
+      app.onError((err, c) => {
+        if (err instanceof HTTPException) {
+          return err.getResponse();
+        }
+        return c.json({ error: "Internal Server Error" }, 500);
+      });
+
+      const router = fromHono(app, { validateResponse: true });
+      router.get("/items/:id", EndpointWithExtraFields);
+
+      const request = await router.fetch(new Request("http://localhost/items/1", { method: "GET" }));
+      const resp = (await request.json()) as any;
+
+      expect(request.status).toBe(200);
+      expect(resp.id).toBe(1);
+      expect(resp.name).toBe("Test");
+      expect(resp.secret).toBeUndefined();
+      expect(resp.internal_notes).toBeUndefined();
+    });
+
+    it("should return 500 with error code 7013 for invalid response data", async () => {
+      const app = new Hono();
+      let caughtError: unknown = null;
+
+      app.onError((err, c) => {
+        caughtError = err;
+        if (err instanceof HTTPException) {
+          return err.getResponse();
+        }
+        return c.json({ error: "Internal Server Error" }, 500);
+      });
+
+      const router = fromHono(app, { validateResponse: true });
+      router.get("/items/:id", EndpointReturningInvalidData);
+
+      const request = await router.fetch(new Request("http://localhost/items/1", { method: "GET" }));
+
+      // Hono adapter wraps ApiException as HTTPException via wrapHandler
+      expect(caughtError).toBeInstanceOf(HTTPException);
+      expect((caughtError as HTTPException).status).toBe(500);
+
+      const resp = (await request.json()) as any;
+      expect(request.status).toBe(500);
+      expect(resp.success).toBe(false);
+      expect(resp.errors[0].code).toBe(7013);
+      expect(resp.errors[0].message).toBe("Internal Error");
+    });
+
+    it("should strip unknown fields from Response object bodies", async () => {
+      const app = new Hono();
+      app.onError((err, c) => {
+        if (err instanceof HTTPException) {
+          return err.getResponse();
+        }
+        return c.json({ error: "Internal Server Error" }, 500);
+      });
+
+      const router = fromHono(app, { validateResponse: true });
+      router.post("/items", EndpointReturningResponse);
+
+      const request = await router.fetch(
+        new Request("http://localhost/items", {
+          method: "POST",
+          body: JSON.stringify({}),
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+      const resp = (await request.json()) as any;
+
+      expect(request.status).toBe(201);
+      expect(resp.success).toBe(true);
+      expect(resp.result.id).toBe(42);
+      expect(resp.result.title).toBe("New Item");
+      expect(resp.result.passwordHash).toBeUndefined();
+    });
   });
 });
