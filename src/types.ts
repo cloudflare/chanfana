@@ -6,6 +6,8 @@ import type { ZodObject, ZodPipe, ZodType, z } from "zod";
 // Type alias for compatibility with Zod v4
 export type AnyZodObject = ZodObject<any, any>;
 
+export type OrderByDirection = "asc" | "desc";
+
 export type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {};
 
 export type IsEqual<A, B> = (<G>() => G extends A ? 1 : 2) extends <G>() => G extends B ? 1 : 2 ? true : false;

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { contentJson } from "../contentTypes";
 import { InputValidationException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
-import type { AnyZodObject } from "../types";
+import type { AnyZodObject, OrderByDirection } from "../types";
 import {
   type FilterCondition,
   type ListFilters,
@@ -29,7 +29,7 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
   orderByFields: string[] = [];
   defaultOrderBy?: string;
   /** Default sort direction when order_by is used. Defaults to "asc". */
-  defaultOrderByDirection: "asc" | "desc" = "asc";
+  defaultOrderByDirection: OrderByDirection = "asc";
 
   getSchema() {
     const parsedQueryParameters = this.meta.fields.pick(

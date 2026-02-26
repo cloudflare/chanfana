@@ -1,4 +1,5 @@
 import { ApiException, InputValidationException } from "../../exceptions";
+import type { OrderByDirection } from "../../types";
 import type { FilterCondition, Filters, Logger } from "../types";
 
 /**
@@ -86,9 +87,9 @@ export function validateColumnName(columnName: string, validColumns?: string[]):
  * @param direction - The direction string to validate
  * @returns "asc" or "desc"
  */
-export function validateOrderDirection(direction: string | undefined): "asc" | "desc" {
+export function validateOrderDirection(direction: string | undefined): OrderByDirection {
   const normalized = (direction || "asc").toLowerCase().trim();
-  return VALID_ORDER_DIRECTIONS.has(normalized) ? (normalized as "asc" | "desc") : "asc";
+  return VALID_ORDER_DIRECTIONS.has(normalized) ? (normalized as OrderByDirection) : "asc";
 }
 
 /**
@@ -254,6 +255,6 @@ export function buildWhereClause(conditions: string[]): string {
  * @param direction - Validated direction ("asc" or "desc")
  * @returns ORDER BY clause string
  */
-export function buildOrderByClause(column: string, direction: "asc" | "desc"): string {
+export function buildOrderByClause(column: string, direction: OrderByDirection): string {
   return `ORDER BY ${column} ${direction}`;
 }

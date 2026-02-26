@@ -10,6 +10,7 @@ import {
   D1UpdateEndpoint,
   fromIttyRouter,
   InputValidationException,
+  type OrderByDirection,
 } from "../../src";
 
 // User schema for testing - id is optional because it's auto-generated
@@ -736,7 +737,7 @@ describe("D1 ListEndpoint defaultOrderByDirection", () => {
     dbName = "DB";
     orderByFields = ["id", "name"];
     defaultOrderBy = "name";
-    defaultOrderByDirection: "asc" | "desc" = "desc";
+    defaultOrderByDirection: OrderByDirection = "desc";
   }
 
   const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
