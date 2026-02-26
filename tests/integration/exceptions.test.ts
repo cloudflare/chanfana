@@ -106,6 +106,94 @@ class ThrowMultiExceptionEndpoint extends OpenAPIRoute {
   }
 }
 
+// Test endpoint with validation schema to test validation error format
+class ValidationEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      body: contentJson(
+        z.object({
+          name: z.string(),
+          age: z.number(),
+        }),
+      ),
+    },
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(z.object({ success: z.boolean() })),
+      },
+    },
+  };
+
+  async handle() {
+    await this.getValidatedData();
+    return { success: true };
+  }
+}
+
+// Custom error wrapper (simulating user's pattern from the MR)
+class CustomWrappedError extends Error {
+  constructor(public readonly originalError: ApiException) {
+    super(originalError.message);
+    this.name = "CustomWrappedError";
+  }
+}
+
+// Test endpoint that uses handleError hook to transform errors
+class HandleErrorHookEndpoint extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(z.object({ success: z.boolean() })),
+      },
+    },
+  };
+
+  protected handleError(error: unknown): unknown {
+    if (error instanceof ApiException) {
+      return new CustomWrappedError(error);
+    }
+    return error;
+  }
+
+  async handle() {
+    throw new NotFoundException("Resource not found");
+  }
+}
+
+// Test endpoint with handleError that re-classifies errors
+class HandleErrorReclassifyEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      body: contentJson(
+        z.object({
+          email: z.string(),
+        }),
+      ),
+    },
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(z.object({ success: z.boolean() })),
+      },
+    },
+  };
+
+  protected handleError(error: unknown): unknown {
+    // Convert validation MultiException to a single ApiException
+    if (error instanceof MultiException) {
+      return new ApiException("Custom validation failed");
+    }
+    return error;
+  }
+
+  async handle() {
+    await this.getValidatedData();
+    return { success: true };
+  }
+}
+
 // Test endpoint that throws ZodError
 class ThrowZodErrorEndpoint extends OpenAPIRoute {
   schema = {
@@ -150,6 +238,9 @@ describe("Exception Handling", () => {
   router.get("/multi-exception", ThrowMultiExceptionEndpoint);
   router.get("/zod-error", ThrowZodErrorEndpoint);
   router.get("/hidden-error", ThrowHiddenErrorEndpoint);
+  router.post("/validation", ValidationEndpoint);
+  router.get("/handle-error-hook", HandleErrorHookEndpoint);
+  router.post("/handle-error-reclassify", HandleErrorReclassifyEndpoint);
 
   it("should catch ApiException and return 500 with error response", async () => {
     const request = await router.fetch(buildRequest({ method: "GET", path: "/api-exception" }));
@@ -225,6 +316,56 @@ describe("Exception Handling", () => {
     expect(resp.success).toBe(false);
     expect(resp.errors[0].message).toBe("Internal Error");
     expect(resp.errors[0].message).not.toBe("Sensitive internal error details");
+  });
+
+  it("should wrap validation ZodErrors as InputValidationException with code 7001", async () => {
+    const request = await router.fetch(
+      buildRequest({
+        method: "POST",
+        path: "/validation",
+        json: () => ({ name: 123 }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    const resp = await request.json();
+
+    expect(request.status).toEqual(400);
+    expect(resp.success).toBe(false);
+    expect(resp.errors.length).toBeGreaterThan(0);
+    // Validation errors should use InputValidationException format (code 7001)
+    // instead of raw Zod issue format (code: "invalid_type")
+    for (const error of resp.errors) {
+      expect(error.code).toBe(7001);
+      expect(typeof error.message).toBe("string");
+      expect(Array.isArray(error.path)).toBe(true);
+    }
+  });
+
+  it("should call handleError hook when handle() throws", async () => {
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/handle-error-hook" }));
+
+    // handleError wraps NotFoundException in CustomWrappedError (a plain Error),
+    // which formatChanfanaError does not recognize, so it is re-thrown
+    // and itty-router returns a 500 status
+    expect(request.status).toEqual(500);
+  });
+
+  it("should allow handleError to reclassify validation errors", async () => {
+    const request = await router.fetch(
+      buildRequest({
+        method: "POST",
+        path: "/handle-error-reclassify",
+        json: () => ({ wrong: "field" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    const resp = await request.json();
+
+    // handleError converts the MultiException to a generic ApiException
+    expect(request.status).toEqual(500);
+    expect(resp.success).toBe(false);
+    expect(resp.errors[0].code).toBe(7000);
+    expect(resp.errors[0].message).toBe("Custom validation failed");
   });
 });
 

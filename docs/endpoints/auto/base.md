@@ -623,6 +623,9 @@ class ListProducts extends ListEndpoint {
     
     // Default sort field if none specified
     defaultOrderBy = 'name';
+
+    // Default sort direction (defaults to 'asc')
+    defaultOrderByDirection = 'desc';
     
     // Optional: customize the search query parameter name (defaults to 'search')
     // searchFieldName = 'q';
@@ -743,6 +746,7 @@ You can customize auto endpoints by:
     *   `searchFields` - Fields available for full-text search
     *   `orderByFields` - Fields available for sorting
     *   `defaultOrderBy` - Default sort field when none specified
+    *   `defaultOrderByDirection` - Default sort direction: `"asc"` or `"desc"` (defaults to `"asc"`)
     *   `searchFieldName` - Customize the search query parameter name (defaults to `'search'`)
 *   **Using `serializer` and `serializerSchema` in `Meta`:** Transform output data and hide sensitive fields before sending responses.
 *   **Using `pathParameters` in `Meta`:** Explicitly define path parameters, especially for nested routes with composite primary keys.

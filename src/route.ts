@@ -1,5 +1,6 @@
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
+import { InputValidationException, MultiException } from "./exceptions";
 import { coerceInputs } from "./parameters";
 import type { AnyZodObject, OpenAPIRouteSchema, RouteOptions, ValidatedData } from "./types";
 import { formatChanfanaError, jsonResp } from "./utils";
@@ -141,6 +142,36 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
   }
 
   /**
+   * Hook to transform errors thrown during handle().
+   * Override this method to wrap, replace, or re-classify errors before
+   * chanfana's default error formatting runs.
+   *
+   * The returned value is used for all subsequent error handling:
+   * - If `raiseOnError` is true, the returned error is re-thrown (e.g. to Hono's onError).
+   * - Otherwise, chanfana's `formatChanfanaError` is called on the returned error.
+   *
+   * @example
+   * ```typescript
+   * class MyRoute extends OpenAPIRoute {
+   *   protected handleError(error: unknown): unknown {
+   *     // Wrap ApiExceptions so they bypass chanfana's formatter
+   *     // and reach Hono's onError handler directly
+   *     if (error instanceof ApiException) {
+   *       return new MyCustomError(error);
+   *     }
+   *     return error;
+   *   }
+   * }
+   * ```
+   *
+   * @param error - The caught error
+   * @returns The error (possibly transformed) to be handled by chanfana
+   */
+  protected handleError(error: unknown): unknown {
+    return error;
+  }
+
+  /**
    * Main execution method called by the router.
    * Handles validation, error catching, and response formatting.
    *
@@ -158,7 +189,9 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     let resp;
     try {
       resp = await this.handle(...args);
-    } catch (e) {
+    } catch (rawError) {
+      const e = this.handleError(rawError);
+
       if (this.params?.raiseOnError) {
         throw e;
       }
@@ -218,6 +251,13 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       validationSchema = z.object(rawSchema);
     }
 
-    return await validationSchema.parseAsync(unvalidatedData);
+    try {
+      return await validationSchema.parseAsync(unvalidatedData);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        throw new MultiException(e.issues.map((issue) => new InputValidationException(issue.message, issue.path)));
+      }
+      throw e;
+    }
   }
 }

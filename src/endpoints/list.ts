@@ -28,6 +28,8 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
   // Explicitly type orderByFields to avoid narrow never[] inference for subclasses
   orderByFields: string[] = [];
   defaultOrderBy?: string;
+  /** Default sort direction when order_by is used. Defaults to "asc". */
+  defaultOrderByDirection: "asc" | "desc" = "asc";
 
   getSchema() {
     const parsedQueryParameters = this.meta.fields.pick(
@@ -65,7 +67,11 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
       const orderByFieldsTuple = this.orderByFields as [string, ...string[]];
       queryParameters = queryParameters.extend({
         order_by: z.enum(orderByFieldsTuple).optional().default(orderByFieldsTuple[0]).describe("Order By Column Name"),
-        order_by_direction: z.enum(["asc", "desc"]).optional().default("asc").describe("Order By Direction"),
+        order_by_direction: z
+          .enum(["asc", "desc"])
+          .optional()
+          .default(this.defaultOrderByDirection)
+          .describe("Order By Direction"),
       });
     }
 

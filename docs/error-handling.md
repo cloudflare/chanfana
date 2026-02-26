@@ -512,6 +512,111 @@ The `static schema()` method in `ApiException` and its subclasses is used to gen
 
 When you call `...MyExceptionClass.schema()` it returns an OpenAPI response object that you can include in your endpoint's `schema.responses`. This automatically documents the error response with the correct status code, description, and response body schema (based on the `ApiException`'s `buildResponse()` output).
 
+## Validation Error Format
+
+When request validation fails (e.g., a required field is missing or has the wrong type), chanfana automatically converts the Zod validation errors into `InputValidationException` instances wrapped in a `MultiException`. This ensures validation errors use a consistent format that matches the OpenAPI schema:
+
+```json
+{
+    "success": false,
+    "errors": [
+        {
+            "code": 7001,
+            "message": "Invalid input: expected string, received number",
+            "path": ["body", "name"]
+        },
+        {
+            "code": 7001,
+            "message": "Invalid input: expected number, received undefined",
+            "path": ["body", "age"]
+        }
+    ],
+    "result": {}
+}
+```
+
+Each validation error includes:
+- **`code`:** `7001` (the `InputValidationException` error code)
+- **`message`:** The human-readable validation error message from Zod
+- **`path`:** Array of strings indicating the location of the invalid field (e.g., `["body", "name"]`, `["query", "page"]`)
+
+## The `handleError` Hook
+
+`OpenAPIRoute` provides a `handleError` hook that lets you transform errors thrown during `handle()` before chanfana's default error formatting runs. This is useful when you need to:
+
+- Wrap chanfana exceptions in your own error types
+- Re-classify errors (e.g., convert validation errors to a custom format)
+- Route specific errors to your framework's error handler (e.g., Hono's `onError`)
+
+**Method signature:**
+
+```typescript
+protected handleError(error: unknown): unknown {
+    return error; // Default: pass through unchanged
+}
+```
+
+The returned value is used for all subsequent error handling:
+- If `raiseOnError` is true (Hono adapter), the returned error is re-thrown to Hono's `onError`.
+- Otherwise, chanfana's `formatChanfanaError` is called on the returned error.
+
+**Example: Custom error wrapping for Hono**
+
+A common pattern is wrapping `ApiException` in a custom error class so that it bypasses chanfana's built-in formatter and reaches Hono's `onError`, where you can apply your own response format:
+
+```typescript
+import { ApiException, OpenAPIRoute, NotFoundException } from 'chanfana';
+
+// Custom error that chanfana won't recognize
+class MyAppError extends Error {
+    constructor(public readonly original: ApiException) {
+        super(original.message);
+    }
+}
+
+class MyEndpoint extends OpenAPIRoute {
+    protected handleError(error: unknown): unknown {
+        if (error instanceof ApiException) {
+            return new MyAppError(error);
+        }
+        return error;
+    }
+
+    async handle(c) {
+        throw new NotFoundException("Resource not found");
+    }
+}
+```
+
+Then in your Hono app:
+
+```typescript
+app.onError((err, c) => {
+    if (err instanceof MyAppError) {
+        // Your custom error format
+        return c.json({
+            ok: false,
+            error: { code: err.original.code, message: err.original.message }
+        }, err.original.status);
+    }
+    return c.json({ error: "Internal Server Error" }, 500);
+});
+```
+
+**Example: Re-classifying validation errors**
+
+```typescript
+class StrictEndpoint extends OpenAPIRoute {
+    protected handleError(error: unknown): unknown {
+        // Convert validation MultiException to a single ApiException
+        if (error instanceof MultiException) {
+            return new ApiException("Request validation failed");
+        }
+        return error;
+    }
+}
+```
+
 ## Global Error Handling Strategies
 
 While Chanfana provides structured exception handling within endpoints, you can also implement global error handling for centralized error logging, monitoring, and custom response formatting.
