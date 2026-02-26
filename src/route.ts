@@ -192,7 +192,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     try {
       resp = await this.handle(...args);
     } catch (rawError) {
-      const e = this.handleError(rawError);
+      const e = this.handleError(rawError) ?? rawError;
 
       if (this.params?.raiseOnError) {
         throw e;
