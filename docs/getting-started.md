@@ -29,7 +29,7 @@ npm run db:migrate:local
 npm run dev
 ```
 
-Once running, open http://localhost:8787/api/docs to explore the auto-generated API documentation.
+Once running, open `http://localhost:8787/api/docs` to explore the auto-generated API documentation.
 
 See [`template/README.md`](https://github.com/cloudflare/chanfana/blob/main/template/README.md) for full setup instructions.
 
