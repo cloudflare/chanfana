@@ -299,13 +299,18 @@ describe("Exception Handling", () => {
     expect(resp.errors[1].path).toEqual(["body", "name"]);
   });
 
-  it("should catch ZodError and return 400 with validation errors", async () => {
+  it("should catch ZodError and return 400 with InputValidationException format", async () => {
     const request = await router.fetch(buildRequest({ method: "GET", path: "/zod-error" }));
     const resp = await request.json();
 
     expect(request.status).toEqual(400);
     expect(resp.success).toBe(false);
     expect(resp.errors).toHaveLength(1);
+    // Direct ZodErrors from handle() should also use InputValidationException format
+    // (code 7001) for consistency with validateRequest() errors
+    expect(resp.errors[0].code).toBe(7001);
+    expect(typeof resp.errors[0].message).toBe("string");
+    expect(Array.isArray(resp.errors[0].path)).toBe(true);
   });
 
   it("should hide internal error details when isVisible is false", async () => {

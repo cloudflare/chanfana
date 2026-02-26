@@ -165,7 +165,9 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    * ```
    *
    * @param error - The caught error
-   * @returns The error (possibly transformed) to be handled by chanfana
+   * @returns The error (possibly transformed) to be handled by chanfana.
+   *   Should be an Error instance. Returning non-Error values (null, strings, etc.)
+   *   may produce confusing stack traces if the error is ultimately re-thrown.
    */
   protected handleError(error: unknown): unknown {
     return error;
@@ -255,7 +257,9 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       return await validationSchema.parseAsync(unvalidatedData);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        throw new MultiException(e.issues.map((issue) => new InputValidationException(issue.message, issue.path)));
+        throw new MultiException(
+          e.issues.map((issue) => new InputValidationException(issue.message, issue.path.map(String))),
+        );
       }
       throw e;
     }
