@@ -752,6 +752,122 @@ describe("Serializer with context", () => {
     expect(resp.result.secret).toBeUndefined();
     expect(resp.result.name).toBe("Item 1");
   });
+
+  // Track context passed to serializer for Create, Update, Delete endpoints
+  let capturedContext: any;
+  const capturingSerializer = (obj: any, context?: any) => {
+    capturedContext = context;
+    return obj;
+  };
+
+  class ContextCreateEndpoint extends CreateEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+        serializer: capturingSerializer,
+      },
+    };
+
+    async create(data: any) {
+      return { id: 99, ...data };
+    }
+  }
+
+  class ContextUpdateEndpoint extends UpdateEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+        serializer: capturingSerializer,
+      },
+    };
+
+    async getObject(_filters: UpdateFilters) {
+      return mockContextDB[1];
+    }
+
+    async update(_oldObj: any, filters: UpdateFilters) {
+      return { ...mockContextDB[1], ...filters.updatedData };
+    }
+  }
+
+  class ContextDeleteEndpoint extends DeleteEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+        serializer: capturingSerializer,
+      },
+    };
+
+    async getObject(_filters: Filters) {
+      return mockContextDB[1];
+    }
+
+    async delete(_oldObj: any, _filters: Filters) {
+      return mockContextDB[1];
+    }
+  }
+
+  const mutationRouter = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+  mutationRouter.post("/ctx-items", ContextCreateEndpoint);
+  mutationRouter.put("/ctx-items/:id", ContextUpdateEndpoint);
+  mutationRouter.delete("/ctx-items/:id", ContextDeleteEndpoint);
+
+  it("should pass context with empty filters array to create serializer", async () => {
+    capturedContext = undefined;
+    const request = await mutationRouter.fetch(
+      new Request("http://localhost/api/ctx-items", {
+        method: "POST",
+        body: JSON.stringify({ id: 99, name: "New Item", category: "C" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(request.status).toBe(201);
+    expect(capturedContext).toBeDefined();
+    expect(capturedContext.filters).toEqual([]);
+  });
+
+  it("should pass context with primary key filter to update serializer", async () => {
+    capturedContext = undefined;
+    const request = await mutationRouter.fetch(
+      new Request("http://localhost/api/ctx-items/1", {
+        method: "PUT",
+        body: JSON.stringify({ name: "Updated Item", category: "A" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(request.status).toBe(200);
+    expect(capturedContext).toBeDefined();
+    expect(capturedContext.filters).toBeDefined();
+    expect(capturedContext.filters.length).toBeGreaterThan(0);
+    expect(capturedContext.filters[0].field).toBe("id");
+    // Update endpoint does not pass options
+    expect(capturedContext.options).toBeUndefined();
+  });
+
+  it("should pass context with primary key filter to delete serializer", async () => {
+    capturedContext = undefined;
+    const request = await mutationRouter.fetch(
+      new Request("http://localhost/api/ctx-items/1", {
+        method: "DELETE",
+      }),
+    );
+
+    expect(request.status).toBe(200);
+    expect(capturedContext).toBeDefined();
+    expect(capturedContext.filters).toBeDefined();
+    expect(capturedContext.filters.length).toBeGreaterThan(0);
+    expect(capturedContext.filters[0].field).toBe("id");
+    // Delete endpoint does not pass options
+    expect(capturedContext.options).toBeUndefined();
+  });
 });
 
 describe("PathParameters in Nested Routes", () => {

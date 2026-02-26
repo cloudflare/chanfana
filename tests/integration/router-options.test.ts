@@ -973,6 +973,55 @@ class EndpointReturningInvalidData extends OpenAPIRoute {
   }
 }
 
+class EndpointWith404Schema extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(
+          z.object({
+            id: z.number(),
+            name: z.string(),
+          }),
+        ),
+      },
+      "404": {
+        description: "Not Found",
+        ...contentJson(
+          z.object({
+            error: z.string(),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    // Return a 404 Response with extra fields that should be stripped
+    return Response.json({ error: "Not found", debug: "internal-info" }, { status: 404 });
+  }
+}
+
+class EndpointWithTransform extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "Success",
+        ...contentJson(
+          z.object({
+            name: z.string().transform((s) => s.toUpperCase()),
+            id: z.number(),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    return { id: 1, name: "alice" };
+  }
+}
+
 describe("validateResponse option", () => {
   describe("itty-router with validateResponse enabled", () => {
     it("should strip unknown fields from plain object responses", async () => {
@@ -1103,6 +1152,32 @@ describe("validateResponse option", () => {
     expect(request.status).toBe(200);
     expect(resp.id).toBe(1);
     expect(resp.status).toBe("active");
+  });
+
+  it("should validate non-200 Response against matching status-specific schema", async () => {
+    const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+    router.get("/not-found", EndpointWith404Schema);
+
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/not-found" }));
+    const resp = await request.json();
+
+    expect(request.status).toBe(404);
+    expect(resp.error).toBe("Not found");
+    // Extra "debug" field should be stripped by the 404 schema
+    expect(resp.debug).toBeUndefined();
+  });
+
+  it("should apply Zod transforms to response fields", async () => {
+    const router = fromIttyRouter(AutoRouter(), { validateResponse: true });
+    router.get("/transform", EndpointWithTransform);
+
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/transform" }));
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    expect(resp.id).toBe(1);
+    // The transform should uppercase the name
+    expect(resp.name).toBe("ALICE");
   });
 
   describe("validateResponse with passthroughErrors", () => {

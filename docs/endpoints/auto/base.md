@@ -32,7 +32,7 @@ type Model = {
     tableName: string; // Required, the database table name
     schema: AnyZodObject; // Zod schema defining the data model
     primaryKeys: Array<string>; // Array of primary key field names
-    serializer?: (obj: object) => object; // Optional serializer function
+    serializer?: (obj: object, context?: SerializerContext) => object; // Optional serializer function
     serializerSchema?: AnyZodObject; // Optional schema for serialized output
 };
 ```
@@ -43,7 +43,12 @@ type Model = {
     *   **`tableName` (required):** The name of the database table. Used by D1 endpoints for SQL generation.
     *   **`schema` (required):** A Zod schema that defines the structure of your data model. This schema is used for schema generation and validation.
     *   **`primaryKeys` (required):** An array of strings representing the primary key fields of your data model. Used for identifying resources in `ReadEndpoint`, `UpdateEndpoint`, and `DeleteEndpoint`.
-    *   **`serializer` (optional):** A function to serialize your data before sending it in responses. Useful for data transformation or formatting. If not provided, a default serializer that returns the object as is is used.
+    *   **`serializer` (optional):** A function to serialize your data before sending it in responses. Receives the object and an optional `SerializerContext` containing `filters` (the active filter conditions) and `options` (pagination/ordering options, when available). The context varies by endpoint type:
+        *   `ListEndpoint` / `ReadEndpoint`: `{ filters, options }` (full context)
+        *   `UpdateEndpoint` / `DeleteEndpoint`: `{ filters }` (no pagination options)
+        *   `CreateEndpoint`: `{ filters: [] }` (no filters apply during creation)
+
+        If not provided, a default serializer that returns the object unchanged is used.
     *   **`serializerSchema` (optional):** A Zod schema for the serialized output. If a `serializer` is provided, you should also provide a `serializerSchema` to document the serialized response structure correctly. If not provided, defaults to `model.schema`.
 *   **`fields` (optional):**  A Zod schema that represents all possible fields of your data model. If not provided, it defaults to `model.schema`. You can use `fields` to define a broader schema than `model.schema` if needed, for example, if your database table has more columns than you want to expose in your API.
 *   **`pathParameters` (optional):** An array of strings to explicitly define the path parameters for the endpoint. This is particularly useful in nested route scenarios where the URL parameters might not directly correspond to the model's primary keys in a one-to-one manner within each route segment.  If not provided, Chanfana will infer path parameters from the primary keys defined in your `model`.
@@ -361,9 +366,17 @@ const secureMeta = {
         schema: UserInternalModel,
         primaryKeys: ['id'],
         tableName: 'users',
-        // Serializer removes sensitive fields
-        serializer: (user: any) => {
+        // Serializer removes sensitive fields, using context for conditional logic
+        serializer: (user: any, context?: SerializerContext) => {
             const { passwordHash, apiKey, ...publicData } = user;
+
+            // Example: include the role field only when filtering by role
+            const isFilteringByRole = context?.filters?.some(f => f.field === 'role');
+            if (!isFilteringByRole) {
+                const { role, ...withoutRole } = publicData;
+                return withoutRole;
+            }
+
             return publicData;
         },
         // Schema documents the public API response
@@ -383,7 +396,7 @@ class GetUser extends ReadEndpoint {
 }
 ```
 
-The `serializer` function is automatically called before sending the response, ensuring sensitive data never leaves your API. The `serializerSchema` ensures your OpenAPI documentation accurately reflects what clients will receive.
+The `serializer` function is automatically called before sending the response, ensuring sensitive data never leaves your API. The second argument is a `SerializerContext` object containing the active `filters` and `options` (pagination/ordering), allowing context-dependent serialization. The `serializerSchema` ensures your OpenAPI documentation accurately reflects what clients will receive.
 
 ## `UpdateEndpoint`: Simplifying Resource Updates
 

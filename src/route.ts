@@ -125,7 +125,11 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     const schema = { ...this.getSchema() };
 
     if (!schema.responses) {
-      // No response was provided in the schema, default to a blank one
+      // No response was provided in the schema, default to a blank one.
+      // The `schema: {}` (plain object, not a ZodType) is intentional:
+      // getResponseSchema() relies on the `instanceof z.ZodType` check to
+      // skip this default and return undefined, so validateResponse() passes
+      // through responses when no real schema is defined.
       schema.responses = {
         "200": {
           description: "Successful response",
@@ -197,7 +201,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
           resp = await this.validateResponse(resp);
         } catch (validationError) {
           console.error("[chanfana] Response validation failed:", validationError);
-          throw new ResponseValidationException();
+          throw new ResponseValidationException("Response body does not match schema", { cause: validationError });
         }
       }
     } catch (rawError) {
@@ -257,9 +261,14 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    * For Response objects with JSON content, clones the body, parses, and reconstructs
    * with corrected headers (Content-Length/Transfer-Encoding are removed).
    * Responses without a matching Zod schema (including non-JSON responses) are passed through unchanged.
+   *
+   * Note: Body-dependent headers such as ETag or Content-MD5 are preserved from the
+   * original response and may become stale after fields are stripped or defaults applied.
+   *
    * @param resp - The response from handle()
    * @returns The validated/stripped response
    * @throws ZodError if the response body fails schema validation
+   * @throws SyntaxError if a Response claims application/json but the body is not valid JSON
    */
   async validateResponse(resp: any): Promise<any> {
     if (resp === null || resp === undefined) return resp;
@@ -273,7 +282,15 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 
       // Clone before consuming the body stream so the original remains readable on failure
       const cloned = resp.clone();
-      const body = await cloned.json();
+
+      let body: unknown;
+      try {
+        body = await cloned.json();
+      } catch (parseError) {
+        console.error("[chanfana] Response body is not valid JSON despite content-type header:", parseError);
+        throw parseError;
+      }
+
       const parsed = await responseSchema.parseAsync(body);
 
       // Reconstruct the Response with validated body and original status/headers.
