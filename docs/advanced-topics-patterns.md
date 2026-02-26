@@ -155,11 +155,13 @@ Refer to the documentation for each predefined endpoint type for details on avai
 
 In some cases, you might need to transform or format your API response data before sending it to clients. Chanfana's `Meta` object (used with auto endpoints) allows you to define a custom `serializer` function to handle response data transformation.
 
-**Example: Custom Data Serializer**
+The serializer receives two arguments: the raw object and an optional `SerializerContext` containing `filters` (active filter conditions) and `options` (pagination/ordering). This enables context-aware serialization — for example, including different fields depending on which filters are active.
+
+**Example: Custom Data Serializer with Context**
 
 ```typescript
 import { Hono } from 'hono';
-import { fromHono, ListEndpoint, contentJson } from 'chanfana';
+import { fromHono, ListEndpoint, contentJson, type SerializerContext } from 'chanfana';
 import { z } from 'zod';
 
 // Define Product Model
@@ -179,11 +181,13 @@ const productListMeta = {
         }),
         primaryKeys: ['id'],
         tableName: 'products',
-        serializer: (obj: any) => ({ // Custom serializer function
+        serializer: (obj: any, context?: SerializerContext) => ({
             productId: obj.id,
             productName: obj.name,
             priceInCents: obj.price_cents,
             priceInDollars: (obj.price_cents / 100).toFixed(2), // Add calculated field
+            // Include page info only when pagination options are present
+            ...(context?.options?.page ? { page: context.options.page } : {}),
         }),
         serializerSchema: ProductModel, // Schema for serialized output
     },
@@ -210,7 +214,8 @@ export default app;
 
 **Explanation:**
 
-*   In `productListMeta.model`, we define a `serializer` function. This function takes the raw data object (e.g., from a database query) as input and returns a transformed object.
+*   In `productListMeta.model`, we define a `serializer` function. This function takes the raw data object (e.g., from a database query) and an optional `SerializerContext` as input, and returns a transformed object.
+*   The `context` parameter provides `filters` (the active filter conditions as `Array<FilterCondition>`) and `options` (pagination and ordering, e.g., `page`, `per_page`, `order_by`). The available context varies by endpoint type — see [Defining the Meta Object](../endpoints/auto/base.md#defining-the-meta-object) for details.
 *   We also define `serializerSchema` to describe the structure of the serialized output. This schema (`ProductModel` in this example) is used for OpenAPI documentation of the response body.
 *   In `ListProductsEndpoint`, when the `list` method returns data, Chanfana automatically applies the `serializer` function to each item in the `result` array before sending the response.
 
@@ -220,6 +225,7 @@ export default app;
 *   **Field Renaming:** Rename fields for API consistency or client convenience.
 *   **Data Formatting:** Format data (e.g., dates, numbers, currencies) for API responses.
 *   **Calculated Fields:** Add calculated or derived fields to API responses.
+*   **Context-Aware Output:** Conditionally include or exclude fields based on active filters or pagination options.
 *   **Schema Documentation:** Ensure that your OpenAPI documentation accurately reflects the structure of the serialized response data using `serializerSchema`.
 
 ## Logging and Monitoring API Requests

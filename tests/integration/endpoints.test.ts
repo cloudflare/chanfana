@@ -664,6 +664,212 @@ describe("Serializer and SerializerSchema", () => {
   });
 });
 
+describe("Serializer with context", () => {
+  const ItemSchema = z.object({
+    id: z.number().int(),
+    name: z.string(),
+    category: z.string(),
+    secret: z.string().optional(),
+  });
+
+  const mockContextDB: Record<number, any> = {
+    1: { id: 1, name: "Item 1", category: "A", secret: "hidden1" },
+    2: { id: 2, name: "Item 2", category: "B", secret: "hidden2" },
+  };
+
+  // Serializer that uses context to decide what to strip
+  const contextSerializer = (obj: any, context?: any) => {
+    // If filtering by category, include the secret; otherwise strip it
+    const hasFilter = context?.filters?.some((f: any) => f.field === "category");
+    if (hasFilter) {
+      return obj;
+    }
+    const { secret, ...rest } = obj;
+    return rest;
+  };
+
+  class ContextReadEndpoint extends ReadEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+        serializer: contextSerializer,
+      },
+    };
+
+    async fetch(_filters: ListFilters) {
+      const id = _filters.filters.find((f) => f.field === "id")?.value;
+      return mockContextDB[id as number] || null;
+    }
+  }
+
+  class ContextListEndpoint extends ListEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+        serializer: contextSerializer,
+      },
+    };
+    filterFields = ["category"];
+
+    async list(_filters: ListFilters) {
+      return { result: Object.values(mockContextDB) };
+    }
+  }
+
+  const contextRouter = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+  contextRouter.get("/ctx-items", ContextListEndpoint);
+  contextRouter.get("/ctx-items/:id", ContextReadEndpoint);
+
+  it("should pass context with filters to list serializer", async () => {
+    const request = await contextRouter.fetch(buildRequest({ method: "GET", path: "/api/ctx-items?category=A" }));
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    // Has category filter, so secret should be included
+    expect(resp.result[0].secret).toBeDefined();
+  });
+
+  it("should pass empty filters to list serializer when no filter params", async () => {
+    const request = await contextRouter.fetch(buildRequest({ method: "GET", path: "/api/ctx-items" }));
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    // No filter, so secret should be stripped
+    expect(resp.result[0].secret).toBeUndefined();
+    expect(resp.result[0].name).toBe("Item 1");
+  });
+
+  it("should pass context with filters to read serializer", async () => {
+    const request = await contextRouter.fetch(buildRequest({ method: "GET", path: "/api/ctx-items/1" }));
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    // Read endpoint passes id filter, which is not "category", so secret should be stripped
+    expect(resp.result.secret).toBeUndefined();
+    expect(resp.result.name).toBe("Item 1");
+  });
+
+  // Track context passed to serializer for Create, Update, Delete endpoints
+  let capturedContext: any;
+  const capturingSerializer = (obj: any, context?: any) => {
+    capturedContext = context;
+    return obj;
+  };
+
+  class ContextCreateEndpoint extends CreateEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+        serializer: capturingSerializer,
+      },
+    };
+
+    async create(data: any) {
+      return { id: 99, ...data };
+    }
+  }
+
+  class ContextUpdateEndpoint extends UpdateEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+        serializer: capturingSerializer,
+      },
+    };
+
+    async getObject(_filters: UpdateFilters) {
+      return mockContextDB[1];
+    }
+
+    async update(_oldObj: any, filters: UpdateFilters) {
+      return { ...mockContextDB[1], ...filters.updatedData };
+    }
+  }
+
+  class ContextDeleteEndpoint extends DeleteEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+        serializer: capturingSerializer,
+      },
+    };
+
+    async getObject(_filters: Filters) {
+      return mockContextDB[1];
+    }
+
+    async delete(_oldObj: any, _filters: Filters) {
+      return mockContextDB[1];
+    }
+  }
+
+  const mutationRouter = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+  mutationRouter.post("/ctx-items", ContextCreateEndpoint);
+  mutationRouter.put("/ctx-items/:id", ContextUpdateEndpoint);
+  mutationRouter.delete("/ctx-items/:id", ContextDeleteEndpoint);
+
+  it("should pass context with empty filters array to create serializer", async () => {
+    capturedContext = undefined;
+    const request = await mutationRouter.fetch(
+      new Request("http://localhost/api/ctx-items", {
+        method: "POST",
+        body: JSON.stringify({ id: 99, name: "New Item", category: "C" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(request.status).toBe(201);
+    expect(capturedContext).toBeDefined();
+    expect(capturedContext.filters).toEqual([]);
+  });
+
+  it("should pass context with primary key filter to update serializer", async () => {
+    capturedContext = undefined;
+    const request = await mutationRouter.fetch(
+      new Request("http://localhost/api/ctx-items/1", {
+        method: "PUT",
+        body: JSON.stringify({ name: "Updated Item", category: "A" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    expect(request.status).toBe(200);
+    expect(capturedContext).toBeDefined();
+    expect(capturedContext.filters).toBeDefined();
+    expect(capturedContext.filters.length).toBeGreaterThan(0);
+    expect(capturedContext.filters[0].field).toBe("id");
+    // Update endpoint does not pass options
+    expect(capturedContext.options).toBeUndefined();
+  });
+
+  it("should pass context with primary key filter to delete serializer", async () => {
+    capturedContext = undefined;
+    const request = await mutationRouter.fetch(
+      new Request("http://localhost/api/ctx-items/1", {
+        method: "DELETE",
+      }),
+    );
+
+    expect(request.status).toBe(200);
+    expect(capturedContext).toBeDefined();
+    expect(capturedContext.filters).toBeDefined();
+    expect(capturedContext.filters.length).toBeGreaterThan(0);
+    expect(capturedContext.filters[0].field).toBe("id");
+    // Delete endpoint does not pass options
+    expect(capturedContext.options).toBeUndefined();
+  });
+});
+
 describe("PathParameters in Nested Routes", () => {
   const mockNestedDB: Record<string, any> = {};
 

@@ -83,7 +83,7 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return Response.json(
       {
         success: true,
-        result: this.meta.model.serializer(obj as object),
+        result: this.meta.model.serializer(obj as object, { filters: [] }),
       },
       { status: 201 },
     );

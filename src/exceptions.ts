@@ -300,4 +300,10 @@ export class ResponseValidationException extends ApiException {
   default_message = "Response Validation Error";
   status = 500;
   code = 7013;
+
+  constructor(message?: string, options?: ErrorOptions) {
+    super(message ?? "");
+    if (message) this.message = message;
+    if (options?.cause) this.cause = options.cause;
+  }
 }
