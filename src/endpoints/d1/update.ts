@@ -89,9 +89,16 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
     const safeFilters = this.getSafeFilters(filters);
     const whereClause = buildWhereClause(safeFilters.conditions);
 
+    // Filter updatedData to only include columns defined in the schema.
+    // SELECT * may return DB columns not present in the Zod schema (e.g., internal columns),
+    // and attempting to SET those would fail validateColumnName().
+    const validUpdateData = Object.fromEntries(
+      Object.entries(filters.updatedData).filter(([key]) => validColumns.includes(key)),
+    );
+
     // Validate and build SET clause
-    const updateColumns = Object.keys(filters.updatedData);
-    const updateValues = Object.values(filters.updatedData);
+    const updateColumns = Object.keys(validUpdateData);
+    const updateValues = Object.values(validUpdateData);
 
     // If no fields to update, return the existing object unchanged
     if (updateColumns.length === 0) {

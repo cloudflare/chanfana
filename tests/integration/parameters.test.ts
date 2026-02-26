@@ -503,8 +503,7 @@ describe("bodyParametersValidation", () => {
     expect(resp).toEqual({
       errors: [
         {
-          code: "invalid_type",
-          expected: "string",
+          code: 7001,
           message: "Invalid input: expected string, received null",
           path: ["headers", "p_hostname"],
         },

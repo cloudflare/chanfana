@@ -30,11 +30,17 @@ export function jsonResp(data: any, params?: object): Response {
  * Returns null if the error is not a recognized chanfana error type.
  */
 export function formatChanfanaError(e: unknown): Response | null {
-  // ZodError: use instanceof for type safety
+  // ZodError: convert to InputValidationException format ({code: 7001, message, path})
+  // so that direct z.ZodError throws from handle() produce the same shape as
+  // validation errors from validateRequest().
   if (e instanceof z.ZodError) {
     return jsonResp(
       {
-        errors: e.issues,
+        errors: e.issues.map((issue) => ({
+          code: 7001,
+          message: issue.message,
+          path: issue.path.map(String),
+        })),
         success: false,
         result: {},
       },

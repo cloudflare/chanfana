@@ -724,6 +724,149 @@ describe("D1 UpdateEndpoint empty update", () => {
   });
 });
 
+describe("D1 ListEndpoint defaultOrderByDirection", () => {
+  class UserListDescEndpoint extends D1ListEndpoint {
+    _meta = {
+      model: {
+        tableName: "users",
+        schema: UserSchema,
+        primaryKeys: ["id"],
+      },
+    };
+    dbName = "DB";
+    orderByFields = ["id", "name"];
+    defaultOrderBy = "name";
+    defaultOrderByDirection: "asc" | "desc" = "desc";
+  }
+
+  const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+  router.get("/users-desc", UserListDescEndpoint);
+
+  beforeEach(async () => {
+    await setupDatabase();
+    await seedTestData();
+  });
+
+  it("should use descending order by default when defaultOrderByDirection is desc", async () => {
+    const response = await router.fetch(
+      new Request("https://example.com/api/users-desc", {
+        method: "GET",
+      }),
+      env,
+    );
+
+    const data = (await response.json()) as any;
+
+    expect(response.status).toBe(200);
+    expect(data.result).toHaveLength(3);
+    // Default order_by is "name" with default direction "desc"
+    expect(data.result[0].name).toBe("Charlie");
+    expect(data.result[1].name).toBe("Bob");
+    expect(data.result[2].name).toBe("Alice");
+  });
+
+  it("should allow explicit override of default direction", async () => {
+    const response = await router.fetch(
+      new Request("https://example.com/api/users-desc?order_by_direction=asc", {
+        method: "GET",
+      }),
+      env,
+    );
+
+    const data = (await response.json()) as any;
+
+    expect(response.status).toBe(200);
+    expect(data.result).toHaveLength(3);
+    // Explicit asc overrides the desc default
+    expect(data.result[0].name).toBe("Alice");
+    expect(data.result[1].name).toBe("Bob");
+    expect(data.result[2].name).toBe("Charlie");
+  });
+});
+
+describe("D1 UpdateEndpoint with extra DB columns", () => {
+  // Schema only defines a subset of columns in the DB
+  const PartialUserSchema = z.object({
+    id: z.number().optional(),
+    name: z.string(),
+    email: z.string(),
+  });
+
+  class PartialUserUpdateEndpoint extends D1UpdateEndpoint {
+    _meta = {
+      model: {
+        tableName: "users_extra",
+        schema: PartialUserSchema,
+        primaryKeys: ["id"],
+      },
+    };
+    dbName = "DB";
+  }
+
+  class PartialUserReadEndpoint extends D1ReadEndpoint {
+    _meta = {
+      model: {
+        tableName: "users_extra",
+        schema: PartialUserSchema,
+        primaryKeys: ["id"],
+      },
+    };
+    dbName = "DB";
+  }
+
+  const router = fromIttyRouter(AutoRouter({ base: "/api" }), { base: "/api" });
+  router.put("/users-extra/:id", PartialUserUpdateEndpoint);
+  router.get("/users-extra/:id", PartialUserReadEndpoint);
+
+  beforeEach(async () => {
+    await env.DB.prepare("DROP TABLE IF EXISTS users_extra").run();
+    await env.DB.prepare(`
+      CREATE TABLE users_extra (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        internal_settings TEXT DEFAULT '{}'
+      )
+    `).run();
+    await env.DB.prepare(
+      "INSERT INTO users_extra (name, email, internal_settings) VALUES ('Alice', 'alice@example.com', '{\"key\": \"value\"}')",
+    ).run();
+  });
+
+  it("should update successfully when DB has columns not in the Zod schema", async () => {
+    const response = await router.fetch(
+      new Request("https://example.com/api/users-extra/1", {
+        method: "PUT",
+        body: JSON.stringify({ name: "Alice Updated", email: "alice@example.com" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+      env,
+    );
+
+    const data = (await response.json()) as any;
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(data.result.name).toBe("Alice Updated");
+  });
+
+  it("should preserve extra DB column values after update", async () => {
+    await router.fetch(
+      new Request("https://example.com/api/users-extra/1", {
+        method: "PUT",
+        body: JSON.stringify({ name: "Alice Updated", email: "alice@example.com" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+      env,
+    );
+
+    // Verify internal_settings was not lost
+    const row = await env.DB.prepare("SELECT * FROM users_extra WHERE id = 1").first();
+    expect(row?.internal_settings).toBe('{"key": "value"}');
+    expect(row?.name).toBe("Alice Updated");
+  });
+});
+
 describe("D1 Endpoints with Composite Primary Keys", () => {
   // Schema for posts with composite key (userId, postId)
   const PostSchema = z.object({

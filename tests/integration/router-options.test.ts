@@ -4,7 +4,8 @@ import { AutoRouter } from "itty-router";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { fromHono, fromIttyRouter } from "../../src";
-import { ApiException, NotFoundException } from "../../src/exceptions";
+import { contentJson } from "../../src/contentTypes";
+import { ApiException, MultiException, NotFoundException } from "../../src/exceptions";
 import { OpenAPIRoute } from "../../src/route";
 import { buildRequest } from "../utils";
 
@@ -607,6 +608,144 @@ describe("Hono error handling", () => {
     expect(request.status).toEqual(400);
     expect((resp as any).success).toEqual(false);
     expect((resp as any).errors).toBeDefined();
+  });
+});
+
+describe("Hono handleError hook", () => {
+  // Custom error that bypasses chanfana's formatter
+  class MyRouteError extends Error {
+    constructor(public readonly apiException: ApiException) {
+      super(apiException.message);
+      this.name = "MyRouteError";
+    }
+  }
+
+  class EndpointWithHandleErrorHook extends OpenAPIRoute {
+    schema = {
+      responses: {
+        "200": {
+          description: "Success",
+          content: {
+            "application/json": {
+              schema: z.object({ success: z.boolean() }),
+            },
+          },
+        },
+      },
+    };
+
+    protected handleError(error: unknown): unknown {
+      // Wrap ApiException in a plain Error to bypass chanfana's wrapHandler formatting
+      if (error instanceof ApiException) {
+        return new MyRouteError(error);
+      }
+      return error;
+    }
+
+    async handle() {
+      throw new NotFoundException("Resource not found");
+    }
+  }
+
+  it("handleError can bypass chanfana error formatting in Hono adapter", async () => {
+    const app = new Hono();
+    let caughtError: unknown = null;
+
+    app.onError((err, c) => {
+      caughtError = err;
+      if (err instanceof MyRouteError) {
+        // User handles the error with their own format
+        return c.json(
+          { success: false, customFormat: true, message: err.apiException.message },
+          err.apiException.status as any,
+        );
+      }
+      return c.json({ error: "Internal Server Error" }, 500);
+    });
+
+    const router = fromHono(app);
+    router.get("/resource/:id", EndpointWithHandleErrorHook);
+
+    const request = await router.fetch(new Request("http://localhost/resource/123"));
+    const resp = (await request.json()) as any;
+
+    // Error should reach onError as MyRouteError (not HTTPException)
+    expect(caughtError).toBeInstanceOf(MyRouteError);
+    expect(caughtError).not.toBeInstanceOf(HTTPException);
+
+    // User's custom format should be used
+    expect(request.status).toEqual(404);
+    expect(resp.success).toBe(false);
+    expect(resp.customFormat).toBe(true);
+    expect(resp.message).toBe("Resource not found");
+  });
+
+  it("handleError can intercept validation errors in Hono adapter", async () => {
+    class ValidationHandleErrorEndpoint extends OpenAPIRoute {
+      schema = {
+        request: {
+          body: contentJson(
+            z.object({
+              email: z.string(),
+            }),
+          ),
+        },
+        responses: {
+          "200": {
+            description: "Success",
+            content: {
+              "application/json": {
+                schema: z.object({ success: z.boolean() }),
+              },
+            },
+          },
+        },
+      };
+
+      protected handleError(error: unknown): unknown {
+        if (error instanceof MultiException) {
+          return new MyRouteError(new ApiException("Validation intercepted by handleError"));
+        }
+        return error;
+      }
+
+      async handle() {
+        await this.getValidatedData();
+        return { success: true };
+      }
+    }
+
+    const app = new Hono();
+    let caughtError: unknown = null;
+
+    app.onError((err, c) => {
+      caughtError = err;
+      if (err instanceof MyRouteError) {
+        return c.json({ success: false, intercepted: true, message: err.apiException.message }, 400);
+      }
+      return c.json({ error: "Internal Server Error" }, 500);
+    });
+
+    const router = fromHono(app);
+    router.post("/validate", ValidationHandleErrorEndpoint);
+
+    const request = await router.fetch(
+      new Request("http://localhost/validate", {
+        method: "POST",
+        body: JSON.stringify({ wrong: "field" }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    const resp = (await request.json()) as any;
+
+    // handleError should intercept the MultiException from validation
+    expect(caughtError).toBeInstanceOf(MyRouteError);
+    expect(caughtError).not.toBeInstanceOf(HTTPException);
+
+    expect(request.status).toEqual(400);
+    expect(resp.success).toBe(false);
+    expect(resp.intercepted).toBe(true);
+    expect(resp.message).toBe("Validation intercepted by handleError");
   });
 });
 
