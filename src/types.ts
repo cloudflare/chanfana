@@ -76,7 +76,12 @@ export interface RouterOptions {
   openapiVersion?: "3" | "3.1";
   raiseOnError?: boolean;
   passthroughErrors?: boolean;
-  /** When enabled, response bodies are parsed through their Zod schema to strip unknown fields */
+  /**
+   * When enabled, response bodies are parsed through their Zod schema,
+   * stripping unknown fields and validating required fields/types.
+   * Validation failures result in a 500 error response and a console.error log.
+   * Responses without a Zod schema are passed through unchanged.
+   */
   validateResponse?: boolean;
 }
 

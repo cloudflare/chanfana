@@ -1,6 +1,6 @@
 import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
-import { InputValidationException, MultiException } from "./exceptions";
+import { InputValidationException, MultiException, ResponseValidationException } from "./exceptions";
 import { coerceInputs } from "./parameters";
 import type { AnyZodObject, OpenAPIRouteSchema, RouteOptions, ValidatedData } from "./types";
 import { formatChanfanaError, jsonResp } from "./utils";
@@ -193,7 +193,12 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       resp = await this.handle(...args);
 
       if (this.params?.validateResponse) {
-        resp = await this.validateResponse(resp);
+        try {
+          resp = await this.validateResponse(resp);
+        } catch (validationError) {
+          console.error("[chanfana] Response validation failed:", validationError);
+          throw new ResponseValidationException();
+        }
       }
     } catch (rawError) {
       if (this.params?.passthroughErrors) {
@@ -248,10 +253,13 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 
   /**
    * Validates a response body against the response schema.
-   * For plain objects, parses through Zod to strip unknown fields.
-   * For Response objects with JSON content, reads the body, parses, and reconstructs.
+   * For plain objects, parses through Zod to strip unknown fields and validate types.
+   * For Response objects with JSON content, clones the body, parses, and reconstructs
+   * with corrected headers (Content-Length/Transfer-Encoding are removed).
+   * Responses without a matching Zod schema (including non-JSON responses) are passed through unchanged.
    * @param resp - The response from handle()
    * @returns The validated/stripped response
+   * @throws ZodError if the response body fails schema validation
    */
   async validateResponse(resp: any): Promise<any> {
     if (resp === null || resp === undefined) return resp;
@@ -263,11 +271,17 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       const responseSchema = this.getResponseSchema(resp.status);
       if (!responseSchema) return resp;
 
-      const body = await resp.json();
+      // Clone before consuming the body stream so the original remains readable on failure
+      const cloned = resp.clone();
+      const body = await cloned.json();
       const parsed = await responseSchema.parseAsync(body);
 
-      // Reconstruct the Response with validated body and original status/headers
+      // Reconstruct the Response with validated body and original status/headers.
+      // Delete Content-Length and Transfer-Encoding since the body size may have changed
+      // after stripping unknown fields.
       const newHeaders = new Headers(resp.headers);
+      newHeaders.delete("content-length");
+      newHeaders.delete("transfer-encoding");
       return new Response(JSON.stringify(parsed), {
         status: resp.status,
         statusText: resp.statusText,

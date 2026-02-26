@@ -367,6 +367,30 @@ if (maintenanceMode) {
 *   **`code`:** `7012`
 *   **`default_message`:** `"Gateway Timeout"`
 
+### `ResponseValidationException`: Response Schema Mismatch (500)
+
+`ResponseValidationException` is thrown automatically when the [`validateResponse`](./openapi-configuration-customization.md#validateresponse-response-body-validation) option is enabled and a handler's response doesn't match its declared Zod response schema (e.g., a required field is missing or has the wrong type).
+
+**Key features:**
+*   **`status`:** `500 Internal Server Error`
+*   **`code`:** `7013`
+*   **`default_message`:** `"Response Validation Error"`
+*   **`isVisible`:** `false` (error details hidden from clients to avoid leaking internal schema information)
+
+This exception is **not intended to be thrown manually**. It is raised internally by chanfana when response validation fails. The full validation error (including Zod issue details) is logged via `console.error` for server-side debugging.
+
+```json
+{
+    "success": false,
+    "errors": [{ "code": 7013, "message": "Internal Error" }],
+    "result": {}
+}
+```
+
+::: tip
+A response validation failure indicates a **server-side bug** — the handler produced data that doesn't match its declared schema. Check your server logs (`console.error`) for the specific Zod validation issues, then fix the handler or update the response schema.
+:::
+
 ## Exception Summary Table
 
 | Exception | Status | Code | Default Message | Special Properties |
@@ -384,6 +408,7 @@ if (maintenanceMode) {
 | `BadGatewayException` | 502 | 7010 | "Bad Gateway" | - |
 | `ServiceUnavailableException` | 503 | 7011 | "Service Unavailable" | `retryAfter` |
 | `GatewayTimeoutException` | 504 | 7012 | "Gateway Timeout" | - |
+| `ResponseValidationException` | 500 | 7013 | "Response Validation Error" | `isVisible: false` |
 
 ### `MultiException`: Managing Multiple Errors
 
