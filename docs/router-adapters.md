@@ -134,6 +134,14 @@ app.onError((err, c) => {
 const openapi = fromHono(app);
 ```
 
+If you want errors to reach `onError` without chanfana formatting or wrapping them, use the `passthroughErrors` option:
+
+```typescript
+const openapi = fromHono(app, { passthroughErrors: true });
+```
+
+With this flag, raw exceptions (`NotFoundException`, `ZodError`, etc.) propagate directly to `onError` — no `HTTPException` wrapping, no JSON formatting. See [Bypassing Chanfana's Error Formatting](./error-handling.md#bypassing-chanfanas-error-formatting) for details.
+
 See [Error Handling - Global Error Handling Strategies](./error-handling.md#global-error-handling-strategies) for more details.
 
 ### `HonoOpenAPIRouterType`

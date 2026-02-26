@@ -107,6 +107,8 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
    * error response format via HTTPException.getResponse().
    */
   protected wrapHandler(handler: (...args: any[]) => Promise<Response>): (...args: any[]) => Promise<Response> {
+    if (this.options?.passthroughErrors) return handler;
+
     return async (...args: any[]) => {
       try {
         return await handler(...args);

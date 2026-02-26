@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { AnyZodObject, SetRequired } from "../types";
+import type { AnyZodObject, OrderByDirection, SetRequired } from "../types";
 
 export type FilterCondition = {
   field: string;
@@ -13,7 +13,7 @@ export type ListFilters = {
     page?: number;
     per_page?: number;
     order_by?: string;
-    order_by_direction?: "asc" | "desc";
+    order_by_direction?: OrderByDirection;
   };
 };
 

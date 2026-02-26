@@ -410,6 +410,35 @@ app.onError((err, c) => {
 const openapi = fromHono(app)
 ```
 
+### Hono: Raw Error Passthrough
+
+If you want full control over error responses and don't want chanfana to format or wrap errors, use `passthroughErrors`. Errors propagate as raw exceptions to Hono's `onError` — no `HTTPException` wrapping, no JSON formatting:
+
+```ts
+import { Hono } from 'hono'
+import { fromHono, ApiException } from 'chanfana'
+import { ZodError } from 'zod'
+
+const app = new Hono()
+
+app.onError((err, c) => {
+  // Errors arrive as raw exceptions — handle them directly
+  if (err instanceof ApiException) {
+    return c.json({ ok: false, code: err.code, message: err.message }, err.status as any)
+  }
+
+  if (err instanceof ZodError) {
+    return c.json({ ok: false, validationErrors: err.issues }, 400)
+  }
+
+  return c.json({ ok: false, message: 'Internal Server Error' }, 500)
+})
+
+const openapi = fromHono(app, { passthroughErrors: true })
+```
+
+See [Bypassing Chanfana's Error Formatting](./error-handling.md#bypassing-chanfanas-error-formatting) for a detailed explanation.
+
 ### Reusing error handlers across the project
 
 Define a base class that extends `OpenAPIRoute` with shared logic:
