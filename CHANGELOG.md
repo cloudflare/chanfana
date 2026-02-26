@@ -1,5 +1,37 @@
 # chanfana
 
+## 3.2.1
+
+### Patch Changes
+
+- [#325](https://github.com/cloudflare/chanfana/pull/325) [`c182e59`](https://github.com/cloudflare/chanfana/commit/c182e594258b306da2a03fdd076f73b1ee0326be) Thanks [@G4brym](https://github.com/G4brym)! - Export `OrderByDirection` type alias (`"asc" | "desc"`) so consumers can import it directly instead of inlining literal unions
+
+- [#325](https://github.com/cloudflare/chanfana/pull/325) [`c182e59`](https://github.com/cloudflare/chanfana/commit/c182e594258b306da2a03fdd076f73b1ee0326be) Thanks [@G4brym](https://github.com/G4brym)! - Add `passthroughErrors` option to bypass chanfana's error handling and let errors propagate raw to the framework's error handler
+
+  ```typescript
+  import { Hono } from "hono";
+  import { fromHono, ApiException } from "chanfana";
+  import { ZodError } from "zod";
+
+  const app = new Hono();
+
+  app.onError((err, c) => {
+    // Errors arrive as raw exceptions — no HTTPException wrapping
+    if (err instanceof ApiException) {
+      return c.json(
+        { ok: false, code: err.code, message: err.message },
+        err.status as any
+      );
+    }
+    if (err instanceof ZodError) {
+      return c.json({ ok: false, validationErrors: err.issues }, 400);
+    }
+    return c.json({ ok: false, message: "Internal Server Error" }, 500);
+  });
+
+  const openapi = fromHono(app, { passthroughErrors: true });
+  ```
+
 ## 3.2.0
 
 ### Minor Changes
