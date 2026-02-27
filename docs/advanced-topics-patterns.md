@@ -215,7 +215,7 @@ export default app;
 **Explanation:**
 
 *   In `productListMeta.model`, we define a `serializer` function. This function takes the raw data object (e.g., from a database query) and an optional `SerializerContext` as input, and returns a transformed object.
-*   The `context` parameter provides `filters` (the active filter conditions as `Array<FilterCondition>`) and `options` (pagination and ordering, e.g., `page`, `per_page`, `order_by`). The available context varies by endpoint type — see [Defining the Meta Object](../endpoints/auto/base.md#defining-the-meta-object) for details.
+*   The `context` parameter provides `filters` (the active filter conditions as `Array<FilterCondition>`) and `options` (pagination and ordering, e.g., `page`, `per_page`, `order_by`). The available context varies by endpoint type — see [Defining the Meta Object](./endpoints/auto/base.md#defining-the-meta-object) for details.
 *   We also define `serializerSchema` to describe the structure of the serialized output. This schema (`ProductModel` in this example) is used for OpenAPI documentation of the response body.
 *   In `ListProductsEndpoint`, when the `list` method returns data, Chanfana automatically applies the `serializer` function to each item in the `result` array before sending the response.
 
