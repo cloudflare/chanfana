@@ -24,12 +24,19 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
   filterFields?: Array<string>;
   searchFields?: Array<string>;
   searchFieldName = "search";
-  optionFields = ["page", "per_page", "order_by", "order_by_direction"];
+  pageFieldName = "page";
+  perPageFieldName = "per_page";
+  orderByFieldName = "order_by";
+  orderByDirectionFieldName = "order_by_direction";
   // Explicitly type orderByFields to avoid narrow never[] inference for subclasses
   orderByFields: string[] = [];
   defaultOrderBy?: string;
   /** Default sort direction when order_by is used. Defaults to "asc". */
   defaultOrderByDirection: OrderByDirection = "asc";
+
+  get optionFields(): string[] {
+    return [this.pageFieldName, this.perPageFieldName, this.orderByFieldName, this.orderByDirectionFieldName];
+  }
 
   getSchema() {
     const parsedQueryParameters = this.meta.fields.pick(
@@ -58,21 +65,25 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
 
     let queryParameters = z
       .object({
-        page: z.number().int().min(1).optional().default(1),
-        per_page: z.number().int().min(1).max(100).optional().default(20),
+        [this.pageFieldName]: z.number().int().min(1).optional().default(1),
+        [this.perPageFieldName]: z.number().int().min(1).max(100).optional().default(20),
       })
       .extend(parsedQueryParameters);
 
     if (this.orderByFields && this.orderByFields.length > 0) {
       const orderByFieldsTuple = this.orderByFields as [string, ...string[]];
       queryParameters = queryParameters.extend({
-        order_by: z.enum(orderByFieldsTuple).optional().default(orderByFieldsTuple[0]).describe("Order By Column Name"),
-        order_by_direction: z
+        [this.orderByFieldName]: z
+          .enum(orderByFieldsTuple)
+          .optional()
+          .default(orderByFieldsTuple[0])
+          .describe("Order By Column Name"),
+        [this.orderByDirectionFieldName]: z
           .enum(["asc", "desc"])
           .optional()
           .default(this.defaultOrderByDirection)
           .describe("Order By Direction"),
-      });
+      } as any); // Cast needed: computed property keys widen the type beyond what Zod's .extend() accepts
     }
 
     return {

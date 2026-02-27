@@ -14,6 +14,7 @@ export type ListFilters = {
     per_page?: number;
     order_by?: string;
     order_by_direction?: OrderByDirection;
+    [key: string]: unknown;
   };
 };
 
