@@ -51,6 +51,7 @@ export default defineConfig({
           {text: "Advanced Patterns", link: "/advanced-topics-patterns"},
           {text: "Troubleshooting And FAQ", link: "/troubleshooting-and-faq"},
           {text: "Migration to Chanfana v3", link: "/migration-to-chanfana-3"},
+          {text: "Changelog", link: "/changelog"},
         ],
       },
     ],
