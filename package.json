@@ -28,7 +28,8 @@
     "AGENTS.md",
     "llms.txt",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "rm -rf dist/ && tsc && tsup src/index.ts src/cli.ts --format cjs,esm --dts --config tsconfig.json --external Hono",
