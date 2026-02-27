@@ -9,7 +9,13 @@ export type FilterCondition = {
 
 export type ListFilters = {
   filters: Array<FilterCondition>;
-  options: Record<string, unknown>;
+  options: {
+    page?: number;
+    per_page?: number;
+    order_by?: string;
+    order_by_direction?: OrderByDirection;
+    [key: string]: unknown;
+  };
 };
 
 export type Filters = {

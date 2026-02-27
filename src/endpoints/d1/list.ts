@@ -1,6 +1,6 @@
 import { ApiException } from "../../exceptions";
 import { ListEndpoint } from "../list";
-import type { Logger } from "../types";
+import type { ListFilters, Logger } from "../types";
 import {
   buildOrderByClause,
   buildWhereClause,
@@ -48,7 +48,7 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
    */
   async list(filters: {
     filters?: Array<{ field: string; operator: string; value: unknown }>;
-    options?: Record<string, unknown>;
+    options?: ListFilters["options"];
   }) {
     const tableName = validateTableName(this.meta.model.tableName);
     const validColumns = this.getValidColumns();

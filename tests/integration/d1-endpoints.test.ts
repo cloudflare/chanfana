@@ -981,3 +981,130 @@ describe("D1 Endpoints with Composite Primary Keys", () => {
     expect(result?.count).toBe(2);
   });
 });
+
+describe("D1ListEndpoint Custom Pagination Parameter Names", () => {
+  const ItemSchema = z.object({
+    id: z.number().optional(),
+    title: z.string(),
+    score: z.number(),
+  });
+
+  class CustomPaginationD1ListEndpoint extends D1ListEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+      },
+    };
+    dbName = "DB";
+    filterFields = ["title"];
+    orderByFields = ["id", "title", "score"];
+    defaultOrderBy = "id";
+
+    pageFieldName = "p";
+    perPageFieldName = "limit";
+    orderByFieldName = "sort";
+    orderByDirectionFieldName = "direction";
+  }
+
+  const customPaginationRouter = fromIttyRouter(AutoRouter());
+  customPaginationRouter.get("/items", CustomPaginationD1ListEndpoint);
+
+  async function setupItemsTable() {
+    await env.DB.prepare("DROP TABLE IF EXISTS items").run();
+    await env.DB.prepare(`
+      CREATE TABLE items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        score INTEGER NOT NULL
+      )
+    `).run();
+  }
+
+  async function seedItems() {
+    for (let i = 1; i <= 10; i++) {
+      await env.DB.prepare("INSERT INTO items (title, score) VALUES (?, ?)")
+        .bind(`Item ${i}`, i * 10)
+        .run();
+    }
+  }
+
+  beforeEach(async () => {
+    await setupItemsTable();
+    await seedItems();
+  });
+
+  it("should paginate with custom parameter names", async () => {
+    const response = await customPaginationRouter.fetch(
+      new Request("https://example.com/items?p=2&limit=3&sort=id&direction=asc", {
+        method: "GET",
+      }),
+      env,
+    );
+
+    const data = (await response.json()) as any;
+
+    expect(response.status).toBe(200);
+    expect(data.result).toHaveLength(3);
+    expect(data.result_info.page).toBe(2);
+    expect(data.result_info.per_page).toBe(3);
+    expect(data.result_info.total_count).toBe(10);
+    // Page 2 with limit 3, sorted by id asc: items 4, 5, 6
+    expect(data.result[0].id).toBe(4);
+    expect(data.result[2].id).toBe(6);
+  });
+
+  it("should order with custom parameter names", async () => {
+    const response = await customPaginationRouter.fetch(
+      new Request("https://example.com/items?sort=score&direction=desc&limit=3", {
+        method: "GET",
+      }),
+      env,
+    );
+
+    const data = (await response.json()) as any;
+
+    expect(response.status).toBe(200);
+    expect(data.result).toHaveLength(3);
+    // Sorted by score descending: 100, 90, 80
+    expect(data.result[0].score).toBe(100);
+    expect(data.result[1].score).toBe(90);
+    expect(data.result[2].score).toBe(80);
+  });
+
+  it("should reflect custom parameter names in OpenAPI schema", async () => {
+    const schemaReq = await customPaginationRouter.fetch(
+      new Request("https://example.com/openapi.json", { method: "GET" }),
+      env,
+    );
+    const schema = (await schemaReq.json()) as any;
+
+    const queryParams = schema.paths["/items"].get.parameters.filter((p: any) => p.in === "query");
+    const paramNames = queryParams.map((p: any) => p.name);
+
+    expect(paramNames).toContain("p");
+    expect(paramNames).toContain("limit");
+    expect(paramNames).toContain("sort");
+    expect(paramNames).toContain("direction");
+    expect(paramNames).not.toContain("page");
+    expect(paramNames).not.toContain("per_page");
+    expect(paramNames).not.toContain("order_by");
+    expect(paramNames).not.toContain("order_by_direction");
+  });
+
+  it("should not treat custom option fields as filters", async () => {
+    const response = await customPaginationRouter.fetch(
+      new Request("https://example.com/items?p=1&limit=5", {
+        method: "GET",
+      }),
+      env,
+    );
+
+    const data = (await response.json()) as any;
+
+    expect(response.status).toBe(200);
+    expect(data.result).toHaveLength(5);
+    expect(data.result_info.total_count).toBe(10);
+  });
+});

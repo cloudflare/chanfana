@@ -1196,6 +1196,106 @@ describe("ListEndpoint Custom Pagination Parameter Names", () => {
   });
 });
 
+describe("ListEndpoint Partial Custom Pagination Parameter Names", () => {
+  const mockPartialDB: Record<number, any> = {};
+
+  beforeEach(() => {
+    for (let i = 1; i <= 10; i++) {
+      mockPartialDB[i] = { id: i, title: `Item ${i}`, score: i * 10 };
+    }
+  });
+
+  const ItemSchema = z.object({
+    id: z.number().int(),
+    title: z.string(),
+    score: z.number().int(),
+  });
+
+  class PartialCustomListEndpoint extends ListEndpoint {
+    _meta = {
+      model: {
+        tableName: "items",
+        schema: ItemSchema,
+        primaryKeys: ["id"],
+      },
+    };
+
+    // Only override page field name; keep per_page, order_by, order_by_direction as defaults
+    pageFieldName = "p";
+    orderByFields = ["title", "score"];
+
+    async list(filters: ListFilters) {
+      const items = Object.values(mockPartialDB);
+
+      // Apply ordering via default field names
+      if (filters.options.order_by) {
+        const field = filters.options.order_by as string;
+        const dir = (filters.options.order_by_direction as string) || "asc";
+        items.sort((a: any, b: any) => {
+          if (a[field] < b[field]) return dir === "asc" ? -1 : 1;
+          if (a[field] > b[field]) return dir === "asc" ? 1 : -1;
+          return 0;
+        });
+      }
+
+      // Apply pagination via mixed field names
+      const page = Number(filters.options.p) || 1;
+      const perPage = Number(filters.options.per_page) || 20;
+      const start = (page - 1) * perPage;
+      const end = start + perPage;
+
+      return {
+        result: items.slice(start, end),
+      };
+    }
+  }
+
+  const partialRouter = fromIttyRouter(AutoRouter());
+  partialRouter.get("/items", PartialCustomListEndpoint);
+
+  it("should accept custom page name with default per_page name", async () => {
+    const request = await partialRouter.fetch(
+      buildRequest({ method: "GET", path: "/items?p=2&per_page=3&order_by=score&order_by_direction=asc" }),
+    );
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    expect(resp.success).toBe(true);
+    expect(resp.result.length).toBe(3);
+    // Page 2 with per_page 3, sorted by score asc: items 4, 5, 6
+    expect(resp.result[0].id).toBe(4);
+    expect(resp.result[2].id).toBe(6);
+  });
+
+  it("should reflect mixed custom and default names in OpenAPI schema", async () => {
+    const schemaReq = await partialRouter.fetch(buildRequest({ method: "GET", path: "/openapi.json" }));
+    const schema = await schemaReq.json();
+
+    const queryParams = schema.paths["/items"].get.parameters.filter((p: any) => p.in === "query");
+    const paramNames = queryParams.map((p: any) => p.name);
+
+    // Custom name
+    expect(paramNames).toContain("p");
+    // Default names still present
+    expect(paramNames).toContain("per_page");
+    expect(paramNames).toContain("order_by");
+    expect(paramNames).toContain("order_by_direction");
+    // "page" should NOT be present (overridden by "p")
+    expect(paramNames).not.toContain("page");
+  });
+
+  it("should have correct optionFields with partial overrides", async () => {
+    // Verify via OpenAPI schema that only the overridden field uses custom name
+    // while other option fields remain defaults and are not treated as filters
+    const request = await partialRouter.fetch(buildRequest({ method: "GET", path: "/items?p=1&per_page=10" }));
+    const resp = await request.json();
+
+    expect(request.status).toBe(200);
+    // All 10 items should be returned — per_page and p are options, not filters
+    expect(resp.result.length).toBe(10);
+  });
+});
+
 describe("UpdateEndpoint with Zod 4 Optional Defaults", () => {
   const mockZod4DB: Record<string, any> = {};
 

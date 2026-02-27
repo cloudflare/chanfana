@@ -83,7 +83,7 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
           .optional()
           .default(this.defaultOrderByDirection)
           .describe("Order By Direction"),
-      } as any);
+      } as any); // Cast needed: computed property keys widen the type beyond what Zod's .extend() accepts
     }
 
     return {
