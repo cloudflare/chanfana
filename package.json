@@ -79,7 +79,7 @@
     "@cloudflare/workers-types": "4.20260303.0",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "25.3.0",
-    "@vitest/coverage-istanbul": "^3.2.4",
+    "@vitest/coverage-istanbul": "^4.0.18",
     "hono": "4.12.2",
     "itty-router": "5.0.22",
     "pkg-pr-new": "^0.0.63",
