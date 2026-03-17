@@ -32,7 +32,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "rm -rf dist/ && tsc && tsup src/index.ts src/cli.ts --format cjs,esm --dts --config tsconfig.json --external Hono",
+    "build": "rm -rf dist/ && tsc && tsup src/index.ts src/cli.ts --format cjs,esm --dts --config tsconfig.json --external hono",
     "lint": "npx @biomejs/biome check || (npx @biomejs/biome check --write; exit 1)",
     "test": "tsc && vitest run --config tests/vitest.config.mts",
     "docs:deploy": "npm run docs:build && wrangler pages deploy docs/.vitepress/dist/ --project-name chanfana --branch main",
