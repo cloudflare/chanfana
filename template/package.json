@@ -11,7 +11,7 @@
     "db:migrate:remote": "wrangler d1 migrations apply tasks-db --remote"
   },
   "dependencies": {
-    "chanfana": "^3.2.1",
+    "chanfana": "^3.3.0",
     "hono": "^4.12.0",
     "zod": "^4.3.0"
   },

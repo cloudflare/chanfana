@@ -1,5 +1,72 @@
 # chanfana
 
+## 3.3.0
+
+### Minor Changes
+
+- [#316](https://github.com/cloudflare/chanfana/pull/316) [`d30cc36`](https://github.com/cloudflare/chanfana/commit/d30cc3662db1b6152f01e1b296cde294cc67939c) Thanks [@G4brym](https://github.com/G4brym)! - Add customizable pagination and ordering parameter names to ListEndpoint via `pageFieldName`, `perPageFieldName`, `orderByFieldName`, and `orderByDirectionFieldName` class properties.
+
+  **Breaking change for subclasses overriding `optionFields`:** `optionFields` is now a computed getter derived from the four `*FieldName` properties. Subclasses that previously overrode `optionFields` directly should instead override the individual field name properties.
+
+- [#317](https://github.com/cloudflare/chanfana/pull/317) [`39c89d2`](https://github.com/cloudflare/chanfana/commit/39c89d29e7ff28f5c9ce8c3b76540450d7461818) Thanks [@G4brym](https://github.com/G4brym)! - Add `validateResponse` router option to validate and sanitize response bodies against their Zod schemas at runtime.
+
+  When enabled, responses are parsed through `z.object().parseAsync()`, which strips unknown fields and validates required fields/types. This prevents accidental data leaks (e.g., internal fields like `passwordHash` reaching the client) and catches handler bugs where the response doesn't match the declared schema.
+
+  ```typescript
+  const router = fromHono(app, { validateResponse: true });
+  ```
+
+  **Behavior:**
+
+  - Plain object responses are validated against the `200` response schema
+  - `Response` objects with `application/json` content are cloned, validated, and reconstructed with corrected headers
+  - Non-JSON responses and responses without a matching Zod schema are passed through unchanged
+  - Validation failures return `500 Internal Server Error` (code `7013`) and log the full error via `console.error`
+
+  **New exports:**
+
+  - `ResponseValidationException` — thrown when a handler's response doesn't match its declared schema (status 500, code 7013, `isVisible: false`)
+
+- [#315](https://github.com/cloudflare/chanfana/pull/315) [`47d304a`](https://github.com/cloudflare/chanfana/commit/47d304a3ff48740344aaf1f50979fb7c9ab111ca) Thanks [@G4brym](https://github.com/G4brym)! - Add `SerializerContext` parameter to auto endpoint serializer function, providing access to filters and options for context-aware serialization.
+
+  The serializer signature changes from `(obj: object) => object` to `(obj: object, context?: SerializerContext) => object`. The `SerializerContext` type contains:
+
+  - `filters` — `Array<FilterCondition>`: the active filter conditions for the current request
+  - `options` — pagination and ordering options (`page`, `per_page`, `order_by`, `order_by_direction`)
+
+  **Context passed per endpoint type:**
+
+  | Endpoint                            | Context                |
+  | ----------------------------------- | ---------------------- |
+  | `ListEndpoint` / `ReadEndpoint`     | `{ filters, options }` |
+  | `UpdateEndpoint` / `DeleteEndpoint` | `{ filters }`          |
+  | `CreateEndpoint`                    | `{ filters: [] }`      |
+
+  ```typescript
+  const meta = {
+    model: {
+      schema: UserSchema,
+      primaryKeys: ["id"],
+      tableName: "users",
+      serializer: (obj: any, context?: SerializerContext) => {
+        const hasRoleFilter = context?.filters?.some((f) => f.field === "role");
+        // Conditionally include fields based on active filters
+        return hasRoleFilter ? obj : omit(obj, ["role"]);
+      },
+    },
+  };
+  ```
+
+  **New exports:**
+
+  - `SerializerContext` — type for the serializer's second parameter
+
+### Patch Changes
+
+- [#335](https://github.com/cloudflare/chanfana/pull/335) [`028c256`](https://github.com/cloudflare/chanfana/commit/028c2562e6ab0531dd2648a556042445398896da) Thanks [@andrewheberle](https://github.com/andrewheberle)! - Fix: Error from Zod transform is returning 500 instead of 400
+
+- [#328](https://github.com/cloudflare/chanfana/pull/328) [`662ff72`](https://github.com/cloudflare/chanfana/commit/662ff7259819b1ba1038219a4331c69322989c8c) Thanks [@G4brym](https://github.com/G4brym)! - Include CHANGELOG.md in the npm package so AI agents and tools can read the project's change history. Also add a changelog page to the documentation site.
+
 ## 3.2.1
 
 ### Patch Changes
