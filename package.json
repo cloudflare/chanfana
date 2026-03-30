@@ -72,22 +72,22 @@
     "url": "https://github.com/cloudflare/chanfana/issues"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.4",
-    "@changesets/changelog-github": "^0.5.2",
+    "@biomejs/biome": "2.4.9",
+    "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.29.8",
-    "@cloudflare/vitest-pool-workers": "^0.12.17",
-    "@cloudflare/workers-types": "4.20260303.0",
+    "@cloudflare/vitest-pool-workers": "^0.13.5",
+    "@cloudflare/workers-types": "4.20260329.1",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "25.3.0",
-    "@vitest/coverage-istanbul": "^3.2.4",
-    "hono": "4.12.2",
-    "itty-router": "5.0.22",
-    "pkg-pr-new": "^0.0.63",
+    "@types/node": "25.5.0",
+    "@vitest/coverage-istanbul": "^4.1.2",
+    "hono": "4.12.9",
+    "itty-router": "5.0.23",
+    "pkg-pr-new": "^0.0.66",
     "tsup": "8.5.1",
-    "typescript": "5.9.3",
+    "typescript": "6.0.2",
     "vitepress": "^1.6.4",
     "vitest-openapi": "^1.0.3",
-    "wrangler": "4.68.1"
+    "wrangler": "4.78.0"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.4.1",
