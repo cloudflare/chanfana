@@ -607,22 +607,36 @@ export class ToDoList extends OpenAPIRoute {
 
 ## Hiding Routes in OpenAPI Schema
 
-If you don't want a route to be displayed in the openapi schema, just register it in the base router
+If you don't want a Chanfana route to be displayed in the OpenAPI schema, set `"x-ignore": true` in the route schema.
+The route remains registered and accessible, but it is omitted from `/openapi.json`, Swagger UI, and ReDoc.
 
 ```ts
-import { fromIttyRouter } from 'chanfana'
+import { fromIttyRouter, OpenAPIRoute } from 'chanfana'
 import { Router } from 'itty-router'
+
+class HiddenTodoGet extends OpenAPIRoute {
+  schema = {
+    "x-ignore": true,
+    responses: {
+      "200": {
+        description: "Hidden response",
+      },
+    },
+  }
+
+  async handle({ params }) {
+    return new Response(`Todo #${params.id}`)
+  }
+}
 
 const router = Router()
 const openAPI = fromIttyRouter(router)
 
-router.get(
-  '/todos/:id',
-  ({ params }) => new Response(`Todo #${params.id}`)
-)
+openAPI.get('/todos/:id', HiddenTodoGet)
 ```
 
-This endpoint will still be accessible, but will not be shown in the schema.
+For routes that should only be hidden in some environments, set `"x-ignore"` from the same configuration you use when
+creating or registering the router, for example a deployment-stage flag.
 
 ## Reusable Schemas
 
