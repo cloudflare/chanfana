@@ -4,6 +4,88 @@ import type { AnyZodObject, RouteParameter } from "./types";
 
 extendZodWithOpenApi(z);
 
+type ParameterValue = string | number | boolean;
+
+export interface ParameterType<Default = ParameterValue> {
+  default?: Default;
+  description?: string;
+  example?: ParameterValue;
+  required?: boolean;
+  deprecated?: boolean;
+  format?: string;
+}
+
+type NonWrappingParameterType<Default> = Omit<ParameterType<Default>, "default" | "required"> & {
+  default?: never;
+  required?: true;
+};
+type OptionalParameterType<Default> = Omit<ParameterType<Default>, "default" | "required"> & {
+  default?: never;
+  required: false;
+};
+type DefaultParameterType<Default> = Omit<ParameterType<Default>, "default" | "required"> & {
+  default: Default;
+  required?: true;
+};
+type OptionalDefaultParameterType<Default> = Omit<ParameterType<Default>, "default" | "required"> & {
+  default: Default;
+  required: false;
+};
+type ConvertedParameterSchema<M extends z.ZodType> =
+  | M
+  | z.ZodOptional<M>
+  | z.ZodDefault<M>
+  | z.ZodDefault<z.ZodOptional<M>>;
+type ConvertedParameterSchemaForParams<M extends z.ZodType, Params> = [Params] extends [undefined]
+  ? M
+  : Params extends OptionalDefaultParameterType<any>
+    ? z.ZodDefault<z.ZodOptional<M>>
+    : Params extends DefaultParameterType<any>
+      ? z.ZodDefault<M>
+      : Params extends OptionalParameterType<any>
+        ? z.ZodOptional<M>
+        : Params extends NonWrappingParameterType<any>
+          ? M
+          : ConvertedParameterSchema<M>;
+
+export function convertParams<M extends z.ZodType, Params extends ParameterType<any> | undefined = undefined>(
+  field: M,
+  params?: Params,
+): ConvertedParameterSchemaForParams<M, Params> {
+  if (!params) return field as ConvertedParameterSchemaForParams<M, Params>;
+
+  let result: z.ZodType = field;
+
+  if (params.required === false) result = result.optional();
+  if (params.description) result = result.describe(params.description);
+  if (params.default !== undefined) result = result.default(params.default);
+  if (params.example !== undefined) result = result.openapi({ example: params.example });
+  if (params.format) result = result.openapi({ format: params.format });
+  if (params.deprecated !== undefined) result = result.openapi({ deprecated: params.deprecated });
+
+  return result as ConvertedParameterSchemaForParams<M, Params>;
+}
+
+export function Arr<T extends z.ZodType, Params extends ParameterType<any> | undefined = undefined>(
+  innerType: T,
+  params?: Params,
+): ConvertedParameterSchemaForParams<z.ZodArray<T>, Params> {
+  return convertParams(innerType.array(), params);
+}
+
+export function Obj<T extends z.ZodRawShape, Params extends ParameterType<any> | undefined = undefined>(
+  fields: T,
+  params?: Params,
+): ConvertedParameterSchemaForParams<z.ZodObject<T>, Params> {
+  return convertParams(z.object(fields), params);
+}
+
+export function Str<Params extends ParameterType<any> | undefined = undefined>(
+  params?: Params,
+): ConvertedParameterSchemaForParams<z.ZodString, Params> {
+  return convertParams(z.string(), params);
+}
+
 /**
  * Helper function to unwrap optional/nullable types and check instanceof.
  * Handles Zod's wrapper types like ZodOptional, ZodNullable, ZodDefault.
