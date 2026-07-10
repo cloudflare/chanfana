@@ -2,8 +2,7 @@ import { Hono } from "hono";
 import { AutoRouter } from "itty-router";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { fromHono, fromIttyRouter } from "../../src";
-import { OpenAPIRoute } from "../../src/route";
+import { fromHono, fromIttyRouter, OpenAPIRoute } from "../../src";
 import { ToDoGet, todoRouter } from "../router";
 import { buildRequest } from "../utils";
 
@@ -98,10 +97,10 @@ describe("openapi schema", () => {
   });
 
   it.each([
-    { openapiVersion: undefined, openapi: "3.1.0" },
+    { openapiVersion: "3.1" as const, openapi: "3.1.0" },
     { openapiVersion: "3" as const, openapi: "3.0.3" },
   ])("exports request.params as OpenAPI path parameters ($openapi)", async ({ openapiVersion, openapi }) => {
-    const router = fromHono(new Hono(), openapiVersion ? { openapiVersion } : undefined);
+    const router = fromHono(new Hono(), { openapiVersion });
     router.get("/users/:id", GetUserByIdEndpoint);
 
     const first = await (await router.fetch(new Request("http://localhost/openapi.json"))).json();
@@ -122,7 +121,7 @@ describe("openapi schema", () => {
       },
     });
 
-    // Repeated generation stays deterministic and does not mutate the Zod schema.
+    // Repeated generation stays deterministic and preserves schema metadata.
     expect(second.paths["/users/{id}"].get.parameters).toEqual(parameters);
     expect(userIdParamsSchema.shape.id.description).toBe("User ID");
   });
