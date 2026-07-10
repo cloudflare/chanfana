@@ -2,6 +2,8 @@
 
 A starter Cloudflare Worker using Chanfana (OpenAPI), Hono, D1, and Zod v4. This is a copyable template — users clone it and build on top.
 
+Requires **Node.js 22 or later** (Wrangler engines constraint).
+
 ## Commands
 
 ```bash

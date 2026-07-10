@@ -11,6 +11,14 @@ updates:
         dependency-type: "production"
       dev-deps:
         dependency-type: "development"
+  - package-ecosystem: "npm"
+    directory: "/template"
+    schedule:
+      interval: "weekly"
+    groups:
+      template-deps:
+        patterns:
+          - "*"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

@@ -8,6 +8,10 @@ Scaffold a new project with the `create-cloudflare` CLI:
 npm create cloudflare@latest -- --template https://github.com/cloudflare/chanfana/tree/main/template
 ```
 
+## Prerequisites
+
+- **Node.js 22 or later** (required by Wrangler)
+
 ## Setup
 
 ```bash
