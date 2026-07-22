@@ -33,6 +33,21 @@ describe("numeric parameter coercion", () => {
     expect(response.status).toBe(400);
   });
 
+  it.each([
+    ["empty query", "https://example.com/numeric-parameters/1?queryValue=", "1"],
+    ["empty header", "https://example.com/numeric-parameters/1?queryValue=1", ""],
+    ["whitespace query", "https://example.com/numeric-parameters/1?queryValue=%20%20%20", "1"],
+    ["whitespace path", "https://example.com/numeric-parameters/%20%20%20?queryValue=1", "1"],
+    ["whitespace header", "https://example.com/numeric-parameters/1?queryValue=1", "   "],
+    ["hex query", "https://example.com/numeric-parameters/1?queryValue=0x10", "1"],
+    ["binary path", "https://example.com/numeric-parameters/0b10?queryValue=1", "1"],
+    ["octal header", "https://example.com/numeric-parameters/1?queryValue=1", "0o10"],
+  ])("rejects an unsupported %s parameter", async (_case, url, headerValue) => {
+    const response = await numericParametersRouter.fetch(new Request(url, { headers: { "x-number": headerValue } }));
+
+    expect(response.status).toBe(400);
+  });
+
   it("preserves signed decimals and exponent notation", async () => {
     const response = await numericParametersRouter.fetch(
       new Request("https://example.com/numeric-parameters/-.5?queryValue=%2B1.25e2", {
