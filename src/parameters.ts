@@ -84,7 +84,7 @@ export function coerceInputs(data: Record<string, any>, schema?: RouteParameter)
           params[key] = _val === "true";
         }
       } else if (unwrapAndCheck(innerType, z.ZodNumber) && typeof params[key] === "string") {
-        params[key] = Number.parseFloat(params[key]);
+        params[key] = Number(params[key]);
       } else if (unwrapAndCheck(innerType, z.ZodBigInt) && typeof params[key] === "string") {
         try {
           params[key] = BigInt(params[key]);
