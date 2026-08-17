@@ -4,6 +4,8 @@ import type { AnyZodObject, RouteParameter } from "./types";
 
 extendZodWithOpenApi(z);
 
+const DECIMAL_NUMBER_PATTERN = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/;
+
 /**
  * Helper function to unwrap optional/nullable types and check instanceof.
  * Handles Zod's wrapper types like ZodOptional, ZodNullable, ZodDefault.
@@ -84,7 +86,8 @@ export function coerceInputs(data: Record<string, any>, schema?: RouteParameter)
           params[key] = _val === "true";
         }
       } else if (unwrapAndCheck(innerType, z.ZodNumber) && typeof params[key] === "string") {
-        params[key] = Number.parseFloat(params[key]);
+        const numericValue = params[key].trim();
+        params[key] = DECIMAL_NUMBER_PATTERN.test(numericValue) ? Number(numericValue) : Number.NaN;
       } else if (unwrapAndCheck(innerType, z.ZodBigInt) && typeof params[key] === "string") {
         try {
           params[key] = BigInt(params[key]);
