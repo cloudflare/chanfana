@@ -149,10 +149,6 @@ Each key in `request.params` must match a dynamic route segment (for example, `i
 
 Path-parameter schemas must not be optional or nullable: OpenAPI requires every path parameter to have `required: true`.
 
-::: tip Chanfana / Zod versions
-Chanfana v2 uses Zod 3. Projects on Zod 4 must use Chanfana v3. See the [Migration to Chanfana v3](/migration-to-chanfana-3) guide.
-:::
-
 ### Defining Path Parameter Schema with Zod
 
 Use `z.object({})` within `schema.request.params` to define the expected path parameters and their validation rules.
