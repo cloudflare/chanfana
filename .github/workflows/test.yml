@@ -20,7 +20,7 @@ jobs:
           node-version: 24.x
           cache: "npm"
 
-      - run: npm install --frozen-lockfile
+      - run: npm ci
       - run: npm run build
       - run: npm run lint
       - run: npm run test -- --coverage
@@ -46,7 +46,7 @@ jobs:
             console.log('OK: ' + v + ' satisfies ' + r);
           "
       - name: Template — install dependencies
-        run: npm install
+        run: npm ci
         working-directory: template
       - name: Template — typecheck
         run: npm run typecheck
