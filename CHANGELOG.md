@@ -1,5 +1,17 @@
 # chanfana
 
+## 3.4.0
+
+### Minor Changes
+
+- [#349](https://github.com/cloudflare/chanfana/pull/349) [`98a3ba0`](https://github.com/cloudflare/chanfana/commit/98a3ba006798c0fbf7df859de68f558f8fedcdec) Thanks [@G4brym](https://github.com/G4brym)! - Refresh dependency security, reproducible CI installs, and explicit test tooling.
+
+### Patch Changes
+
+- [#347](https://github.com/cloudflare/chanfana/pull/347) [`deb4a5d`](https://github.com/cloudflare/chanfana/commit/deb4a5d8538e811dfdcf07d0b1ad3bbc993df91c) Thanks [@G4brym](https://github.com/G4brym)! - Preserve the fetched object when preparing update data for lifecycle hooks.
+
+- [#346](https://github.com/cloudflare/chanfana/pull/346) [`7f1f15a`](https://github.com/cloudflare/chanfana/commit/7f1f15a8c7e7cf5adfb6fd8d4d3074fe435764b9) Thanks [@winklemad](https://github.com/winklemad)! - Reject partially numeric query, path, and header parameters instead of silently accepting their numeric prefix.
+
 ## 3.3.0
 
 ### Minor Changes
