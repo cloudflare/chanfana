@@ -2,6 +2,9 @@
   "name": "chanfana-template",
   "version": "0.0.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
@@ -20,6 +23,6 @@
     "@cloudflare/workers-types": "^4.20260303.0",
     "typescript": "^5.9.0",
     "vitest": "^3.2.0",
-    "wrangler": "4.68.1"
+    "wrangler": "4.107.1"
   }
 }

@@ -145,6 +145,10 @@ Similar to request bodies, Chanfana infers the types of query parameters based o
 
 Path parameters are dynamic segments in the URL path, denoted by colons (e.g., `/users/:userId`). Chanfana validates path parameters using Zod schemas defined in `schema.request.params`.
 
+Each key in `request.params` must match a dynamic route segment (for example, `id` for `/users/:id`). When generating the OpenAPI document, Chanfana converts `:id` to `{id}` in the path. Ordinary Zod object properties are exported automatically as OpenAPI parameters, so `.openapi({ param: ... })` is not required merely to make them appear. Use `param` metadata only for Parameter Object fields such as a parameter-level description, deprecation status, examples, or serialization options. Do not override `name` or `in`; they are derived from the object key and `request.params`.
+
+Path-parameter schemas must not be optional or nullable: OpenAPI requires every path parameter to have `required: true`.
+
 ### Defining Path Parameter Schema with Zod
 
 Use `z.object({})` within `schema.request.params` to define the expected path parameters and their validation rules.
@@ -177,6 +181,8 @@ class GetProductEndpoint extends OpenAPIRoute {
     }
 }
 ```
+
+Register the endpoint on a matching route such as `/products/:productId`. The generated OpenAPI path will be `/products/{productId}` and will include a required `productId` path parameter derived from the Zod schema.
 
 In this example:
 
