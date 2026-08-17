@@ -81,6 +81,15 @@ class UserUpdateEndpoint extends UpdateEndpoint {
   }
 }
 
+let oldObjBeforeUpdate: User | undefined;
+
+class SnapshotUserUpdateEndpoint extends UserUpdateEndpoint {
+  async before(oldObj: User, filters: UpdateFilters): Promise<UpdateFilters> {
+    oldObjBeforeUpdate = oldObj;
+    return filters;
+  }
+}
+
 // DeleteEndpoint implementation
 class UserDeleteEndpoint extends DeleteEndpoint {
   _meta = {
@@ -172,6 +181,7 @@ const router = fromIttyRouter(AutoRouter(), {
 router.post("/users/:id", UserCreateEndpoint);
 router.get("/users/:id", UserReadEndpoint);
 router.put("/users/:id", UserUpdateEndpoint);
+router.put("/snapshot-users/:id", SnapshotUserUpdateEndpoint);
 router.delete("/users/:id", UserDeleteEndpoint);
 router.get("/users", UserListEndpoint);
 
@@ -321,6 +331,31 @@ describe("UpdateEndpoint", () => {
     expect(resp.result.username).toBe("newname");
     expect(resp.result.email).toBe("new@example.com");
     expect(mockDB[20].username).toBe("newname");
+  });
+
+  it("should preserve the old object passed to before", async () => {
+    mockDB[22] = {
+      id: 22,
+      username: "oldname",
+      email: "old@example.com",
+    };
+
+    const request = await router.fetch(
+      new Request("https://example.com/snapshot-users/22", {
+        method: "PUT",
+        body: JSON.stringify({
+          username: "newname",
+          email: "new@example.com",
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    );
+
+    expect(request.status).toBe(200);
+    expect(oldObjBeforeUpdate?.username).toBe("oldname");
+    expect(mockDB[22].username).toBe("newname");
   });
 
   it("should return 404 for non-existent user", async () => {

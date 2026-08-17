@@ -82,7 +82,7 @@ export class UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
   async getUpdatedData(_oldObj: O<typeof this._meta>): Promise<UpdatedData> {
     const data = await this.getValidatedData();
 
-    const updatedData = _oldObj;
+    const updatedData = { ..._oldObj };
 
     // In Zod 4, optional fields with defaults are always present in validated data,
     // even if not sent in the request. We need to check the raw unvalidated data to determine
