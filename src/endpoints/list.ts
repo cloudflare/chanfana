@@ -76,7 +76,7 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
         [this.orderByFieldName]: z
           .enum(orderByFieldsTuple)
           .optional()
-          .default(orderByFieldsTuple[0])
+          .default(this.defaultOrderBy ?? orderByFieldsTuple[0])
           .describe("Order By Column Name"),
         [this.orderByDirectionFieldName]: z
           .enum(["asc", "desc"])

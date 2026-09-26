@@ -766,6 +766,16 @@ describe("D1 ListEndpoint defaultOrderByDirection", () => {
     expect(data.result[2].name).toBe("Alice");
   });
 
+  it("should order by defaultOrderBy instead of the first orderByFields entry", async () => {
+    await env.DB.prepare("INSERT INTO users (name, email, age) VALUES ('Aaron', 'aaron@example.com', 40)").run();
+
+    const response = await router.fetch(new Request("https://example.com/api/users-desc", { method: "GET" }), env);
+    const data = (await response.json()) as any;
+
+    expect(response.status).toBe(200);
+    expect(data.result.map((user: any) => user.name)).toEqual(["Charlie", "Bob", "Alice", "Aaron"]);
+  });
+
   it("should allow explicit override of default direction", async () => {
     const response = await router.fetch(
       new Request("https://example.com/api/users-desc?order_by_direction=asc", {
