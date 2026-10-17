@@ -83,6 +83,39 @@ describe("routerOptions", () => {
     }
   });
 
+  it("generated operation ids are unique when endpoint classes share a name", async () => {
+    // Classes assigned to an object property all get the same name ("route")
+    const routes = [
+      { path: "/plaza/chat", route: class extends EndpointWithoutOperationId {} },
+      { path: "/config", route: class extends EndpointWithoutOperationId {} },
+    ];
+
+    const router = fromIttyRouter(AutoRouter());
+    for (const r of routes) {
+      router.get(r.path, r.route);
+    }
+    router.get("/todo", EndpointWithoutOperationId);
+    router.get("/todo/:id", EndpointWithoutOperationId);
+
+    expect(router.schema.paths["/plaza/chat"].get.operationId).toEqual("get_route");
+    expect(router.schema.paths["/config"].get.operationId).toEqual("get_config");
+    expect(router.schema.paths["/todo"].get.operationId).toEqual("get_EndpointWithoutOperationId");
+    expect(router.schema.paths["/todo/{id}"].get.operationId).toEqual("get_todo_id");
+  });
+
+  it("generated operation ids do not reuse an explicit operation id", async () => {
+    class Shared extends EndpointWithoutOperationId {}
+    const router = fromIttyRouter(AutoRouter());
+    router.get("/a", EndpointWithOperationId);
+    router.get("/b", Shared);
+    router.get("/my/todo", Shared);
+
+    // Both "get_Shared" and the path-based "get_my_todo" are taken, so a suffix is added
+    expect(router.schema.paths["/a"].get.operationId).toEqual("get_my_todo");
+    expect(router.schema.paths["/b"].get.operationId).toEqual("get_Shared");
+    expect(router.schema.paths["/my/todo"].get.operationId).toEqual("get_my_todo_2");
+  });
+
   it("with base empty", async () => {
     const router = fromIttyRouter(AutoRouter());
     router.get("/todo", EndpointWithOperationId);

@@ -30,6 +30,9 @@ export class OpenAPIHandler {
   options: RouterOptions;
   registry: OpenAPIRegistryMerger;
 
+  /** OperationIds already registered on this router, used to keep generated ids unique. */
+  private usedOperationIds: Set<string> = new Set();
+
   allowedMethods: string[] = ["get", "head", "post", "put", "delete", "patch"];
 
   /**
@@ -215,6 +218,27 @@ export class OpenAPIHandler {
   }
 
   /**
+   * Returns the first candidate operationId that is not registered yet,
+   * appending a numeric suffix when every candidate is taken.
+   * @param candidates - Preferred operationIds, in order
+   * @returns A unique operationId
+   */
+  private uniqueOperationId(candidates: string[]): string {
+    for (const candidate of candidates) {
+      if (!this.usedOperationIds.has(candidate)) {
+        return candidate;
+      }
+    }
+
+    const base = candidates[candidates.length - 1] as string;
+    let suffix = 2;
+    while (this.usedOperationIds.has(`${base}_${suffix}`)) {
+      suffix++;
+    }
+    return `${base}_${suffix}`;
+  }
+
+  /**
    * Registers a route with the OpenAPI registry.
    * @param params - Route registration parameters
    * @returns Array of wrapped handlers
@@ -229,11 +253,11 @@ export class OpenAPIHandler {
     }
 
     let schema: OpenAPIRouteSchema | undefined;
-    let operationId: string | undefined;
+    let namedOperationId: string | undefined;
 
     for (const handler of params.handlers) {
       if (handler.name) {
-        operationId = this.sanitizeOperationId(`${params.method}_${handler.name}`);
+        namedOperationId = this.sanitizeOperationId(`${params.method}_${handler.name}`);
       }
 
       if (handler.isRoute === true) {
@@ -245,9 +269,12 @@ export class OpenAPIHandler {
       }
     }
 
-    if (operationId === undefined) {
-      operationId = this.sanitizeOperationId(`${params.method}_${parsedRoute}`);
-    }
+    // Fall back to the path when the handler name is missing or already used by another route,
+    // so that every operation keeps a unique operationId
+    const pathOperationId = this.sanitizeOperationId(`${params.method}_${parsedRoute}`);
+    const operationId = this.uniqueOperationId(
+      namedOperationId === undefined ? [pathOperationId] : [namedOperationId, pathOperationId],
+    );
 
     if (schema === undefined) {
       // No schema for this route, try to guess the parameters
@@ -284,6 +311,9 @@ export class OpenAPIHandler {
     }
 
     if (params.doRegister === undefined || params.doRegister) {
+      if (schema.operationId) {
+        this.usedOperationIds.add(schema.operationId);
+      }
       this.registry.registerPath({
         ...schema,
         // @ts-expect-error - method type is more restrictive in the library
