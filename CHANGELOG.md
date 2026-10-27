@@ -1,5 +1,11 @@
 # chanfana
 
+## 3.4.2
+
+### Patch Changes
+
+- [#371](https://github.com/cloudflare/chanfana/pull/371) [`85a1a96`](https://github.com/cloudflare/chanfana/commit/85a1a96d4e537f7ea171f8c57527923435c000c1) Thanks [@kwy404](https://github.com/kwy404)! - Leave missing request headers out of the validated data, so headers declared with `.optional()` or `.default()` no longer fail with a 400 when the client does not send them.
+
 ## 3.4.1
 
 ### Patch Changes
