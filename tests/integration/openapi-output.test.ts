@@ -121,6 +121,17 @@ describe("openapi.yaml output", () => {
 });
 
 describe("openapi schema generation", () => {
+  it("documents the root route as /", async () => {
+    const child = fromHono(new Hono());
+    child.get("/", YamlRoundTripEndpoint);
+
+    const router = fromHono(new Hono());
+    router.get("/", YamlRoundTripEndpoint);
+    router.route("/child", child);
+
+    expect(Object.keys(router.schema.paths)).toEqual(["/", "/child"]);
+  });
+
   it("documents zod v4 string formats", async () => {
     const router = fromHono(new Hono());
     router.get("/formats", StringFormatsEndpoint);
