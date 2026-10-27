@@ -1,6 +1,19 @@
-import { defineWorkersConfig } from "@cloudflare/vitest-pool-workers/config";
+import { cloudflareTest } from "@cloudflare/vitest-pool-workers";
+import { defineConfig } from "vitest/config";
 
-export default defineWorkersConfig({
+export default defineConfig({
+  plugins: [
+    cloudflareTest({
+      wrangler: {
+        configPath: "./tests/wrangler.toml",
+      },
+      miniflare: {
+        d1Databases: {
+          DB: "00000000-0000-0000-0000-000000000000",
+        },
+      },
+    }),
+  ],
   test: {
     // typecheck: {
     //   enabled: true,
@@ -10,22 +23,9 @@ export default defineWorkersConfig({
     include: ["tests/**/*.{test,spec}.?(c|m)[jt]s?(x)"], // Regular test files
     coverage: {
       provider: "istanbul",
-      all: true,
       include: ["src/**/*.ts"],
       exclude: ["src/cli.ts"],
       reporter: ["text", "json-summary", "json"],
-    },
-    poolOptions: {
-      workers: {
-        wrangler: {
-          configPath: "./wrangler.toml",
-        },
-        miniflare: {
-          d1Databases: {
-            DB: "00000000-0000-0000-0000-000000000000",
-          },
-        },
-      },
     },
   },
 });
