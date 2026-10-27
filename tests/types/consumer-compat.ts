@@ -21,7 +21,7 @@ export class BindingsEndpoint extends OpenAPIRoute {
 
 export class CustomRouterEndpoint extends OpenAPIRoute {
   async handle() {
-    return { custom: this.params.router.myCustomHelper() };
+    return { custom: this.params.router.myCustomHelper(), original: this.params.router.router.foo };
   }
 }
 

@@ -16,13 +16,6 @@ export type OpenAPIRouterType<M> = {
 };
 
 /**
- * Minimal shape of the underlying router (Hono, itty-router, ...) used by {@link OpenAPIHandler}.
- */
-export type BaseRouter = {
-  get: (path: string, handler: () => Response) => unknown;
-};
-
-/**
  * A route handler function after an {@link OpenAPIRoute} class has been bound to a router.
  */
 export type RouteHandler = (...args: Array<object>) => Promise<Response>;
@@ -50,7 +43,8 @@ export type HttpMethod = "get" | "head" | "post" | "put" | "delete" | "patch";
  * will be excluded from the generated OpenAPI specification by the CLI tool.
  */
 export class OpenAPIHandler {
-  router: BaseRouter;
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access members of the underlying router
+  router: any;
   options: RouterOptions;
   registry: OpenAPIRegistryMerger;
 
@@ -95,7 +89,7 @@ export class OpenAPIHandler {
       validateBasePath(options.base);
     }
 
-    this.router = router as BaseRouter;
+    this.router = router;
     this.options = options || {};
     this.registry = new OpenAPIRegistryMerger();
 
