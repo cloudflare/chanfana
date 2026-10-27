@@ -6,6 +6,12 @@ extendZodWithOpenApi(z);
 
 const DECIMAL_NUMBER_PATTERN = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/;
 
+type ZodConstructor = abstract new (...args: never[]) => z.core.$ZodType;
+
+function hasUnwrap(value: unknown): value is { unwrap: () => unknown } {
+  return typeof value === "object" && value !== null && "unwrap" in value && typeof value.unwrap === "function";
+}
+
 /**
  * Helper function to unwrap optional/nullable types and check instanceof.
  * Handles Zod's wrapper types like ZodOptional, ZodNullable, ZodDefault.
@@ -14,20 +20,27 @@ const DECIMAL_NUMBER_PATTERN = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/
  * @param ZodClass - The Zod class to check against
  * @returns True if the unwrapped schema is an instance of ZodClass
  */
-function unwrapAndCheck(schema: any, ZodClass: any): boolean {
+function unwrapAndCheck(schema: unknown, ZodClass: ZodConstructor): boolean {
   let current = schema;
   // Check first before unwrapping (important for arrays which also have .unwrap())
   if (current instanceof ZodClass) {
     return true;
   }
   // Unwrap optional/nullable/default wrappers
-  while (current && typeof current.unwrap === "function") {
+  while (hasUnwrap(current)) {
     current = current.unwrap();
     if (current instanceof ZodClass) {
       return true;
     }
   }
   return false;
+}
+
+function getEntries(data: object): Iterable<[string, unknown]> {
+  if ("entries" in data && typeof data.entries === "function") {
+    return data.entries() as Iterable<[string, unknown]>;
+  }
+  return Object.entries(data);
 }
 
 /**
@@ -46,56 +59,62 @@ function unwrapAndCheck(schema: any, ZodClass: any): boolean {
  * @param schema - Optional Zod schema to guide coercion
  * @returns Coerced data object or null if empty
  */
-export function coerceInputs(data: Record<string, any>, schema?: RouteParameter): Record<string, any> | null {
+export function coerceInputs(
+  data: URLSearchParams | object,
+  schema?: RouteParameter,
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, callers read coerced values without narrowing
+): Record<string, any> | null {
   // For older node versions, searchParams is just an object without the size property
-  if (data.size === 0 || (data.size === undefined && typeof data === "object" && Object.keys(data).length === 0)) {
+  const size: unknown = Reflect.get(data, "size");
+  if (size === 0 || (size === undefined && typeof data === "object" && Object.keys(data).length === 0)) {
     return null;
   }
 
-  const params: Record<string, any> = {};
-  const entries = data.entries ? data.entries() : Object.entries(data);
-  for (let [key, value] of entries) {
+  const shape: Record<string, unknown> | undefined = (schema as AnyZodObject | undefined)?.shape;
+  const params: Record<string, unknown> = {};
+  for (const [key, rawValue] of getEntries(data)) {
     // Query, path and headers can be empty strings, that should equal to null as nothing was provided
-    if (value === "") {
-      value = null;
-    }
+    const value = rawValue === "" ? null : rawValue;
 
-    if (params[key] === undefined) {
+    const existing = params[key];
+    if (existing === undefined) {
       params[key] = value;
-    } else if (!Array.isArray(params[key])) {
-      params[key] = [params[key], value];
+    } else if (Array.isArray(existing)) {
+      existing.push(value);
     } else {
-      params[key].push(value);
+      params[key] = [existing, value];
     }
 
-    let innerType;
-    if ((schema as AnyZodObject)?.shape?.[key]) {
-      innerType = (schema as AnyZodObject).shape[key];
+    let innerType: unknown;
+    if (shape?.[key]) {
+      innerType = shape[key];
     } else if (schema) {
       // Fallback for Zod effects
       innerType = schema;
     }
 
+    const current = params[key];
+
     // Soft transform query strings into expected types
-    if (innerType && params[key] !== null) {
-      if (unwrapAndCheck(innerType, z.ZodArray) && !Array.isArray(params[key])) {
-        params[key] = [params[key]];
-      } else if (unwrapAndCheck(innerType, z.ZodBoolean) && typeof params[key] === "string") {
-        const _val = params[key].toLowerCase().trim();
+    if (innerType && current !== null) {
+      if (unwrapAndCheck(innerType, z.ZodArray) && !Array.isArray(current)) {
+        params[key] = [current];
+      } else if (unwrapAndCheck(innerType, z.ZodBoolean) && typeof current === "string") {
+        const _val = current.toLowerCase().trim();
         if (_val === "true" || _val === "false") {
           params[key] = _val === "true";
         }
-      } else if (unwrapAndCheck(innerType, z.ZodNumber) && typeof params[key] === "string") {
-        const numericValue = params[key].trim();
+      } else if (unwrapAndCheck(innerType, z.ZodNumber) && typeof current === "string") {
+        const numericValue = current.trim();
         params[key] = DECIMAL_NUMBER_PATTERN.test(numericValue) ? Number(numericValue) : Number.NaN;
-      } else if (unwrapAndCheck(innerType, z.ZodBigInt) && typeof params[key] === "string") {
+      } else if (unwrapAndCheck(innerType, z.ZodBigInt) && typeof current === "string") {
         try {
-          params[key] = BigInt(params[key]);
+          params[key] = BigInt(current);
         } catch {
           // If BigInt conversion fails, leave as string for Zod to handle validation
         }
-      } else if (unwrapAndCheck(innerType, z.ZodDate) && typeof params[key] === "string") {
-        params[key] = new Date(params[key]);
+      } else if (unwrapAndCheck(innerType, z.ZodDate) && typeof current === "string") {
+        params[key] = new Date(current);
       }
     }
   }

@@ -49,7 +49,9 @@ class UserReadEndpoint extends ReadEndpoint {
   async fetch(filters: ListFilters): Promise<User | null> {
     // Extract id from filters
     const idFilter = filters.filters.find((f) => f.field === "id");
-    if (!idFilter) return null;
+    if (!idFilter) {
+      return null;
+    }
 
     const user = mockDB[idFilter.value as number];
     return user || null;
@@ -68,7 +70,9 @@ class UserUpdateEndpoint extends UpdateEndpoint {
 
   async getObject(filters: UpdateFilters): Promise<User | null> {
     const idFilter = filters.filters.find((f) => f.field === "id");
-    if (!idFilter) return null;
+    if (!idFilter) {
+      return null;
+    }
 
     const user = mockDB[idFilter.value as number];
     return user || null;
@@ -102,7 +106,9 @@ class UserDeleteEndpoint extends DeleteEndpoint {
 
   async getObject(filters: Filters): Promise<User | null> {
     const idFilter = filters.filters.find((f) => f.field === "id");
-    if (!idFilter) return null;
+    if (!idFilter) {
+      return null;
+    }
 
     const user = mockDB[idFilter.value as number];
     return user || null;
@@ -150,8 +156,12 @@ class UserListEndpoint extends ListEndpoint {
       const field = filters.options.order_by as string;
       const direction = filters.options.order_by_direction || "asc";
       users.sort((a: any, b: any) => {
-        if (a[field] < b[field]) return direction === "asc" ? -1 : 1;
-        if (a[field] > b[field]) return direction === "asc" ? 1 : -1;
+        if (a[field] < b[field]) {
+          return direction === "asc" ? -1 : 1;
+        }
+        if (a[field] > b[field]) {
+          return direction === "asc" ? 1 : -1;
+        }
         return 0;
       });
     }
@@ -1017,8 +1027,12 @@ describe("ListEndpoint Advanced Features", () => {
         const field = filters.options.order_by as string;
         const direction = filters.options.order_by_direction || "asc";
         products.sort((a: any, b: any) => {
-          if (a[field] < b[field]) return direction === "asc" ? -1 : 1;
-          if (a[field] > b[field]) return direction === "asc" ? 1 : -1;
+          if (a[field] < b[field]) {
+            return direction === "asc" ? -1 : 1;
+          }
+          if (a[field] > b[field]) {
+            return direction === "asc" ? 1 : -1;
+          }
           return 0;
         });
       }
@@ -1154,8 +1168,12 @@ describe("ListEndpoint Custom Pagination Parameter Names", () => {
         const field = filters.options.sort as string;
         const dir = (filters.options.direction as string) || "asc";
         items.sort((a: any, b: any) => {
-          if (a[field] < b[field]) return dir === "asc" ? -1 : 1;
-          if (a[field] > b[field]) return dir === "asc" ? 1 : -1;
+          if (a[field] < b[field]) {
+            return dir === "asc" ? -1 : 1;
+          }
+          if (a[field] > b[field]) {
+            return dir === "asc" ? 1 : -1;
+          }
           return 0;
         });
       }
@@ -1267,8 +1285,12 @@ describe("ListEndpoint Partial Custom Pagination Parameter Names", () => {
         const field = filters.options.order_by as string;
         const dir = (filters.options.order_by_direction as string) || "asc";
         items.sort((a: any, b: any) => {
-          if (a[field] < b[field]) return dir === "asc" ? -1 : 1;
-          if (a[field] > b[field]) return dir === "asc" ? 1 : -1;
+          if (a[field] < b[field]) {
+            return dir === "asc" ? -1 : 1;
+          }
+          if (a[field] > b[field]) {
+            return dir === "asc" ? 1 : -1;
+          }
           return 0;
         });
       }
@@ -1357,7 +1379,9 @@ describe("UpdateEndpoint with Zod 4 Optional Defaults", () => {
 
     async getObject(filters: UpdateFilters): Promise<UserWithDefaults | null> {
       const idFilter = filters.filters.find((f) => f.field === "id");
-      if (!idFilter) return null;
+      if (!idFilter) {
+        return null;
+      }
 
       const user = mockZod4DB[idFilter.value as number];
       return user || null;
@@ -1375,7 +1399,9 @@ describe("UpdateEndpoint with Zod 4 Optional Defaults", () => {
 
   beforeEach(() => {
     // Clear and setup test data
-    Object.keys(mockZod4DB).forEach((key) => delete mockZod4DB[key]);
+    for (const key of Object.keys(mockZod4DB)) {
+      delete mockZod4DB[key];
+    }
   });
 
   it("should NOT overwrite fields with defaults when not provided in request", async () => {

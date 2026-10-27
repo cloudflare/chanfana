@@ -10,6 +10,7 @@ import {
   metaSchemaProps,
   type O,
 } from "./types";
+import { keysMask } from "./utils";
 
 export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
   // @ts-expect-error
@@ -19,7 +20,7 @@ export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> exte
     return MetaGenerator(this._meta);
   }
 
-  getSchema() {
+  override getSchema() {
     if (
       !this.meta.pathParameters &&
       this.meta.model.primaryKeys.sort().toString() !== this.params.urlParams.sort().toString()
@@ -32,9 +33,7 @@ export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> exte
     const inputPathParameters = this.meta.pathParameters ?? this.meta.model.primaryKeys;
 
     //const queryParameters = this.model.omit((this.primaryKey || []).reduce((a, v) => ({ ...a, [v]: true }), {}));
-    const pathParameters = this.meta.fields.pick(
-      (inputPathParameters || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
-    );
+    const pathParameters = this.meta.fields.pick(keysMask(inputPathParameters || []));
 
     return {
       request: {
@@ -97,7 +96,7 @@ export class ReadEndpoint<HandleArgs extends Array<object> = Array<object>> exte
     return null;
   }
 
-  async handle(..._args: HandleArgs) {
+  override async handle(..._args: HandleArgs) {
     let filters = await this.getFilters();
 
     filters = await this.before(filters);

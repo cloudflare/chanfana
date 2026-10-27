@@ -3,6 +3,7 @@ import { contentJson } from "../contentTypes";
 import { NotFoundException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
 import { type FilterCondition, type Filters, MetaGenerator, type MetaInput, metaSchemaProps, type O } from "./types";
+import { keysMask } from "./utils";
 
 export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
   // @ts-expect-error
@@ -12,15 +13,11 @@ export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return MetaGenerator(this._meta);
   }
 
-  getSchema() {
+  override getSchema() {
     const urlParams = this.meta.pathParameters ?? this.params.urlParams ?? [];
 
-    const bodyParameters = this.meta.fields
-      .pick((this.meta.model.primaryKeys || []).reduce((a, v) => ({ ...a, [v]: true }), {}))
-      .omit(urlParams.reduce((a, v) => ({ ...a, [v]: true }), {}));
-    const pathParameters = this.meta.fields
-      .pick((this.meta.model.primaryKeys || []).reduce((a, v) => ({ ...a, [v]: true }), {}))
-      .pick(urlParams.reduce((a, v) => ({ ...a, [v]: true }), {}));
+    const bodyParameters = this.meta.fields.pick(keysMask(this.meta.model.primaryKeys || [])).omit(keysMask(urlParams));
+    const pathParameters = this.meta.fields.pick(keysMask(this.meta.model.primaryKeys || [])).pick(keysMask(urlParams));
 
     return {
       request: {
@@ -85,7 +82,7 @@ export class DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return null;
   }
 
-  async handle(..._args: HandleArgs) {
+  override async handle(..._args: HandleArgs) {
     let filters = await this.getFilters();
 
     const oldObj = await this.getObject(filters);

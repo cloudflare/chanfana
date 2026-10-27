@@ -12,6 +12,7 @@ import {
   type UpdatedData,
   type UpdateFilters,
 } from "./types";
+import { keysMask } from "./utils";
 
 export class UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
   // @ts-expect-error
@@ -21,13 +22,9 @@ export class UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return MetaGenerator(this._meta);
   }
 
-  getSchema() {
-    const bodyParameters = this.meta.fields.omit(
-      (this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
-    );
-    const pathParameters = this.meta.model.schema.pick(
-      (this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
-    );
+  override getSchema() {
+    const bodyParameters = this.meta.fields.omit(keysMask(this.params.urlParams || []));
+    const pathParameters = this.meta.model.schema.pick(keysMask(this.params.urlParams || []));
 
     return {
       request: {
@@ -127,7 +124,7 @@ export class UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return oldObj;
   }
 
-  async handle(..._args: HandleArgs) {
+  override async handle(..._args: HandleArgs) {
     const initialFilters = await this.getFilters();
 
     const oldObj = await this.getObject(initialFilters);

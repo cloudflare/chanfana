@@ -1,7 +1,8 @@
 import { OpenApiGeneratorV3, OpenApiGeneratorV31 } from "@asteasolutions/zod-to-openapi";
 import { dump } from "js-yaml";
 import { z } from "zod";
-import type { OpenAPIRouteSchema, RouterOptions } from "./types";
+import { isOpenAPIRouteClass } from "./route";
+import type { OpenAPIRouteSchema, RouteOptions, RouterOptions } from "./types";
 import { getReDocUI, getSwaggerUI } from "./ui";
 import { validateBasePath } from "./utils";
 import { OpenAPIRegistryMerger } from "./zod/registry";
@@ -10,7 +11,23 @@ export type OpenAPIRouterType<M> = {
   original: M;
   options: RouterOptions;
   registry: OpenAPIRegistryMerger;
+  // biome-ignore lint/suspicious/noExplicitAny: public API, consumers index into the generated document freely (e.g. `schema.paths["/x"].get`)
   schema: any;
+};
+
+/**
+ * A route handler function after an {@link OpenAPIRoute} class has been bound to a router.
+ */
+export type RouteHandler = (...args: Array<object>) => Promise<Response>;
+
+/**
+ * Shape of a chanfana-wrapped router when it is nested inside another one.
+ */
+export type NestedRouter = {
+  options?: RouterOptions;
+  registry: OpenAPIRegistryMerger;
+  fetch: unknown;
+  generatedOperationIds?: unknown;
 };
 
 /**
@@ -26,6 +43,7 @@ export type HttpMethod = "get" | "head" | "post" | "put" | "delete" | "patch";
  * will be excluded from the generated OpenAPI specification by the CLI tool.
  */
 export class OpenAPIHandler {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access members of the underlying router
   router: any;
   options: RouterOptions;
   registry: OpenAPIRegistryMerger;
@@ -58,11 +76,11 @@ export class OpenAPIHandler {
    * Subclasses (e.g. HonoOpenAPIHandler) can override this to add
    * error conversion or other adapter-specific behavior.
    */
-  protected wrapHandler(handler: (...args: any[]) => Promise<Response>): (...args: any[]) => Promise<Response> {
+  protected wrapHandler(handler: RouteHandler): RouteHandler {
     return handler;
   }
 
-  constructor(router: any, options?: RouterOptions) {
+  constructor(router: unknown, options?: RouterOptions) {
     if (!router) {
       throw new Error("Router is required");
     }
@@ -178,7 +196,7 @@ export class OpenAPIHandler {
    * @param params - Nested router parameters
    * @returns Array containing the nested router's fetch handler
    */
-  registerNestedRouter(params: { method: string; nestedRouter: any; path?: string }) {
+  registerNestedRouter(params: { method: string; nestedRouter: NestedRouter; path?: string | undefined }) {
     // Only overwrite the path if the nested router doesn't have a base already
     const path = params.nestedRouter.options?.base
       ? undefined
@@ -306,7 +324,7 @@ export class OpenAPIHandler {
    * @param params - Route registration parameters
    * @returns Array of wrapped handlers
    */
-  registerRoute(params: { method: string; path: string; handlers: any[]; doRegister?: boolean }) {
+  registerRoute(params: { method: string; path: string; handlers: unknown[]; doRegister?: boolean }): unknown[] {
     const parsedRoute = this.parseRoute(params.path);
 
     const parsedParams = ((this.options.base || "") + params.path).match(/:(\w+)/g);
@@ -319,15 +337,16 @@ export class OpenAPIHandler {
     let namedOperationId: string | undefined;
 
     for (const handler of params.handlers) {
-      if (handler.name) {
+      if (typeof handler === "function" && handler.name) {
         namedOperationId = this.sanitizeOperationId(`${params.method}_${handler.name}`);
       }
 
-      if (handler.isRoute === true) {
+      if (isOpenAPIRouteClass(handler)) {
+        // Only route info is needed to build the schema, the instance is never executed
         schema = new handler({
           route: parsedRoute,
           urlParams: urlParams,
-        }).getSchemaZod();
+        } as RouteOptions).getSchemaZod();
         break;
       }
     }
@@ -354,15 +373,7 @@ export class OpenAPIHandler {
 
       if (urlParams.length > 0) {
         schema.request = {
-          params: z.object(
-            urlParams.reduce(
-              (obj, item) =>
-                Object.assign(obj, {
-                  [item]: z.string(),
-                }),
-              {},
-            ),
-          ),
+          params: z.object(Object.fromEntries(urlParams.map((item) => [item, z.string()]))),
         };
       }
     } else {
@@ -388,18 +399,10 @@ export class OpenAPIHandler {
       }
     }
 
-    return params.handlers.map((handler: any) => {
-      if (handler.isRoute) {
-        const fn = (...params: any[]) =>
-          new handler({
-            router: this,
-            route: parsedRoute,
-            urlParams: urlParams,
-            raiseOnError: this.options?.raiseOnError,
-            validateResponse: this.options?.validateResponse,
-            raiseUnknownParameters: this.options?.raiseUnknownParameters,
-            passthroughErrors: this.options?.passthroughErrors,
-          }).execute(...params);
+    return params.handlers.map((handler) => {
+      if (isOpenAPIRouteClass(handler)) {
+        const fn: RouteHandler = (...args) =>
+          new handler(this.buildRouteOptions(parsedRoute, urlParams)).execute(...args);
         return this.wrapHandler(fn);
       }
 
@@ -408,10 +411,25 @@ export class OpenAPIHandler {
   }
 
   /**
+   * Builds the options passed to an {@link OpenAPIRoute} instance for a registered route.
+   */
+  private buildRouteOptions(route: string, urlParams: string[]): RouteOptions {
+    return {
+      router: this,
+      route,
+      urlParams,
+      raiseOnError: this.options?.raiseOnError,
+      validateResponse: this.options?.validateResponse,
+      raiseUnknownParameters: this.options?.raiseUnknownParameters,
+      passthroughErrors: this.options?.passthroughErrors,
+    };
+  }
+
+  /**
    * Handles common proxy properties for the wrapped router.
    * Provides access to isChanfana flag, original router, schema, and registry.
    */
-  handleCommonProxy(_target: any, prop: string, ..._args: any[]) {
+  handleCommonProxy(_target: unknown, prop: string | symbol, ..._args: unknown[]) {
     // This is a hack to allow older versions of wrangler to use this library
     // https://github.com/cloudflare/workers-sdk/issues/5420
     if (prop === "middleware") {
@@ -445,7 +463,7 @@ export class OpenAPIHandler {
    * Must be implemented by subclasses.
    * @param _args - Handler arguments
    */
-  getRequest(_args: any[]): Request {
+  getRequest(_args: unknown[]): Request {
     throw new Error("getRequest not implemented");
   }
 
@@ -454,7 +472,8 @@ export class OpenAPIHandler {
    * Must be implemented by subclasses.
    * @param _args - Handler arguments
    */
-  getUrlParams(_args: any[]): Record<string, any> {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  getUrlParams(_args: unknown[]): Record<string, any> {
     throw new Error("getUrlParams not implemented");
   }
 
@@ -463,7 +482,8 @@ export class OpenAPIHandler {
    * Must be implemented by subclasses.
    * @param _args - Handler arguments
    */
-  getBindings(_args: any[]): Record<string, any> {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  getBindings(_args: unknown[]): Record<string, any> {
     throw new Error("getBindings not implemented");
   }
 }

@@ -2,10 +2,13 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 
 // @ts-expect-error
 export class OpenAPIRegistryMerger extends OpenAPIRegistry {
-  public _definitions: { type?: string; route: { path: string; method?: string; operationId?: string } }[] = [];
+  public override _definitions: { type?: string; route: { path: string; method?: string; operationId?: string } }[] =
+    [];
 
   merge(registry: OpenAPIRegistryMerger, basePath?: string): void {
-    if (!registry?._definitions) return;
+    if (!registry?._definitions) {
+      return;
+    }
 
     for (const definition of registry._definitions) {
       if (definition.type !== "route") {

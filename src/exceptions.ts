@@ -12,7 +12,7 @@ import { contentJson } from "./contentTypes";
  */
 export class ApiException extends Error {
   isVisible = true;
-  message: string;
+  override message: string;
   default_message = "Internal Error";
   status = 500;
   code = 7000;
@@ -70,19 +70,20 @@ export class ApiException extends Error {
  * ```
  */
 export class InputValidationException extends ApiException {
-  isVisible = true;
-  default_message = "Input Validation Error";
-  status = 400;
-  code = 7001;
-  path = null;
-  includesPath = true;
+  override isVisible = true;
+  override default_message = "Input Validation Error";
+  override status = 400;
+  override code = 7001;
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers index into the error path
+  path: any = null;
+  override includesPath = true;
 
-  constructor(message?: string, path?: any) {
+  constructor(message?: string, path?: unknown) {
     super(message);
     this.path = path;
   }
 
-  buildResponse() {
+  override buildResponse() {
     return [
       {
         code: this.code,
@@ -106,9 +107,9 @@ export class InputValidationException extends ApiException {
  * ```
  */
 export class MultiException extends ApiException {
-  isVisible = true;
+  override isVisible = true;
   errors: Array<ApiException>;
-  status = 400;
+  override status = 400;
 
   constructor(errors: Array<ApiException>) {
     super("Multiple Exceptions");
@@ -126,7 +127,7 @@ export class MultiException extends ApiException {
     }
   }
 
-  buildResponse() {
+  override buildResponse() {
     return this.errors.flatMap((err) => err.buildResponse());
   }
 }
@@ -141,10 +142,10 @@ export class MultiException extends ApiException {
  * ```
  */
 export class NotFoundException extends ApiException {
-  isVisible = true;
-  default_message = "Not Found";
-  status = 404;
-  code = 7002;
+  override isVisible = true;
+  override default_message = "Not Found";
+  override status = 404;
+  override code = 7002;
 }
 
 /**
@@ -152,10 +153,10 @@ export class NotFoundException extends ApiException {
  * Used when authentication is required but not provided or invalid.
  */
 export class UnauthorizedException extends ApiException {
-  isVisible = true;
-  default_message = "Unauthorized";
-  status = 401;
-  code = 7003;
+  override isVisible = true;
+  override default_message = "Unauthorized";
+  override status = 401;
+  override code = 7003;
 }
 
 /**
@@ -163,10 +164,10 @@ export class UnauthorizedException extends ApiException {
  * Used when the user is authenticated but doesn't have permission.
  */
 export class ForbiddenException extends ApiException {
-  isVisible = true;
-  default_message = "Forbidden";
-  status = 403;
-  code = 7004;
+  override isVisible = true;
+  override default_message = "Forbidden";
+  override status = 403;
+  override code = 7004;
 }
 
 /**
@@ -174,10 +175,10 @@ export class ForbiddenException extends ApiException {
  * Used when the HTTP method is not supported for the requested resource.
  */
 export class MethodNotAllowedException extends ApiException {
-  isVisible = true;
-  default_message = "Method Not Allowed";
-  status = 405;
-  code = 7005;
+  override isVisible = true;
+  override default_message = "Method Not Allowed";
+  override status = 405;
+  override code = 7005;
 }
 
 /**
@@ -185,10 +186,10 @@ export class MethodNotAllowedException extends ApiException {
  * Used when the request conflicts with the current state (e.g., duplicate resource).
  */
 export class ConflictException extends ApiException {
-  isVisible = true;
-  default_message = "Conflict";
-  status = 409;
-  code = 7006;
+  override isVisible = true;
+  override default_message = "Conflict";
+  override status = 409;
+  override code = 7006;
 }
 
 /**
@@ -196,19 +197,20 @@ export class ConflictException extends ApiException {
  * Used when the request is well-formed but semantically incorrect.
  */
 export class UnprocessableEntityException extends ApiException {
-  isVisible = true;
-  default_message = "Unprocessable Entity";
-  status = 422;
-  code = 7007;
-  includesPath = true;
+  override isVisible = true;
+  override default_message = "Unprocessable Entity";
+  override status = 422;
+  override code = 7007;
+  override includesPath = true;
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers index into the error path
   path: any = null;
 
-  constructor(message?: string, path?: any) {
+  constructor(message?: string, path?: unknown) {
     super(message);
     this.path = path;
   }
 
-  buildResponse() {
+  override buildResponse() {
     return [
       {
         code: this.code,
@@ -224,11 +226,11 @@ export class UnprocessableEntityException extends ApiException {
  * Used when the user has sent too many requests in a given time period.
  */
 export class TooManyRequestsException extends ApiException {
-  isVisible = true;
-  default_message = "Too Many Requests";
-  status = 429;
-  code = 7008;
-  retryAfter?: number;
+  override isVisible = true;
+  override default_message = "Too Many Requests";
+  override status = 429;
+  override code = 7008;
+  retryAfter?: number | undefined;
 
   constructor(message?: string, retryAfter?: number) {
     super(message);
@@ -244,10 +246,10 @@ export class TooManyRequestsException extends ApiException {
  * Use the base ApiException when the error message is safe to expose.
  */
 export class InternalServerErrorException extends ApiException {
-  isVisible = false;
-  default_message = "Internal Server Error";
-  status = 500;
-  code = 7009;
+  override isVisible = false;
+  override default_message = "Internal Server Error";
+  override status = 500;
+  override code = 7009;
 }
 
 /**
@@ -255,10 +257,10 @@ export class InternalServerErrorException extends ApiException {
  * Used when an upstream server returns an invalid response.
  */
 export class BadGatewayException extends ApiException {
-  isVisible = true;
-  default_message = "Bad Gateway";
-  status = 502;
-  code = 7010;
+  override isVisible = true;
+  override default_message = "Bad Gateway";
+  override status = 502;
+  override code = 7010;
 }
 
 /**
@@ -266,11 +268,11 @@ export class BadGatewayException extends ApiException {
  * Used when the server is temporarily unavailable (maintenance, overload).
  */
 export class ServiceUnavailableException extends ApiException {
-  isVisible = true;
-  default_message = "Service Unavailable";
-  status = 503;
-  code = 7011;
-  retryAfter?: number;
+  override isVisible = true;
+  override default_message = "Service Unavailable";
+  override status = 503;
+  override code = 7011;
+  retryAfter?: number | undefined;
 
   constructor(message?: string, retryAfter?: number) {
     super(message);
@@ -283,10 +285,10 @@ export class ServiceUnavailableException extends ApiException {
  * Used when an upstream server doesn't respond in time.
  */
 export class GatewayTimeoutException extends ApiException {
-  isVisible = true;
-  default_message = "Gateway Timeout";
-  status = 504;
-  code = 7012;
+  override isVisible = true;
+  override default_message = "Gateway Timeout";
+  override status = 504;
+  override code = 7012;
 }
 
 /**
@@ -296,14 +298,18 @@ export class GatewayTimeoutException extends ApiException {
  * Error details are hidden from clients (isVisible=false) and logged via console.error.
  */
 export class ResponseValidationException extends ApiException {
-  isVisible = false;
-  default_message = "Response Validation Error";
-  status = 500;
-  code = 7013;
+  override isVisible = false;
+  override default_message = "Response Validation Error";
+  override status = 500;
+  override code = 7013;
 
   constructor(message?: string, options?: ErrorOptions) {
     super(message ?? "");
-    if (message) this.message = message;
-    if (options?.cause) this.cause = options.cause;
+    if (message) {
+      this.message = message;
+    }
+    if (options?.cause) {
+      this.cause = options.cause;
+    }
   }
 }

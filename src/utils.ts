@@ -14,15 +14,25 @@ export function validateBasePath(base: string): void {
   }
 }
 
-export function jsonResp(data: any, params?: object): Response {
+export function jsonResp(data: unknown, params?: object): Response {
+  const init = params as ResponseInit | undefined;
   return new Response(JSON.stringify(data), {
     headers: {
       "content-type": "application/json;charset=UTF-8",
     },
-    // @ts-expect-error
-    status: params?.status ? params.status : 200,
-    ...params,
+    status: init?.status ? init.status : 200,
+    ...init,
   });
+}
+
+type ApiExceptionLike = Error & {
+  buildResponse: () => unknown;
+  status: number;
+  retryAfter?: number;
+};
+
+function isApiExceptionLike(e: unknown): e is ApiExceptionLike {
+  return e instanceof Error && "buildResponse" in e && typeof e.buildResponse === "function";
 }
 
 /**
@@ -51,8 +61,8 @@ export function formatChanfanaError(e: unknown): Response | null {
   }
 
   // ApiException: check by shape to avoid circular dependency with exceptions.ts
-  if (e instanceof Error && "buildResponse" in e && typeof (e as any).buildResponse === "function") {
-    const apiError = e as unknown as { buildResponse: () => any; status: number; retryAfter?: number };
+  if (isApiExceptionLike(e)) {
+    const apiError = e;
     const headers: Record<string, string> = {
       "content-type": "application/json;charset=UTF-8",
     };

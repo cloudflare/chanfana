@@ -7,19 +7,28 @@ import { formatChanfanaError, jsonResp } from "./utils";
 
 extendZodWithOpenApi(z);
 
+/** Raw request data collected before Zod validation, see {@link OpenAPIRoute.getUnvalidatedData}. */
+export type UnvalidatedData = {
+  params?: Record<string, unknown> | null;
+  query?: Record<string, unknown>;
+  headers?: Record<string, unknown>;
+  body?: unknown;
+};
+
 /**
  * Base class for all OpenAPI route handlers.
  * Provides request validation, error handling, and response formatting.
  *
  * @template HandleArgs - Router handler arguments type
  */
+// biome-ignore lint/suspicious/noExplicitAny: default keeps `this.args[0].env`-style access working for untyped subclasses
 export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
   /**
    * The main handler method to be implemented by subclasses.
    * @param _args - Handler arguments (context, request, etc. depending on router)
    * @returns Response object or plain object (will be auto-converted to JSON)
    */
-  handle(..._args: any[]): Response | Promise<Response> | object | Promise<object> {
+  handle(..._args: unknown[]): Response | Promise<Response> | object | Promise<object> {
     throw new Error("Method not implemented.");
   }
 
@@ -28,9 +37,10 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
   /** Args the execute() was called with */
   args: HandleArgs;
   /** Cache for validated data - prevents re-validation on multiple calls */
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers read the cached data without narrowing
   validatedData: any = undefined;
   /** Cache for raw request data before Zod applies defaults/transformations */
-  unvalidatedData: any = undefined;
+  unvalidatedData: UnvalidatedData | undefined = undefined;
   /** Route configuration options */
   params: RouteOptions;
   /** OpenAPI schema definition for this route */
@@ -38,7 +48,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 
   constructor(params: RouteOptions) {
     this.params = params;
-    this.args = [] as any;
+    this.args = [] as unknown as HandleArgs;
   }
 
   /**
@@ -47,10 +57,13 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    *
    * @returns Validated data including params, query, headers, and body
    */
+  // biome-ignore lint/suspicious/noExplicitAny: default keeps the historical untyped result when no schema type is passed
   async getValidatedData<S = any>(): Promise<ValidatedData<S>> {
     const request = this.params.router.getRequest(this.args);
 
-    if (this.validatedData !== undefined) return this.validatedData;
+    if (this.validatedData !== undefined) {
+      return this.validatedData;
+    }
 
     const data = await this.validateRequest(request);
 
@@ -65,12 +78,15 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    *
    * @returns Raw request data object
    */
+  // biome-ignore lint/suspicious/noExplicitAny: public API, consumers use `"field" in raw.body` and similar untyped access
   async getUnvalidatedData(): Promise<any> {
-    if (this.unvalidatedData !== undefined) return this.unvalidatedData;
+    if (this.unvalidatedData !== undefined) {
+      return this.unvalidatedData;
+    }
 
     const request = this.params.router.getRequest(this.args);
     const schema: OpenAPIRouteSchema = this.getSchemaZod();
-    const unvalidatedData: any = {};
+    const unvalidatedData: UnvalidatedData = {};
 
     if (schema.request?.params) {
       unvalidatedData.params = coerceInputs(this.params.router.getUrlParams(this.args), schema.request?.params);
@@ -186,13 +202,14 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    * @param args - Handler arguments from the router
    * @returns Response object
    */
-  async execute(...args: HandleArgs) {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, subclass overrides may return non-Response values
+  async execute(...args: HandleArgs): Promise<any> {
     // Reset caches for request isolation
     this.validatedData = undefined;
     this.unvalidatedData = undefined;
     this.args = args;
 
-    let resp;
+    let resp: unknown;
     try {
       resp = await this.handle(...args);
 
@@ -240,17 +257,25 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
   getResponseSchema(statusCode: number): z.ZodType | undefined {
     const schema = this.getSchemaZod();
     const responses = schema.responses;
-    if (!responses) return undefined;
+    if (!responses) {
+      return undefined;
+    }
 
     const responseConfig = responses[String(statusCode)] ?? responses.default;
-    if (!responseConfig) return undefined;
+    if (!responseConfig) {
+      return undefined;
+    }
 
     const jsonContent = responseConfig.content?.["application/json"];
-    if (!jsonContent?.schema) return undefined;
+    if (!jsonContent?.schema) {
+      return undefined;
+    }
 
     // Skip non-Zod schemas (e.g. empty {} from default response)
     const zodSchema = jsonContent.schema;
-    if (!(zodSchema instanceof z.ZodType)) return undefined;
+    if (!(zodSchema instanceof z.ZodType)) {
+      return undefined;
+    }
 
     return zodSchema;
   }
@@ -270,15 +295,21 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    * @throws ZodError if the response body fails schema validation
    * @throws SyntaxError if a Response claims application/json but the body is not valid JSON
    */
-  async validateResponse(resp: any): Promise<any> {
-    if (resp === null || resp === undefined) return resp;
+  async validateResponse(resp: unknown): Promise<unknown> {
+    if (resp === null || resp === undefined) {
+      return resp;
+    }
 
     if (resp instanceof Response) {
       const contentType = resp.headers.get("content-type") || "";
-      if (!contentType.includes("application/json")) return resp;
+      if (!contentType.includes("application/json")) {
+        return resp;
+      }
 
       const responseSchema = this.getResponseSchema(resp.status);
-      if (!responseSchema) return resp;
+      if (!responseSchema) {
+        return resp;
+      }
 
       // Clone before consuming the body stream so the original remains readable on failure
       const cloned = resp.clone();
@@ -309,7 +340,9 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     if (typeof resp === "object") {
       // Plain objects are auto-converted to 200 JSON responses
       const responseSchema = this.getResponseSchema(200);
-      if (!responseSchema) return resp;
+      if (!responseSchema) {
+        return resp;
+      }
 
       return await responseSchema.parseAsync(resp);
     }
@@ -323,13 +356,14 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    * @returns Validated and typed request data
    * @throws ZodError if validation fails
    */
-  async validateRequest(request: Request) {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, the validated shape depends on the subclass schema
+  async validateRequest(request: Request): Promise<any> {
     const schema: OpenAPIRouteSchema = this.getSchemaZod();
 
     // Get unvalidated data (this also stores it in this.unvalidatedData)
     const unvalidatedData = await this.getUnvalidatedData();
 
-    const rawSchema: any = {};
+    const rawSchema: Record<string, z.ZodType> = {};
     if (schema.request?.params) {
       rawSchema.params = schema.request.params;
     }
@@ -338,23 +372,21 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     }
 
     if (schema.request?.headers) {
-      rawSchema.headers = schema.request.headers;
+      rawSchema.headers = schema.request.headers as AnyZodObject;
     }
 
     if (
       !["get", "head"].includes(request.method.toLowerCase()) &&
       schema.request?.body?.content?.["application/json"]?.schema
     ) {
-      rawSchema.body = schema.request.body.content["application/json"].schema;
+      // Non-Zod (plain OpenAPI) body schemas are not supported for validation
+      rawSchema.body = schema.request.body.content["application/json"].schema as z.ZodType;
     }
 
-    let validationSchema: any;
-
-    if (this.params?.raiseUnknownParameters === undefined || this.params?.raiseUnknownParameters === true) {
-      validationSchema = z.strictObject(rawSchema);
-    } else {
-      validationSchema = z.object(rawSchema);
-    }
+    const validationSchema: z.ZodType =
+      this.params?.raiseUnknownParameters === undefined || this.params?.raiseUnknownParameters === true
+        ? z.strictObject(rawSchema)
+        : z.object(rawSchema);
 
     try {
       return await validationSchema.parseAsync(unvalidatedData);
@@ -367,4 +399,16 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       throw e;
     }
   }
+}
+
+/**
+ * Constructor type of any {@link OpenAPIRoute} subclass, as accepted by the router adapters.
+ */
+export type OpenAPIRouteClass = typeof OpenAPIRoute<Array<object>>;
+
+/**
+ * Checks whether a value is an {@link OpenAPIRoute} subclass (as opposed to a plain handler function).
+ */
+export function isOpenAPIRouteClass(value: unknown): value is OpenAPIRouteClass {
+  return typeof value === "function" && "isRoute" in value && Boolean(value.isRoute);
 }

@@ -1,4 +1,5 @@
 import { contentJson, OpenAPIRoute } from "chanfana";
+import type { Context } from "hono";
 import { z } from "zod";
 
 /**
@@ -30,7 +31,7 @@ export class Hello extends OpenAPIRoute {
     },
   };
 
-  async handle(_c: any) {
+  async handle(_c: Context) {
     const data = await this.getValidatedData<typeof this.schema>();
     const { name } = data.query;
 

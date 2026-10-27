@@ -38,7 +38,7 @@ export class D1CreateEndpoint<HandleArgs extends Array<object> = Array<object>> 
    * @returns The created record
    * @throws ApiException on database errors
    */
-  async create(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
+  override async create(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
     const tableName = validateTableName(this.meta.model.tableName);
     const validColumns = this.getValidColumns();
 

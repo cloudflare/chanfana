@@ -3,6 +3,8 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "bundler",
+    // Tests mirror consumer code, which typically does not use `override`
+    "noImplicitOverride": false,
     "types": ["@cloudflare/workers-types/experimental", "@cloudflare/vitest-plugin"]
   },
   "include": ["./**/*.ts", "./bindings.d.ts"]

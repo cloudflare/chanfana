@@ -4,6 +4,7 @@ import type { HeadersObject as HeadersObject31, LinksObject as LinksObject31 } f
 import type { ZodObject, ZodPipe, ZodType, z } from "zod";
 
 // Type alias for compatibility with Zod v4
+// biome-ignore lint/suspicious/noExplicitAny: public alias, `any` keeps z.output<AnyZodObject> loosely typed for consumers
 export type AnyZodObject = ZodObject<any, any>;
 
 export type OrderByDirection = "asc" | "desc";
@@ -25,7 +26,7 @@ export type Except<
   Options extends ExceptOptions = { requireExactProps: false },
 > = {
   [KeyType in keyof ObjectType as Filter<KeyType, KeysType>]: ObjectType[KeyType];
-} & (Options["requireExactProps"] extends true ? Partial<Record<KeysType, never>> : {});
+} & (Options["requireExactProps"] extends true ? Partial<Record<KeysType, never>> : unknown);
 
 export type SetOptional<BaseType, Keys extends keyof BaseType> = Simplify<
   // Pick just the keys that are readonly from the base type.
@@ -63,7 +64,7 @@ export interface ResponseConfig {
   links?: LinksObject;
   content?: ZodContentObject;
 }
-export type RouteParameter = AnyZodObject | ZodPipe<AnyZodObject, any> | undefined;
+export type RouteParameter = AnyZodObject | ZodPipe<AnyZodObject, ZodType> | undefined;
 
 export interface RouterOptions {
   base?: string;
@@ -86,21 +87,22 @@ export interface RouterOptions {
 }
 
 export interface RouteOptions {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, custom router handlers may expose extra members
   router: any;
-  raiseUnknownParameters: boolean;
-  raiseOnError?: boolean;
-  passthroughErrors?: boolean;
-  validateResponse?: boolean;
+  raiseUnknownParameters?: boolean | undefined;
+  raiseOnError?: boolean | undefined;
+  passthroughErrors?: boolean | undefined;
+  validateResponse?: boolean | undefined;
   route: string;
   urlParams: Array<string>;
 }
 
 export type RequestTypes = {
-  body?: ZodRequestBody;
-  params?: AnyZodObject;
-  query?: AnyZodObject;
-  cookies?: AnyZodObject;
-  headers?: AnyZodObject | ZodType<unknown>[];
+  body?: ZodRequestBody | undefined;
+  params?: AnyZodObject | undefined;
+  query?: AnyZodObject | undefined;
+  cookies?: AnyZodObject | undefined;
+  headers?: AnyZodObject | ZodType<unknown>[] | undefined;
 };
 
 // Changes over the original RouteConfig:

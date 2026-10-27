@@ -1,5 +1,5 @@
-export function getSwaggerUI(schemaUrl: string): string {
-  schemaUrl = schemaUrl.replace(/\/+(\/|$)/g, "$1"); // strip double & trailing splash
+export function getSwaggerUI(rawSchemaUrl: string): string {
+  const schemaUrl = rawSchemaUrl.replace(/\/+(\/|$)/g, "$1"); // strip double & trailing splash
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,8 +30,8 @@ export function getSwaggerUI(schemaUrl: string): string {
 </html>`;
 }
 
-export function getReDocUI(schemaUrl: string): string {
-  schemaUrl = schemaUrl.replace(/\/+(\/|$)/g, "$1"); // strip double & trailing splash
+export function getReDocUI(rawSchemaUrl: string): string {
+  const schemaUrl = rawSchemaUrl.replace(/\/+(\/|$)/g, "$1"); // strip double & trailing splash
   return `<!DOCTYPE html>
     <html>
     <head>

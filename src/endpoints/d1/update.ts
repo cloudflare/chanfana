@@ -53,7 +53,7 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
    * @param filters - Filter conditions for finding the object
    * @returns The existing record or null if not found
    */
-  async getObject(filters: Filters): Promise<Record<string, unknown> | null> {
+  override async getObject(filters: Filters): Promise<Record<string, unknown> | null> {
     const tableName = validateTableName(this.meta.model.tableName);
     const safeFilters = this.getSafeFilters(filters);
     const whereClause = buildWhereClause(safeFilters.conditions);
@@ -83,7 +83,7 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
    * @returns The updated record
    * @throws ApiException on database errors
    */
-  async update(_oldObj: O<typeof this._meta>, filters: UpdateFilters): Promise<O<typeof this._meta>> {
+  override async update(_oldObj: O<typeof this._meta>, filters: UpdateFilters): Promise<O<typeof this._meta>> {
     const tableName = validateTableName(this.meta.model.tableName);
     const validColumns = this.getValidColumns();
     const safeFilters = this.getSafeFilters(filters);
