@@ -16,12 +16,15 @@ export class OpenAPIRegistryMerger extends OpenAPIRegistry {
         continue;
       }
 
+      // A child root route ("/") is documented at the base path itself, without a trailing slash
+      const childPath = definition.route.path === "/" ? "" : definition.route.path;
+
       // Always copy the route, so that changes in this registry (like operationId renames) don't leak into the child
       this._definitions.push({
         ...definition,
         route: {
           ...definition.route,
-          path: basePath ? `${basePath}${definition.route.path}` : definition.route.path,
+          path: basePath ? `${basePath}${childPath}` : definition.route.path,
         },
       });
     }

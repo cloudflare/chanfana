@@ -227,9 +227,10 @@ export class OpenAPIHandler {
    * @returns The parsed and formatted path
    */
   parseRoute(path: string): string {
-    return ((this.options.base || "") + path)
+    const route = ((this.options.base || "") + path)
       .replaceAll(/\/+(\/|$)/g, "$1") // strip double & trailing slash
       .replaceAll(/:(\w+)/g, "{$1}"); // convert parameters into openapi compliant
+    return route || "/"; // the root route is "/", openapi paths must start with a slash
   }
 
   /**
