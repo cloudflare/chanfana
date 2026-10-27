@@ -8,6 +8,7 @@ on:
 
 jobs:
   changeset-check:
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     concurrency:
