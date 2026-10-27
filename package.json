@@ -78,7 +78,6 @@
     "@changesets/cli": "^3.0.3",
     "@cloudflare/vitest-plugin": "^1.4.8",
     "@cloudflare/workers-types": "5.20261027.1",
-    "@types/js-yaml": "^4.0.9",
     "@types/node": "26.6.5",
     "@vitest/coverage-istanbul": "^5.0.5",
     "hono": "4.13.14",
@@ -92,10 +91,10 @@
     "wrangler": "4.153.0"
   },
   "dependencies": {
-    "@asteasolutions/zod-to-openapi": "^8.5.0",
-    "js-yaml": "^4.3.1",
-    "openapi3-ts": "^4.6.1",
+    "@asteasolutions/zod-to-openapi": "^9.1.0",
+    "js-yaml": "^5.5.0",
+    "openapi3-ts": "^4.6.2",
     "yargs-parser": "^22.0.0",
-    "zod": "^4.4.3"
+    "zod": "^4.6.7"
   }
 }

@@ -1,5 +1,5 @@
 import { OpenApiGeneratorV3, OpenApiGeneratorV31 } from "@asteasolutions/zod-to-openapi";
-import yaml from "js-yaml";
+import { dump } from "js-yaml";
 import { z } from "zod";
 import type { OpenAPIRouteSchema, RouterOptions } from "./types";
 import { getReDocUI, getSwaggerUI } from "./ui";
@@ -144,7 +144,7 @@ export class OpenAPIHandler {
       // YAML endpoint - use proper regex to only replace trailing .json
       const yamlUrl = openapiUrl.replace(/\.json$/, ".yaml");
       this.router.get(routeBase + yamlUrl, () => {
-        return new Response(yaml.dump(this.getGeneratedSchema()), {
+        return new Response(dump(this.getGeneratedSchema()), {
           headers: {
             "content-type": "text/yaml;charset=UTF-8",
           },
