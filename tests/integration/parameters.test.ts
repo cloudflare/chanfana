@@ -64,6 +64,33 @@ describe("numeric parameter coercion", () => {
   });
 });
 
+class OptionalHeadersEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      headers: z.object({
+        "x-request-id": z.string().optional(),
+        "x-locale": z.string().default("en"),
+      }),
+    },
+  };
+
+  async handle() {
+    return this.getValidatedData<typeof this.schema>();
+  }
+}
+
+const optionalHeadersRouter = fromIttyRouter(AutoRouter());
+optionalHeadersRouter.get("/optional-headers", OptionalHeadersEndpoint);
+
+describe("optional headers", () => {
+  it("accepts a request without optional headers", async () => {
+    const response = await optionalHeadersRouter.fetch(new Request("https://example.com/optional-headers"));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ headers: { "x-locale": "en" } });
+  });
+});
+
 describe("queryParametersValidation", () => {
   it("requiredFields", async () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: "/todos" }));
@@ -566,7 +593,7 @@ describe("bodyParametersValidation", () => {
       errors: [
         {
           code: 7001,
-          message: "Invalid input: expected string, received null",
+          message: "Invalid input: expected string, received undefined",
           path: ["headers", "p_hostname"],
         },
       ],
