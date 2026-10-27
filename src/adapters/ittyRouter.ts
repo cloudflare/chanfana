@@ -35,11 +35,13 @@ export class IttyRouterOpenAPIHandler extends OpenAPIHandler {
     return args[0] as Request;
   }
 
-  override getUrlParams(args: unknown[]): Record<string, unknown> {
-    return (args[0] as { params: Record<string, unknown> }).params;
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  override getUrlParams(args: unknown[]): Record<string, any> {
+    return (args[0] as { params: Record<string, string> }).params;
   }
 
-  override getBindings(args: unknown[]): Record<string, unknown> {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  override getBindings(args: unknown[]): Record<string, any> {
     return args[1] as Record<string, unknown>;
   }
 }

@@ -1,0 +1,10 @@
+{
+  // Type-only consumer compatibility checks, run by `npm test` via `tsc -p tests/types`.
+  // Consumer code typically does not use `override`, so noImplicitOverride is disabled here.
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noImplicitOverride": false,
+    "types": ["@cloudflare/workers-types/experimental"]
+  },
+  "include": ["./**/*.ts"]
+}

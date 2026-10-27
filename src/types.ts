@@ -2,7 +2,6 @@ import type { RouteConfig, ZodMediaTypeObject } from "@asteasolutions/zod-to-ope
 import type { HeadersObject as HeadersObject30, LinksObject as LinksObject30, OpenAPIObject } from "openapi3-ts/oas30";
 import type { HeadersObject as HeadersObject31, LinksObject as LinksObject31 } from "openapi3-ts/oas31";
 import type { ZodObject, ZodPipe, ZodType, z } from "zod";
-import type { OpenAPIHandler } from "./openapi";
 
 // Type alias for compatibility with Zod v4
 // biome-ignore lint/suspicious/noExplicitAny: public alias, `any` keeps z.output<AnyZodObject> loosely typed for consumers
@@ -88,8 +87,9 @@ export interface RouterOptions {
 }
 
 export interface RouteOptions {
-  router: OpenAPIHandler;
-  raiseUnknownParameters: boolean;
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, custom router handlers may expose extra members
+  router: any;
+  raiseUnknownParameters?: boolean | undefined;
   raiseOnError?: boolean | undefined;
   passthroughErrors?: boolean | undefined;
   validateResponse?: boolean | undefined;

@@ -37,7 +37,8 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
   /** Args the execute() was called with */
   args: HandleArgs;
   /** Cache for validated data - prevents re-validation on multiple calls */
-  validatedData: unknown = undefined;
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers read the cached data without narrowing
+  validatedData: any = undefined;
   /** Cache for raw request data before Zod applies defaults/transformations */
   unvalidatedData: UnvalidatedData | undefined = undefined;
   /** Route configuration options */
@@ -61,13 +62,13 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     const request = this.params.router.getRequest(this.args);
 
     if (this.validatedData !== undefined) {
-      return this.validatedData as ValidatedData<S>;
+      return this.validatedData;
     }
 
     const data = await this.validateRequest(request);
 
     this.validatedData = data;
-    return data as ValidatedData<S>;
+    return data;
   }
 
   /**
@@ -201,7 +202,8 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    * @param args - Handler arguments from the router
    * @returns Response object
    */
-  async execute(...args: HandleArgs): Promise<Response> {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, subclass overrides may return non-Response values
+  async execute(...args: HandleArgs): Promise<any> {
     // Reset caches for request isolation
     this.validatedData = undefined;
     this.unvalidatedData = undefined;
@@ -243,8 +245,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       return jsonResp(resp);
     }
 
-    // Responses (and any non-object values) returned by handle() are passed through to the router untouched
-    return resp as Response;
+    return resp;
   }
 
   /**
@@ -355,7 +356,8 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    * @returns Validated and typed request data
    * @throws ZodError if validation fails
    */
-  async validateRequest(request: Request): Promise<unknown> {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, the validated shape depends on the subclass schema
+  async validateRequest(request: Request): Promise<any> {
     const schema: OpenAPIRouteSchema = this.getSchemaZod();
 
     // Get unvalidated data (this also stores it in this.unvalidatedData)

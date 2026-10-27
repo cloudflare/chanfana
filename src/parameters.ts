@@ -59,7 +59,11 @@ function getEntries(data: object): Iterable<[string, unknown]> {
  * @param schema - Optional Zod schema to guide coercion
  * @returns Coerced data object or null if empty
  */
-export function coerceInputs(data: URLSearchParams | object, schema?: RouteParameter): Record<string, unknown> | null {
+export function coerceInputs(
+  data: URLSearchParams | object,
+  schema?: RouteParameter,
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, callers read coerced values without narrowing
+): Record<string, any> | null {
   // For older node versions, searchParams is just an object without the size property
   const size: unknown = Reflect.get(data, "size");
   if (size === 0 || (size === undefined && typeof data === "object" && Object.keys(data).length === 0)) {

@@ -348,7 +348,11 @@ export class OpenAPIHandler {
       }
 
       if (isOpenAPIRouteClass(handler)) {
-        schema = new handler(this.buildRouteOptions(parsedRoute, urlParams)).getSchemaZod();
+        // Only route info is needed to build the schema, the instance is never executed
+        schema = new handler({
+          route: parsedRoute,
+          urlParams: urlParams,
+        } as RouteOptions).getSchemaZod();
         break;
       }
     }
@@ -422,8 +426,7 @@ export class OpenAPIHandler {
       urlParams,
       raiseOnError: this.options?.raiseOnError,
       validateResponse: this.options?.validateResponse,
-      // Intentionally forwarded as-is: undefined means "strict" (see OpenAPIRoute.validateRequest)
-      raiseUnknownParameters: this.options?.raiseUnknownParameters as boolean,
+      raiseUnknownParameters: this.options?.raiseUnknownParameters,
       passthroughErrors: this.options?.passthroughErrors,
     };
   }
@@ -475,7 +478,8 @@ export class OpenAPIHandler {
    * Must be implemented by subclasses.
    * @param _args - Handler arguments
    */
-  getUrlParams(_args: unknown[]): Record<string, unknown> {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  getUrlParams(_args: unknown[]): Record<string, any> {
     throw new Error("getUrlParams not implemented");
   }
 
@@ -484,7 +488,8 @@ export class OpenAPIHandler {
    * Must be implemented by subclasses.
    * @param _args - Handler arguments
    */
-  getBindings(_args: unknown[]): Record<string, unknown> {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  getBindings(_args: unknown[]): Record<string, any> {
     throw new Error("getBindings not implemented");
   }
 }

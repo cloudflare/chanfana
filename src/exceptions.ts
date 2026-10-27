@@ -74,7 +74,8 @@ export class InputValidationException extends ApiException {
   override default_message = "Input Validation Error";
   override status = 400;
   override code = 7001;
-  path: unknown = null;
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers index into the error path
+  path: any = null;
   override includesPath = true;
 
   constructor(message?: string, path?: unknown) {
@@ -201,7 +202,8 @@ export class UnprocessableEntityException extends ApiException {
   override status = 422;
   override code = 7007;
   override includesPath = true;
-  path: unknown = null;
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers index into the error path
+  path: any = null;
 
   constructor(message?: string, path?: unknown) {
     super(message);

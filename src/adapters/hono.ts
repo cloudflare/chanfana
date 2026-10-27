@@ -139,11 +139,13 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
     return (args[0] as Context).req.raw;
   }
 
-  override getUrlParams(args: unknown[]): Record<string, unknown> {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  override getUrlParams(args: unknown[]): Record<string, any> {
     return (args[0] as Context).req.param();
   }
 
-  override getBindings(args: unknown[]): Record<string, unknown> {
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  override getBindings(args: unknown[]): Record<string, any> {
     return (args[0] as Context).env;
   }
 }
