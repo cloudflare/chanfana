@@ -23,7 +23,13 @@
     "indentWidth": 2,
     "lineWidth": 120
   },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
   "javascript": {
     "formatter": {
       "quoteStyle": "double"
@@ -44,20 +50,43 @@
     "rules": {
       "preset": "recommended",
       "complexity": {
-        "noBannedTypes": "off",
-        "noThisInStatic": "off"
+        "noBannedTypes": "error",
+        "noThisInStatic": "error",
+        "useOptionalChain": "error"
+      },
+      "correctness": {
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error"
       },
       "suspicious": {
-        "noExplicitAny": "off",
-        "noImplicitAnyLet": "off",
-        "useIterableCallbackReturn": "off"
+        "noExplicitAny": "error",
+        "noImplicitAnyLet": "error",
+        "useIterableCallbackReturn": "error",
+        "noEvolvingTypes": "error"
       },
       "performance": {
-        "noAccumulatingSpread": "off"
+        "noAccumulatingSpread": "error"
       },
       "style": {
-        "noParameterAssign": "off"
+        "noParameterAssign": "error",
+        "useImportType": "error",
+        "useExportType": "error",
+        "noNonNullAssertion": "error",
+        "useConst": "error",
+        "useBlockStatements": "error"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["tests/**", "template/test/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
+      }
+    }
+  ]
 }

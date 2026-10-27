@@ -46,7 +46,7 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
    * @param filters - Filter conditions and pagination options
    * @returns Object containing results and pagination info
    */
-  async list(filters: {
+  override async list(filters: {
     filters?: Array<{ field: string; operator: string; value: unknown }>;
     options?: ListFilters["options"];
   }) {

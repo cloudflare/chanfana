@@ -181,22 +181,23 @@ export function buildPrimaryKeyFilters(
  * @returns D1Database instance
  * @throws ApiException if binding is not defined or is not a D1 binding
  */
-export function getD1Binding(
-  getBindings: (args: any[]) => Record<string, any>,
-  args: any[],
+export function getD1Binding<Args extends Array<unknown>>(
+  getBindings: (args: Args) => object,
+  args: Args,
   dbName: string,
 ): D1Database {
   const env = getBindings(args);
+  const binding: unknown = Reflect.get(env, dbName);
 
-  if (env[dbName] === undefined) {
+  if (binding === undefined) {
     throw new ApiException(`Binding "${dbName}" is not defined in worker`);
   }
 
-  if (env[dbName].prepare === undefined) {
+  if (Reflect.get(Object(binding), "prepare") === undefined) {
     throw new ApiException(`Binding "${dbName}" is not a D1 binding`);
   }
 
-  return env[dbName];
+  return binding as D1Database;
 }
 
 /**

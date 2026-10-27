@@ -1,6 +1,7 @@
-import type { Hono, Input } from "hono";
+import type { Context, Hono, Input } from "hono";
 import type {
   BlankInput,
+  BlankSchema,
   Env,
   H,
   HandlerResponse,
@@ -10,8 +11,9 @@ import type {
   ToSchema,
   TypedResponse,
 } from "hono/types";
-import { OpenAPIHandler, type OpenAPIRouterType } from "../openapi";
-import type { OpenAPIRoute } from "../route";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { type NestedRouter, OpenAPIHandler, type OpenAPIRouterType, type RouteHandler } from "../openapi";
+import type { OpenAPIRouteClass } from "../route";
 import type { RouterOptions } from "../types";
 import { formatChanfanaError, validateBasePath } from "../utils";
 
@@ -24,14 +26,22 @@ type MergeTypedResponse<T> =
       ? T
       : TypedResponse;
 
+// Mirrors Hono's own `R extends AnyHandlerResponse = DefaultHandlerResponse` handler generics, so that type inference matches Hono's
+// biome-ignore lint/suspicious/noExplicitAny: mirrors Hono's HandlerInterface generics
+type AnyHandlerResponse = HandlerResponse<any>;
+// biome-ignore lint/suspicious/noExplicitAny: mirrors Hono's HandlerInterface generics
+type DefaultHandlerResponse = any;
+
+type HonoMethodFn = (...args: unknown[]) => unknown;
+
 const HIJACKED_METHODS = new Set(["basePath", "on", "route", "delete", "get", "patch", "post", "put", "all"]);
 
 export type HonoOpenAPIRouterType<
   E extends Env = Env,
-  S extends Schema = {},
+  S extends Schema = BlankSchema,
   BasePath extends string = "/",
 > = OpenAPIRouterType<Hono<E, S, BasePath>> & {
-  on(method: string, path: string, endpoint: typeof OpenAPIRoute<any>): Hono<E, S, BasePath>["on"];
+  on(method: string, path: string, endpoint: OpenAPIRouteClass): Hono<E, S, BasePath>["on"];
   on(method: string, path: string, router: Hono<E, S, BasePath>): Hono<E, S, BasePath>["on"];
 
   route<SubPath extends string, SubEnv extends Env, SubSchema extends Schema, SubBasePath extends string>(
@@ -39,34 +49,34 @@ export type HonoOpenAPIRouterType<
     app: HonoOpenAPIRouterType<SubEnv, SubSchema, SubBasePath>,
   ): HonoOpenAPIRouterType<E, MergeSchemaPath<SubSchema, MergePath<BasePath, SubPath>> | S, BasePath>;
 
-  all<P extends string, I extends Input = BlankInput, R extends HandlerResponse<any> = any>(
+  all<P extends string, I extends Input = BlankInput, R extends AnyHandlerResponse = DefaultHandlerResponse>(
     path: P,
-    endpoint: typeof OpenAPIRoute<any> | H,
+    endpoint: OpenAPIRouteClass | H,
   ): HonoOpenAPIRouterType<E, S & ToSchema<"all", MergePath<BasePath, P>, I, MergeTypedResponse<R>>, BasePath>;
 
-  delete<P extends string, I extends Input = BlankInput, R extends HandlerResponse<any> = any>(
+  delete<P extends string, I extends Input = BlankInput, R extends AnyHandlerResponse = DefaultHandlerResponse>(
     path: P,
-    endpoint: typeof OpenAPIRoute<any> | H,
+    endpoint: OpenAPIRouteClass | H,
   ): HonoOpenAPIRouterType<E, S & ToSchema<"delete", MergePath<BasePath, P>, I, MergeTypedResponse<R>>, BasePath>;
   delete(path: string, router: Hono<E, S, BasePath>): Hono<E, S, BasePath>["delete"];
-  get<P extends string, I extends Input = BlankInput, R extends HandlerResponse<any> = any>(
+  get<P extends string, I extends Input = BlankInput, R extends AnyHandlerResponse = DefaultHandlerResponse>(
     path: P,
-    endpoint: typeof OpenAPIRoute<any> | H,
+    endpoint: OpenAPIRouteClass | H,
   ): HonoOpenAPIRouterType<E, S & ToSchema<"get", MergePath<BasePath, P>, I, MergeTypedResponse<R>>, BasePath>;
   get(path: string, router: Hono<E, S, BasePath>): Hono<E, S, BasePath>["get"];
-  patch<P extends string, I extends Input = BlankInput, R extends HandlerResponse<any> = any>(
+  patch<P extends string, I extends Input = BlankInput, R extends AnyHandlerResponse = DefaultHandlerResponse>(
     path: P,
-    endpoint: typeof OpenAPIRoute<any> | H,
+    endpoint: OpenAPIRouteClass | H,
   ): HonoOpenAPIRouterType<E, S & ToSchema<"patch", MergePath<BasePath, P>, I, MergeTypedResponse<R>>, BasePath>;
   patch(path: string, router: Hono<E, S, BasePath>): Hono<E, S, BasePath>["patch"];
-  post<P extends string, I extends Input = BlankInput, R extends HandlerResponse<any> = any>(
+  post<P extends string, I extends Input = BlankInput, R extends AnyHandlerResponse = DefaultHandlerResponse>(
     path: P,
-    endpoint: typeof OpenAPIRoute<any> | H,
+    endpoint: OpenAPIRouteClass | H,
   ): HonoOpenAPIRouterType<E, S & ToSchema<"post", MergePath<BasePath, P>, I, MergeTypedResponse<R>>, BasePath>;
   post(path: string, router: Hono<E, S, BasePath>): Hono<E, S, BasePath>["post"];
-  put<P extends string, I extends Input = BlankInput, R extends HandlerResponse<any> = any>(
+  put<P extends string, I extends Input = BlankInput, R extends AnyHandlerResponse = DefaultHandlerResponse>(
     path: P,
-    endpoint: typeof OpenAPIRoute<any> | H,
+    endpoint: OpenAPIRouteClass | H,
   ): HonoOpenAPIRouterType<E, S & ToSchema<"put", MergePath<BasePath, P>, I, MergeTypedResponse<R>>, BasePath>;
   put(path: string, router: Hono<E, S, BasePath>): Hono<E, S, BasePath>["put"];
   // Hono must be defined last, for the overwrite method to have priority!
@@ -79,8 +89,8 @@ export type HonoOpenAPIRouterType<
  *
  * @returns The detected base path, or undefined if not available or "/"
  */
-function getHonoBasePath(router: any): string | undefined {
-  const bp = router?._basePath;
+function getHonoBasePath(router: unknown): string | undefined {
+  const bp = typeof router === "object" && router !== null ? Reflect.get(router, "_basePath") : undefined;
   if (typeof bp !== "string" || bp === "/") {
     return undefined;
   }
@@ -96,7 +106,7 @@ function getHonoBasePath(router: any): string | undefined {
 }
 
 export class HonoOpenAPIHandler extends OpenAPIHandler {
-  protected get routerHandlesBasePrefix(): boolean {
+  protected override get routerHandlesBasePrefix(): boolean {
     return true;
   }
 
@@ -106,41 +116,57 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
    * flow through Hono's onError handler while preserving chanfana's default
    * error response format via HTTPException.getResponse().
    */
-  protected wrapHandler(handler: (...args: any[]) => Promise<Response>): (...args: any[]) => Promise<Response> {
-    if (this.options?.passthroughErrors) return handler;
+  protected override wrapHandler(handler: RouteHandler): RouteHandler {
+    if (this.options?.passthroughErrors) {
+      return handler;
+    }
 
-    return async (...args: any[]) => {
+    return async (...args) => {
       try {
         return await handler(...args);
       } catch (e) {
         const response = formatChanfanaError(e);
         if (response) {
           const { HTTPException } = await import("hono/http-exception");
-          throw new HTTPException(response.status as any, { res: response });
+          throw new HTTPException(response.status as ContentfulStatusCode, { res: response });
         }
         throw e;
       }
     };
   }
 
-  getRequest(args: any[]) {
-    return args[0].req.raw;
+  override getRequest(args: unknown[]): Request {
+    return (args[0] as Context).req.raw;
   }
 
-  getUrlParams(args: any[]): Record<string, any> {
-    return args[0].req.param();
+  override getUrlParams(args: unknown[]): Record<string, unknown> {
+    return (args[0] as Context).req.param();
   }
 
-  getBindings(args: any[]): Record<string, any> {
-    return args[0].env;
+  override getBindings(args: unknown[]): Record<string, unknown> {
+    return (args[0] as Context).env;
   }
+}
+
+type HonoNestedRouter = NestedRouter & { original: Hono };
+
+function isChanfanaRouter(value: unknown): value is HonoNestedRouter {
+  return typeof value === "object" && value !== null && Reflect.get(value, "isChanfana") === true;
+}
+
+function isRouteLike(value: unknown): boolean {
+  return (
+    (typeof value === "object" || typeof value === "function") &&
+    value !== null &&
+    Boolean(Reflect.get(value, "isRoute"))
+  );
 }
 
 export function fromHono<
   M extends Hono<E, S, BasePath>,
-  E extends Env = M extends Hono<infer E, any, any> ? E : never,
-  S extends Schema = M extends Hono<any, infer S, any> ? S : never,
-  BasePath extends string = M extends Hono<any, any, infer BP> ? BP : never,
+  E extends Env = M extends Hono<infer E, infer _S, infer _BP> ? E : never,
+  S extends Schema = M extends Hono<infer _E, infer S, infer _BP> ? S : never,
+  BasePath extends string = M extends Hono<infer _E, infer _S, infer BP> ? BP : never,
 >(router: M, options?: RouterOptions): HonoOpenAPIRouterType<E, S, BasePath> {
   // Validate base format early, before Hono's basePath() is called.
   // The OpenAPIHandler constructor also validates, but basePath() runs first here.
@@ -172,31 +198,35 @@ export function fromHono<
 
   const openapiRouter = new HonoOpenAPIHandler(basedRouter, effectiveOptions);
 
-  const proxy = new Proxy(basedRouter, {
-    get: (target: any, prop: string, ...args: any[]) => {
-      const _result = openapiRouter.handleCommonProxy(target, prop, ...args);
+  const proxy: object = new Proxy<object>(basedRouter, {
+    get: (target: object, prop: string | symbol, receiver: unknown) => {
+      const _result = openapiRouter.handleCommonProxy(target, prop, receiver);
       if (_result !== undefined) {
         return _result;
       }
 
-      if (typeof target[prop] !== "function") {
-        return target[prop];
+      const value: unknown = Reflect.get(target, prop, receiver);
+      if (typeof value !== "function" || typeof prop !== "string") {
+        return value;
       }
 
-      return (route: string, ...handlers: any[]) => {
+      return (route: string, ...rawHandlers: unknown[]) => {
+        let handlers = rawHandlers;
+
         if (prop !== "fetch") {
-          if (prop === "route" && handlers.length === 1 && handlers[0].isChanfana === true) {
+          const firstHandler = handlers[0];
+          if (prop === "route" && handlers.length === 1 && isChanfanaRouter(firstHandler)) {
             openapiRouter.registerNestedRouter({
               method: "",
-              nestedRouter: handlers[0],
+              nestedRouter: firstHandler,
               path: route,
             });
 
             // Hacky clone
-            const subApp = handlers[0].original.basePath("");
+            const subApp = firstHandler.original.basePath("");
 
             const excludePath = new Set(["/openapi.json", "/openapi.yaml", "/docs", "/redocs"]);
-            subApp.routes = subApp.routes.filter((obj: any) => {
+            subApp.routes = subApp.routes.filter((obj) => {
               return !excludePath.has(obj.path);
             });
 
@@ -204,7 +234,7 @@ export function fromHono<
             return proxy;
           }
 
-          if (prop === "all" && handlers.length === 1 && handlers[0].isRoute) {
+          if (prop === "all" && handlers.length === 1 && isRouteLike(firstHandler)) {
             handlers = openapiRouter.registerRoute({
               method: prop,
               path: route,
@@ -219,7 +249,7 @@ export function fromHono<
             });
           } else if (prop === "on") {
             const methods: string | string[] = route;
-            const paths: string | string[] = handlers.shift();
+            const paths = handlers.shift() as string | string[];
 
             if (Array.isArray(methods) || Array.isArray(paths)) {
               throw new Error("chanfana only supports single method+path on hono.on('method', 'path', EndpointClass)");
@@ -235,7 +265,7 @@ export function fromHono<
           }
         }
 
-        const resp = Reflect.get(target, prop, ...args)(route, ...handlers);
+        const resp = (Reflect.get(target, prop, receiver) as HonoMethodFn)(route, ...handlers);
 
         if (HIJACKED_METHODS.has(prop)) {
           return proxy;

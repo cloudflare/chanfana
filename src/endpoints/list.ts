@@ -12,6 +12,7 @@ import {
   metaSchemaProps,
   type O,
 } from "./types";
+import { keysMask } from "./utils";
 
 export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
   // @ts-expect-error
@@ -38,23 +39,19 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
     return [this.pageFieldName, this.perPageFieldName, this.orderByFieldName, this.orderByDirectionFieldName];
   }
 
-  getSchema() {
-    const parsedQueryParameters = this.meta.fields.pick(
-      (this.filterFields || [])
-        .filter((item) => !new Set(this.params.urlParams || []).has(item))
-        .reduce((a, v) => ({ ...a, [v]: true }), {}),
+  override getSchema() {
+    const urlParams = new Set(this.params.urlParams || []);
+    const filterShape = this.meta.fields.pick(
+      keysMask((this.filterFields || []).filter((item) => !urlParams.has(item))),
     ).shape;
-    const pathParameters = this.meta.fields.pick(
-      (this.params.urlParams || this.meta.model.primaryKeys || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
-    );
+    const pathParameters = this.meta.fields.pick(keysMask(this.params.urlParams || this.meta.model.primaryKeys || []));
 
-    for (const [key, value] of Object.entries(parsedQueryParameters)) {
-      // @ts-expect-error  TODO: check this
-      parsedQueryParameters[key] = (value as AnyZodObject).optional();
+    const parsedQueryParameters: Record<string, z.ZodType> = {};
+    for (const [key, value] of Object.entries(filterShape)) {
+      parsedQueryParameters[key] = (value as z.ZodType).optional();
     }
 
     if (this.searchFields) {
-      // @ts-expect-error  TODO: check this
       parsedQueryParameters[this.searchFieldName] = z
         .string()
         .optional()
@@ -63,7 +60,7 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
         });
     }
 
-    let queryParameters = z
+    let queryParameters: AnyZodObject = z
       .object({
         [this.pageFieldName]: z.number().int().min(1).optional().default(1),
         [this.perPageFieldName]: z.number().int().min(1).max(100).optional().default(20),
@@ -87,7 +84,7 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
           .optional()
           .default(this.defaultOrderByDirection)
           .describe("Order By Direction"),
-      } as any); // Cast needed: computed property keys widen the type beyond what Zod's .extend() accepts
+      });
     }
 
     return {
@@ -163,7 +160,7 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
     };
   }
 
-  async handle(..._args: HandleArgs) {
+  override async handle(..._args: HandleArgs) {
     let filters = await this.getFilters();
 
     filters = await this.before(filters);

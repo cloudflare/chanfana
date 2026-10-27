@@ -3,6 +3,7 @@ import { contentJson } from "../contentTypes";
 import { InputValidationException } from "../exceptions";
 import { OpenAPIRoute } from "../route";
 import { MetaGenerator, type MetaInput, metaSchemaProps, type O } from "./types";
+import { keysMask } from "./utils";
 
 export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> extends OpenAPIRoute<HandleArgs> {
   // @ts-expect-error
@@ -12,13 +13,9 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return MetaGenerator(this._meta);
   }
 
-  getSchema() {
-    const bodyParameters = this.meta.fields.omit(
-      (this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
-    );
-    const pathParameters = this.meta.fields.pick(
-      (this.params.urlParams || []).reduce((a, v) => ({ ...a, [v]: true }), {}),
-    );
+  override getSchema() {
+    const bodyParameters = this.meta.fields.omit(keysMask(this.params.urlParams || []));
+    const pathParameters = this.meta.fields.pick(keysMask(this.params.urlParams || []));
 
     return {
       request: {
@@ -48,15 +45,16 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
   async getObject(): Promise<O<typeof this._meta>> {
     const data = await this.getValidatedData();
 
-    const newData: any = {
+    const newData: Record<string, unknown> = {
       ...(data.body as object),
     };
+    const params = data.params as Record<string, unknown> | undefined;
 
     for (const param of this.params.urlParams) {
-      newData[param] = (data.params as any)[param];
+      newData[param] = params?.[param];
     }
 
-    return newData;
+    return newData as O<typeof this._meta>;
   }
 
   async before(data: O<typeof this._meta>): Promise<O<typeof this._meta>> {
@@ -71,7 +69,7 @@ export class CreateEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     return data;
   }
 
-  async handle(..._args: HandleArgs) {
+  override async handle(..._args: HandleArgs) {
     let obj = await this.getObject();
 
     obj = await this.before(obj);

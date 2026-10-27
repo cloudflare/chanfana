@@ -48,7 +48,7 @@ export class D1DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> 
    * @param filters - Filter conditions for finding the object
    * @returns The existing record or null if not found
    */
-  async getObject(filters: Filters): Promise<O<typeof this._meta> | null> {
+  override async getObject(filters: Filters): Promise<O<typeof this._meta> | null> {
     const tableName = validateTableName(this.meta.model.tableName);
     const safeFilters = this.getSafeFilters(filters);
     const whereClause = buildWhereClause(safeFilters.conditions);
@@ -78,7 +78,7 @@ export class D1DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> 
    * @returns The deleted record or null if deletion failed
    * @throws ApiException on database errors
    */
-  async delete(oldObj: O<typeof this._meta>, filters: Filters): Promise<O<typeof this._meta> | null> {
+  override async delete(oldObj: O<typeof this._meta>, filters: Filters): Promise<O<typeof this._meta> | null> {
     const tableName = validateTableName(this.meta.model.tableName);
     const safeFilters = this.getSafeFilters(filters);
     const whereClause = buildWhereClause(safeFilters.conditions);

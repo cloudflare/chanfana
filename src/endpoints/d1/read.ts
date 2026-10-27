@@ -34,7 +34,7 @@ export class D1ReadEndpoint<HandleArgs extends Array<object> = Array<object>> ex
    * @param filters - Filter conditions for the query
    * @returns The found record or null if not found
    */
-  async fetch(filters: ListFilters): Promise<O<typeof this._meta> | null> {
+  override async fetch(filters: ListFilters): Promise<O<typeof this._meta> | null> {
     const tableName = validateTableName(this.meta.model.tableName);
     const validColumns = this.getValidColumns();
 
