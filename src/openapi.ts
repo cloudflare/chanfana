@@ -188,7 +188,8 @@ export class OpenAPIHandler {
             .replaceAll(/:(\w+)/g, "{$1}") // convert parameters into openapi compliant
         : undefined;
 
-    const nestedGeneratedIds: ReadonlySet<string> = params.nestedRouter.generatedOperationIds ?? new Set();
+    const nestedIds = params.nestedRouter.generatedOperationIds;
+    const nestedGeneratedIds: ReadonlySet<string> = nestedIds instanceof Set ? nestedIds : new Set();
     const start = this.registry._definitions.length;
     this.registry.merge(params.nestedRouter.registry, path);
 
