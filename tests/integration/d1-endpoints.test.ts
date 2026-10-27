@@ -793,6 +793,42 @@ describe("D1 ListEndpoint defaultOrderByDirection", () => {
     expect(data.result[1].name).toBe("Bob");
     expect(data.result[2].name).toBe("Charlie");
   });
+
+  it("should expose defaultOrderBy as the order_by default in the OpenAPI schema", async () => {
+    const schemaRouter = fromIttyRouter(AutoRouter());
+    schemaRouter.get("/users", UserListDescEndpoint);
+
+    const schemaReq = await schemaRouter.fetch(new Request("https://example.com/openapi.json"), env);
+    const schema = (await schemaReq.json()) as any;
+    const orderBy = schema.paths["/users"].get.parameters.find((p: any) => p.name === "order_by");
+
+    expect(orderBy.schema.default).toBe("name");
+  });
+
+  it("should fall back to the first orderByFields entry when defaultOrderBy is not an allowed field", async () => {
+    class MismatchedDefaultEndpoint extends D1ListEndpoint {
+      _meta = {
+        model: {
+          tableName: "users",
+          schema: UserSchema,
+          primaryKeys: ["id"],
+        },
+      };
+      dbName = "DB";
+      orderByFields = ["id", "name"];
+      defaultOrderBy = "email";
+    }
+
+    const schemaRouter = fromIttyRouter(AutoRouter());
+    schemaRouter.get("/users", MismatchedDefaultEndpoint);
+
+    const schemaReq = await schemaRouter.fetch(new Request("https://example.com/openapi.json"), env);
+    const schema = (await schemaReq.json()) as any;
+    const orderBy = schema.paths["/users"].get.parameters.find((p: any) => p.name === "order_by");
+
+    expect(orderBy.schema.enum).toEqual(["id", "name"]);
+    expect(orderBy.schema.default).toBe("id");
+  });
 });
 
 describe("D1 UpdateEndpoint with extra DB columns", () => {
