@@ -99,10 +99,14 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     }
 
     if (schema.request?.headers) {
-      const tmpHeaders: Record<string, string | null> = {};
+      const tmpHeaders: Record<string, string> = {};
       const rHeaders = new Headers(request.headers);
       for (const header of Object.keys((schema.request.headers as AnyZodObject).shape)) {
-        tmpHeaders[header] = rHeaders.get(header);
+        // Leave missing headers out, like missing query parameters, so optional and default schemas apply
+        const value = rHeaders.get(header);
+        if (value !== null) {
+          tmpHeaders[header] = value;
+        }
       }
       unvalidatedData.headers = coerceInputs(tmpHeaders, schema.request.headers as AnyZodObject) ?? {};
     }
