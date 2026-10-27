@@ -12,7 +12,7 @@ npm run build                         # Build CJS + ESM to dist/
 npm run lint                          # Lint via Biome (auto-fixes on failure)
 ```
 
-Tests run inside `@cloudflare/vitest-pool-workers` with a real D1 binding. Config: `tests/vitest.config.mts`.
+Tests run inside `@cloudflare/vitest-plugin` with a real D1 binding. Config: `tests/vitest.config.mts`.
 
 ## Project Layout
 

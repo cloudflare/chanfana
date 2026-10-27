@@ -3,7 +3,7 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "types": ["@cloudflare/workers-types/experimental", "@cloudflare/vitest-pool-workers"]
+    "types": ["@cloudflare/workers-types/experimental", "@cloudflare/vitest-plugin"]
   },
   "include": ["./**/*.ts", "./bindings.d.ts"]
 }

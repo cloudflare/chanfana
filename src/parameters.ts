@@ -69,7 +69,7 @@ export function coerceInputs(data: Record<string, any>, schema?: RouteParameter)
     }
 
     let innerType;
-    if (schema && (schema as AnyZodObject).shape && (schema as AnyZodObject).shape[key]) {
+    if ((schema as AnyZodObject)?.shape?.[key]) {
       innerType = (schema as AnyZodObject).shape[key];
     } else if (schema) {
       // Fallback for Zod effects

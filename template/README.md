@@ -35,7 +35,7 @@ Once running, open:
 
 ## Testing
 
-Tests use `@cloudflare/vitest-pool-workers` with a local D1 binding (no real database needed):
+Tests use `@cloudflare/vitest-plugin` with a local D1 binding (no real database needed):
 
 ```bash
 npm test

@@ -6,13 +6,13 @@ A starter Cloudflare Worker using Chanfana (OpenAPI), Hono, D1, and Zod v4. This
 
 ```bash
 npm run dev                # Start local dev server (http://localhost:8787)
-npm test                   # Run integration tests via vitest-pool-workers
+npm test                   # Run integration tests via @cloudflare/vitest-plugin
 npm run deploy             # Deploy to Cloudflare
 npm run db:migrate:local   # Apply D1 migrations locally
 npm run db:migrate:remote  # Apply D1 migrations to production
 ```
 
-Tests use `@cloudflare/vitest-pool-workers` with a local miniflare D1 binding. Config: `vitest.config.mts`.
+Tests use `@cloudflare/vitest-plugin` with a local miniflare D1 binding. Config: `vitest.config.mts`.
 
 ## Project Layout
 

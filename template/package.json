@@ -15,14 +15,14 @@
   },
   "dependencies": {
     "chanfana": "^3.4.0",
-    "hono": "^4.13.2",
-    "zod": "^4.4.3"
+    "hono": "^4.13.14",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.12.17",
-    "@cloudflare/workers-types": "^4.20260702.1",
-    "typescript": "^5.9.0",
-    "vitest": "^3.2.7",
-    "wrangler": "4.107.1"
+    "@cloudflare/vitest-plugin": "^1.4.8",
+    "@cloudflare/workers-types": "^5.20261027.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5",
+    "wrangler": "4.153.0"
   }
 }
