@@ -38,10 +38,10 @@ jobs:
       - name: Create release PR or publish
         uses: changesets/action@v2
         with:
-          version: bash scripts/version.sh
-          publish: npx changeset publish
-          title: "Version Packages"
-          commit: "Version Packages"
+          version-script: bash scripts/version.sh
+          publish-script: npx changeset publish
+          pr-title: "Version Packages"
+          commit-message: "Version Packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
