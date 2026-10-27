@@ -125,3 +125,6 @@ docs/site
 docs/.vitepress/cache
 tests/schema.json
 template/node_modules/
+
+# The template is a starter project; users generate their own lockfile.
+template/package-lock.json

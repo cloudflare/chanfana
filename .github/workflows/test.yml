@@ -46,7 +46,7 @@ jobs:
             console.log('OK: ' + v + ' satisfies ' + r);
           "
       - name: Template — install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
         working-directory: template
       - name: Template — typecheck
         run: npm run typecheck
