@@ -1,5 +1,24 @@
 # chanfana
 
+## 3.4.1
+
+### Patch Changes
+
+- [#366](https://github.com/cloudflare/chanfana/pull/366) [`c2ffa90`](https://github.com/cloudflare/chanfana/commit/c2ffa9052f85e4a093973abebf5dab8375ce5cb3) Thanks [@G4brym](https://github.com/G4brym)! - Bump production dependencies: `@asteasolutions/zod-to-openapi` to v9 (adds `z.guid()`, `z.cidrv4()`, `z.cidrv6()`, `z.base64url()`, `z.iso.time()` and `z.iso.duration()` format support and fixes nested discriminated union mappings), `js-yaml` to v5, `openapi3-ts` to 4.6.2 and `zod` to 4.6.7.
+
+- [#358](https://github.com/cloudflare/chanfana/pull/358) [`2cd8804`](https://github.com/cloudflare/chanfana/commit/2cd880499dccc2a6f9d89ba43b2f5f348cc1adec) Thanks [@kwy404](https://github.com/kwy404)! - Use `defaultOrderBy` as the default `order_by` value in list endpoints instead of always defaulting to the first entry of `orderByFields`.
+
+- [#367](https://github.com/cloudflare/chanfana/pull/367) [`b3747f7`](https://github.com/cloudflare/chanfana/commit/b3747f7fe77481dbf449cc3d252504c8fd021c86) Thanks [@G4brym](https://github.com/G4brym)! - Improve typings by replacing most internal `any` usages with precise types or `unknown`, without changing the public API
+  
+  - Router adapters accept `OpenAPIRouteClass` (any `OpenAPIRoute` subclass, exported together with an `isOpenAPIRouteClass()` helper) in place of `typeof OpenAPIRoute<any>`
+  - `getRequest()` adapter helpers now return `Request`
+  - Parameters of `coerceInputs()`, `jsonResp()`, `getD1Binding()`, `Logger` and exception `path` arguments are widened to `unknown`-based types that accept the same inputs as before
+  - Optional properties of `RequestTypes`, `RouteOptions` and `retryAfter` explicitly allow `undefined`, improving compatibility with `exactOptionalPropertyTypes`
+
+- [#360](https://github.com/cloudflare/chanfana/pull/360) [`ace6b43`](https://github.com/cloudflare/chanfana/commit/ace6b43ee9dc9d62ef1fbd3f2899ae3d82b33288) Thanks [@RaphaelFakhri](https://github.com/RaphaelFakhri)! - Keep generated operationIds unique when endpoint classes share a name. A route whose class name is already used by another route now falls back to a path-based operationId, so Swagger UI no longer runs the wrong endpoint.
+  
+  Explicit `operationId` values take precedence: when one matches an id that was generated for an earlier route, the earlier route is given a new path-based id instead. Two explicit `operationId` values that collide are kept as-is and a warning is logged. Routes from nested routers are checked against the parent router too, so sub-routers reusing a class name no longer produce duplicate ids. Because collisions are resolved as routes are registered, a generated id can depend on registration order.
+
 ## 3.4.0
 
 ### Minor Changes
