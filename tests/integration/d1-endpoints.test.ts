@@ -766,6 +766,16 @@ describe("D1 ListEndpoint defaultOrderByDirection", () => {
     expect(data.result[2].name).toBe("Alice");
   });
 
+  it("should order by defaultOrderBy instead of the first orderByFields entry", async () => {
+    await env.DB.prepare("INSERT INTO users (name, email, age) VALUES ('Aaron', 'aaron@example.com', 40)").run();
+
+    const response = await router.fetch(new Request("https://example.com/api/users-desc", { method: "GET" }), env);
+    const data = (await response.json()) as any;
+
+    expect(response.status).toBe(200);
+    expect(data.result.map((user: any) => user.name)).toEqual(["Charlie", "Bob", "Alice", "Aaron"]);
+  });
+
   it("should allow explicit override of default direction", async () => {
     const response = await router.fetch(
       new Request("https://example.com/api/users-desc?order_by_direction=asc", {
@@ -782,6 +792,42 @@ describe("D1 ListEndpoint defaultOrderByDirection", () => {
     expect(data.result[0].name).toBe("Alice");
     expect(data.result[1].name).toBe("Bob");
     expect(data.result[2].name).toBe("Charlie");
+  });
+
+  it("should expose defaultOrderBy as the order_by default in the OpenAPI schema", async () => {
+    const schemaRouter = fromIttyRouter(AutoRouter());
+    schemaRouter.get("/users", UserListDescEndpoint);
+
+    const schemaReq = await schemaRouter.fetch(new Request("https://example.com/openapi.json"), env);
+    const schema = (await schemaReq.json()) as any;
+    const orderBy = schema.paths["/users"].get.parameters.find((p: any) => p.name === "order_by");
+
+    expect(orderBy.schema.default).toBe("name");
+  });
+
+  it("should fall back to the first orderByFields entry when defaultOrderBy is not an allowed field", async () => {
+    class MismatchedDefaultEndpoint extends D1ListEndpoint {
+      _meta = {
+        model: {
+          tableName: "users",
+          schema: UserSchema,
+          primaryKeys: ["id"],
+        },
+      };
+      dbName = "DB";
+      orderByFields = ["id", "name"];
+      defaultOrderBy = "email";
+    }
+
+    const schemaRouter = fromIttyRouter(AutoRouter());
+    schemaRouter.get("/users", MismatchedDefaultEndpoint);
+
+    const schemaReq = await schemaRouter.fetch(new Request("https://example.com/openapi.json"), env);
+    const schema = (await schemaReq.json()) as any;
+    const orderBy = schema.paths["/users"].get.parameters.find((p: any) => p.name === "order_by");
+
+    expect(orderBy.schema.enum).toEqual(["id", "name"]);
+    expect(orderBy.schema.default).toBe("id");
   });
 });
 

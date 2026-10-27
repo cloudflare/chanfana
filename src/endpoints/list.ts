@@ -72,11 +72,15 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
 
     if (this.orderByFields && this.orderByFields.length > 0) {
       const orderByFieldsTuple = this.orderByFields as [string, ...string[]];
+      const defaultOrderBy =
+        this.defaultOrderBy && orderByFieldsTuple.includes(this.defaultOrderBy)
+          ? this.defaultOrderBy
+          : orderByFieldsTuple[0];
       queryParameters = queryParameters.extend({
         [this.orderByFieldName]: z
           .enum(orderByFieldsTuple)
           .optional()
-          .default(orderByFieldsTuple[0])
+          .default(defaultOrderBy)
           .describe("Order By Column Name"),
         [this.orderByDirectionFieldName]: z
           .enum(["asc", "desc"])
