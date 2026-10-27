@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { AutoRouter } from "itty-router";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { fromHono, fromIttyRouter } from "../../src";
 import { contentJson } from "../../src/contentTypes";
@@ -81,6 +81,105 @@ describe("routerOptions", () => {
     } else {
       throw new Error("/todo not found in schema");
     }
+  });
+
+  it("generated operation ids are unique when endpoint classes share a name", async () => {
+    // Classes assigned to an object property all get the same name ("route")
+    const routes = [
+      { path: "/plaza/chat", route: class extends EndpointWithoutOperationId {} },
+      { path: "/config", route: class extends EndpointWithoutOperationId {} },
+    ];
+
+    const router = fromIttyRouter(AutoRouter());
+    for (const r of routes) {
+      router.get(r.path, r.route);
+    }
+    router.get("/todo", EndpointWithoutOperationId);
+    router.get("/todo/:id", EndpointWithoutOperationId);
+
+    expect(router.schema.paths["/plaza/chat"].get.operationId).toEqual("get_route");
+    expect(router.schema.paths["/config"].get.operationId).toEqual("get_config");
+    expect(router.schema.paths["/todo"].get.operationId).toEqual("get_EndpointWithoutOperationId");
+    expect(router.schema.paths["/todo/{id}"].get.operationId).toEqual("get_todo_id");
+  });
+
+  it("generated operation ids do not reuse an explicit operation id", async () => {
+    class Shared extends EndpointWithoutOperationId {}
+    const router = fromIttyRouter(AutoRouter());
+    router.get("/a", EndpointWithOperationId);
+    router.get("/b", Shared);
+    router.get("/my/todo", Shared);
+
+    // Both "get_Shared" and the path-based "get_my_todo" are taken, so a suffix is added
+    expect(router.schema.paths["/a"].get.operationId).toEqual("get_my_todo");
+    expect(router.schema.paths["/b"].get.operationId).toEqual("get_Shared");
+    expect(router.schema.paths["/my/todo"].get.operationId).toEqual("get_my_todo_2");
+  });
+
+  it("explicit operation ids take precedence over earlier generated ones", async () => {
+    const router = fromIttyRouter(AutoRouter());
+    router.get("/other", class my_todo extends EndpointWithoutOperationId {}); // generates "get_my_todo"
+    router.get("/a", EndpointWithOperationId); // claims "get_my_todo"
+
+    expect(router.schema.paths["/a"].get.operationId).toEqual("get_my_todo");
+    expect(router.schema.paths["/other"].get.operationId).toEqual("get_other");
+  });
+
+  it("explicit operation ids take precedence over an earlier path-based id", async () => {
+    const Route = { route: class extends EndpointWithoutOperationId {} }.route;
+    const router = fromIttyRouter(AutoRouter());
+    router.get("/first", Route); // "get_route"
+    router.get("/my/todo", Route); // class name taken, falls back to "get_my_todo"
+    router.get("/a", EndpointWithOperationId); // claims "get_my_todo"
+
+    expect(router.schema.paths["/first"].get.operationId).toEqual("get_route");
+    expect(router.schema.paths["/a"].get.operationId).toEqual("get_my_todo");
+    expect(router.schema.paths["/my/todo"].get.operationId).toEqual("get_my_todo_2");
+  });
+
+  it("duplicated explicit operation ids are kept and warned about", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const router = fromIttyRouter(AutoRouter());
+      router.get("/a", EndpointWithOperationId);
+      router.get("/b", EndpointWithOperationId);
+
+      expect(router.schema.paths["/a"].get.operationId).toEqual("get_my_todo");
+      expect(router.schema.paths["/b"].get.operationId).toEqual("get_my_todo");
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('operationId "get_my_todo"'));
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("generated operation ids are unique across nested routers", async () => {
+    const Route = { route: class extends EndpointWithoutOperationId {} }.route;
+
+    const usersRouter = fromIttyRouter(AutoRouter({ base: "/api/users" }), { base: "/api/users" });
+    usersRouter.get("/", Route);
+    const postsRouter = fromIttyRouter(AutoRouter({ base: "/api/posts" }), { base: "/api/posts" });
+    postsRouter.get("/", Route);
+    postsRouter.get("/mine", EndpointWithOperationId);
+
+    const router = fromIttyRouter(AutoRouter());
+    router.get("/other", class my_todo extends EndpointWithoutOperationId {}); // generates "get_my_todo"
+    router.get("/todo", Route); // "get_route", taken later by nested routers
+    router.all("/api/users/*", usersRouter);
+    router.all("/api/posts/*", postsRouter);
+    router.get("/config", Route);
+
+    const paths = router.schema.paths;
+    expect(paths["/todo"].get.operationId).toEqual("get_route");
+    expect(paths["/api/users"].get.operationId).toEqual("get_api_users");
+    expect(paths["/api/posts"].get.operationId).toEqual("get_api_posts");
+    expect(paths["/config"].get.operationId).toEqual("get_config");
+    // Explicit nested id takes precedence over the parent's generated one
+    expect(paths["/api/posts/mine"].get.operationId).toEqual("get_my_todo");
+    expect(paths["/other"].get.operationId).toEqual("get_other");
+
+    // Child schemas are not affected by renames in the parent
+    expect(usersRouter.schema.paths["/api/users"].get.operationId).toEqual("get_route");
   });
 
   it("with base empty", async () => {

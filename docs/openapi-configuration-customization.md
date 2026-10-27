@@ -159,7 +159,7 @@ Choose the version that best suits your needs and the tools you are using to con
 
 The `generateOperationIds` option controls whether Chanfana should automatically generate `operationId` values for your OpenAPI operations.
 
-*   `true`: (Default) Chanfana automatically generates `operationId` values based on the HTTP method and route path (e.g., `get_users_userId`).
+*   `true`: (Default) Chanfana automatically generates `operationId` values from the HTTP method and endpoint class name (e.g., `get_ListUsers`). If that id is already used by another route, it falls back to the method and route path (e.g., `get_users_userId`), then to a numeric suffix (e.g., `get_users_userId_2`). Explicit `operationId` values always take precedence, and generated ids are kept unique across nested routers.
 *   `false`: Chanfana will **not** automatically generate `operationId` values. In this case, you **must** provide `operationId` explicitly in your endpoint's `schema` definition. If you don't provide `operationId` when `generateOperationIds` is `false`, Chanfana will throw an error.
 
 `operationId` values are used to uniquely identify operations in your OpenAPI document and are often used by code generation tools and API clients.
