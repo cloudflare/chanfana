@@ -190,3 +190,65 @@ describe("innerRouter", () => {
     });
   });
 });
+
+class ListEndpoint extends OpenAPIRoute {
+  schema = {
+    responses: {},
+  };
+
+  async handle() {
+    return { ok: true };
+  }
+}
+
+class ExplicitListEndpoint extends OpenAPIRoute {
+  schema = {
+    operationId: "get_list",
+    responses: {},
+  };
+
+  async handle() {
+    return { ok: true };
+  }
+}
+
+describe("nested router operationIds", () => {
+  it("keeps generated operationIds unique across nested routers", async () => {
+    // Classes assigned to an object property all get the same name ("route")
+    const Route = { route: class extends ListEndpoint {} }.route;
+
+    const usersRouter = fromHono(new Hono());
+    usersRouter.get("/users", Route);
+    const postsRouter = fromHono(new Hono());
+    postsRouter.get("/posts", Route);
+    postsRouter.get("/explicit", ExplicitListEndpoint);
+
+    const app = fromHono(new Hono());
+    app.get("/list", class list extends ListEndpoint {}); // generates "get_list"
+    app.route("/api", usersRouter);
+    app.route("/api", postsRouter);
+    app.get("/config", Route);
+
+    const paths = app.schema.paths;
+    expect(paths["/api/users"].get.operationId).toEqual("get_route");
+    expect(paths["/api/posts"].get.operationId).toEqual("get_api_posts");
+    expect(paths["/config"].get.operationId).toEqual("get_config");
+    // The nested explicit id takes precedence over the parent's generated one
+    expect(paths["/api/explicit"].get.operationId).toEqual("get_list");
+    expect(paths["/list"].get.operationId).toEqual("get_list_2");
+  });
+
+  it("renames nested generated operationIds that collide with a parent explicit id", async () => {
+    const childRouter = fromHono(new Hono());
+    childRouter.get("/list", class list extends ListEndpoint {}); // generates "get_list"
+
+    const app = fromHono(new Hono());
+    app.get("/explicit", ExplicitListEndpoint);
+    app.route("/api", childRouter);
+
+    const paths = app.schema.paths;
+    expect(paths["/explicit"].get.operationId).toEqual("get_list");
+    expect(paths["/api/list"].get.operationId).toEqual("get_api_list");
+    expect(childRouter.schema.paths["/list"].get.operationId).toEqual("get_list");
+  });
+});
