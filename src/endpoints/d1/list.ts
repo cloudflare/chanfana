@@ -126,7 +126,7 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
       this.getDBBinding()
         .prepare(countSql)
         .bind(...conditionsParams)
-        .all(),
+        .all<{ total: number }>(),
     ]);
 
     return {
@@ -135,7 +135,7 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
         count: results.results.length,
         page,
         per_page: perPage,
-        total_count: (totalCount.results[0] as { total: number })?.total ?? 0,
+        total_count: totalCount.results[0]?.total ?? 0,
       },
     };
   }

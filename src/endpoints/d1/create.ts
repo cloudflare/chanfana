@@ -65,7 +65,7 @@ export class D1CreateEndpoint<HandleArgs extends Array<object> = Array<object>> 
 
       return inserted;
     } catch (e: unknown) {
-      handleDbError(e as Error, this.constraintsMessages, this.logger, `create ${tableName}`);
+      handleDbError(e, this.constraintsMessages, this.logger, `create ${tableName}`);
     }
   }
 }

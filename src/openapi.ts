@@ -269,7 +269,7 @@ export class OpenAPIHandler {
       }
     }
 
-    const base = candidates[candidates.length - 1] as string;
+    const base = candidates[candidates.length - 1] ?? "";
     let suffix = 2;
     while (this.usedOperationIds.has(`${base}_${suffix}`)) {
       suffix++;

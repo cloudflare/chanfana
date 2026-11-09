@@ -1,0 +1,8 @@
+{
+  // Used for declaration emit: the extra strictness flags in tsconfig.json change inferred public types.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": false,
+    "noPropertyAccessFromIndexSignature": false
+  }
+}

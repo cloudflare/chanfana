@@ -251,9 +251,9 @@ export function fromHono<
             });
           } else if (prop === "on") {
             const methods: string | string[] = route;
-            const paths = handlers.shift() as string | string[];
+            const paths: unknown = handlers.shift();
 
-            if (Array.isArray(methods) || Array.isArray(paths)) {
+            if (Array.isArray(methods) || typeof paths !== "string") {
               throw new Error("chanfana only supports single method+path on hono.on('method', 'path', EndpointClass)");
             }
 

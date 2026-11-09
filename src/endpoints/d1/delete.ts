@@ -105,7 +105,7 @@ export class D1DeleteEndpoint<HandleArgs extends Array<object> = Array<object>> 
 
       return oldObj;
     } catch (e: unknown) {
-      handleDbError(e as Error, this.constraintsMessages, this.logger, `delete ${tableName}`);
+      handleDbError(e, this.constraintsMessages, this.logger, `delete ${tableName}`);
     }
   }
 }

@@ -133,7 +133,7 @@ export class D1UpdateEndpoint<HandleArgs extends Array<object> = Array<object>> 
 
       return result;
     } catch (e: unknown) {
-      handleDbError(e as Error, this.constraintsMessages, this.logger, `update ${tableName}`);
+      handleDbError(e, this.constraintsMessages, this.logger, `update ${tableName}`);
     }
   }
 }

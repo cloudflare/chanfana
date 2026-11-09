@@ -4,6 +4,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "noImplicitOverride": false,
+    // Consumers typically do not enable these flags; check compatibility without them.
+    "exactOptionalPropertyTypes": false,
+    "noPropertyAccessFromIndexSignature": false,
     "types": ["@cloudflare/workers-types/experimental"]
   },
   "include": ["./**/*.ts"]
