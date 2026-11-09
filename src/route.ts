@@ -21,7 +21,7 @@ export type UnvalidatedData = {
  *
  * @template HandleArgs - Router handler arguments type
  */
-// biome-ignore lint/suspicious/noExplicitAny: default keeps `this.args[0].env`-style access working for untyped subclasses
+// oxlint-disable-next-line typescript/no-explicit-any -- default keeps `this.args[0].env`-style access working for untyped subclasses
 export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
   /**
    * The main handler method to be implemented by subclasses.
@@ -37,7 +37,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
   /** Args the execute() was called with */
   args: HandleArgs;
   /** Cache for validated data - prevents re-validation on multiple calls */
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers read the cached data without narrowing
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, consumers read the cached data without narrowing
   validatedData: any = undefined;
   /** Cache for raw request data before Zod applies defaults/transformations */
   unvalidatedData: UnvalidatedData | undefined = undefined;
@@ -57,7 +57,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    *
    * @returns Validated data including params, query, headers, and body
    */
-  // biome-ignore lint/suspicious/noExplicitAny: default keeps the historical untyped result when no schema type is passed
+  // oxlint-disable-next-line typescript/no-explicit-any -- default keeps the historical untyped result when no schema type is passed
   async getValidatedData<S = any>(): Promise<ValidatedData<S>> {
     const request = this.params.router.getRequest(this.args);
 
@@ -78,7 +78,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    *
    * @returns Raw request data object
    */
-  // biome-ignore lint/suspicious/noExplicitAny: public API, consumers use `"field" in raw.body` and similar untyped access
+  // oxlint-disable-next-line typescript/no-explicit-any -- public API, consumers use `"field" in raw.body` and similar untyped access
   async getUnvalidatedData(): Promise<any> {
     if (this.unvalidatedData !== undefined) {
       return this.unvalidatedData;
@@ -206,7 +206,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    * @param args - Handler arguments from the router
    * @returns Response object
    */
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, subclass overrides may return non-Response values
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, subclass overrides may return non-Response values
   async execute(...args: HandleArgs): Promise<any> {
     // Reset caches for request isolation
     this.validatedData = undefined;
@@ -265,7 +265,6 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       return undefined;
     }
 
-    // biome-ignore lint/complexity/useLiteralKeys: noPropertyAccessFromIndexSignature
     const responseConfig = responses[String(statusCode)] ?? responses["default"];
     if (!responseConfig) {
       return undefined;
@@ -361,7 +360,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    * @returns Validated and typed request data
    * @throws ZodError if validation fails
    */
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, the validated shape depends on the subclass schema
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, the validated shape depends on the subclass schema
   async validateRequest(request: Request): Promise<any> {
     const schema: OpenAPIRouteSchema = this.getSchemaZod();
 
@@ -370,16 +369,13 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 
     const rawSchema: Record<string, z.ZodType> = {};
     if (schema.request?.params) {
-      // biome-ignore lint/complexity/useLiteralKeys: noPropertyAccessFromIndexSignature
       rawSchema["params"] = schema.request.params;
     }
     if (schema.request?.query) {
-      // biome-ignore lint/complexity/useLiteralKeys: noPropertyAccessFromIndexSignature
       rawSchema["query"] = schema.request.query;
     }
 
     if (schema.request?.headers) {
-      // biome-ignore lint/complexity/useLiteralKeys: noPropertyAccessFromIndexSignature
       rawSchema["headers"] = schema.request.headers as AnyZodObject;
     }
 
@@ -388,7 +384,6 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       schema.request?.body?.content?.["application/json"]?.schema
     ) {
       // Non-Zod (plain OpenAPI) body schemas are not supported for validation
-      // biome-ignore lint/complexity/useLiteralKeys: noPropertyAccessFromIndexSignature
       rawSchema["body"] = schema.request.body.content["application/json"].schema as z.ZodType;
     }
 

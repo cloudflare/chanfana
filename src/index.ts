@@ -19,7 +19,7 @@ export * from "./exceptions";
 export * from "./openapi";
 export * from "./parameters";
 export * from "./route";
-export * from "./types";
+export type * from "./types";
 export * from "./ui";
 export * from "./utils";
 export * from "./zod/registry";

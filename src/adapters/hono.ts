@@ -27,9 +27,9 @@ type MergeTypedResponse<T> =
       : TypedResponse;
 
 // Mirrors Hono's own `R extends AnyHandlerResponse = DefaultHandlerResponse` handler generics, so that type inference matches Hono's
-// biome-ignore lint/suspicious/noExplicitAny: mirrors Hono's HandlerInterface generics
+// oxlint-disable-next-line typescript/no-explicit-any -- mirrors Hono's HandlerInterface generics
 type AnyHandlerResponse = HandlerResponse<any>;
-// biome-ignore lint/suspicious/noExplicitAny: mirrors Hono's HandlerInterface generics
+// oxlint-disable-next-line typescript/no-explicit-any -- mirrors Hono's HandlerInterface generics
 type DefaultHandlerResponse = any;
 
 type HonoMethodFn = (...args: unknown[]) => unknown;
@@ -139,12 +139,12 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
     return (args[0] as Context).req.raw;
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, consumers access bindings/params without narrowing
   override getUrlParams(args: unknown[]): Record<string, any> {
     return (args[0] as Context).req.param();
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, consumers access bindings/params without narrowing
   override getBindings(args: unknown[]): Record<string, any> {
     return (args[0] as Context).env;
   }

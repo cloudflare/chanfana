@@ -9,7 +9,8 @@ npm test                              # Run all tests (tsc + vitest)
 npm test -- coverage-gaps.test.ts     # Run a single test file by name
 npm test -- --coverage                # Run with Istanbul coverage report
 npm run build                         # Build CJS + ESM to dist/
-npm run lint                          # Lint via Biome (auto-fixes on failure)
+npm run lint                          # oxlint (--deny-warnings) + oxfmt --check
+npm run lint:fix                      # oxlint --fix + oxfmt (write)
 ```
 
 Tests run inside `@cloudflare/vitest-plugin` with a real D1 binding. Config: `tests/vitest.config.mts`.
@@ -35,13 +36,15 @@ skills/            # AI coding skills (write-endpoints)
 
 ## Code Style
 
-**Formatter/Linter**: Biome (`biome.json`). Key settings:
+**Formatter/Linter**: oxfmt (`.oxfmtrc.json`) and oxlint (`.oxlintrc.json`). Key settings:
 - 2-space indent, 120 char line width, double quotes, always semicolons, trailing commas on multiline
-- `noExplicitAny` is OFF — `any` is used deliberately throughout
+- `typescript/no-explicit-any` is an error in `src/` (off in `tests/`); deliberate public `any` uses carry `// oxlint-disable-next-line typescript/no-explicit-any -- <reason>`
+- Type-aware linting is on (`oxlint-tsgolint`); `npm run lint` fails on warnings and unused disable directives
+- Enforced (error): oxlint `correctness` category (eslint, typescript, oxc, unicorn, import plugins), plus `no-unused-vars` (`_` prefix ignored, rest siblings ignored), `prefer-const`, `curly`, `no-param-reassign`, `array-callback-return`, `oxc/no-accumulating-spread`, `typescript/no-explicit-any`, `typescript/no-wrapper-object-types`, `typescript/no-unsafe-function-type`, `typescript/no-empty-object-type` (single-extends interfaces allowed), `typescript/no-non-null-assertion`, `typescript/consistent-type-imports`, `typescript/consistent-type-exports` (type-only modules use `export type *`)
 
 **TypeScript** (`tsconfig.json`): `strict: true`, `verbatimModuleSyntax: true` (requires `import type` for type-only imports), target ES2022, bundler module resolution.
 
-**Imports**: Biome auto-organizes. External packages first (alphabetical), then relative imports. No blank lines between groups. Use `import type` for type-only:
+**Imports**: oxfmt sorts imports (`sortImports`). External packages first (alphabetical), then relative imports. No blank lines between groups. Use `import type` for type-only:
 ```typescript
 import { z } from "zod";
 import type { AnyZodObject, RouteParameter } from "./types";
