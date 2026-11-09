@@ -24,12 +24,12 @@ export type Filters = {
 
 export type UpdateFilters = {
   filters: Array<FilterCondition>;
-  // biome-ignore lint/suspicious/noExplicitAny: public hook type, consumers read/write arbitrary fields in before()/update()
+  // oxlint-disable-next-line typescript/no-explicit-any -- public hook type, consumers read/write arbitrary fields in before()/update()
   updatedData: Record<string, any>;
 };
 
 export type UpdatedData = {
-  // biome-ignore lint/suspicious/noExplicitAny: public hook type, consumers read/write arbitrary fields in getUpdatedData()
+  // oxlint-disable-next-line typescript/no-explicit-any -- public hook type, consumers read/write arbitrary fields in getUpdatedData()
   updatedData: Record<string, any>;
 };
 
@@ -77,7 +77,7 @@ export function MetaGenerator(meta: MetaInput) {
   return {
     fields: meta.fields ?? meta.model.schema,
     model: {
-      // biome-ignore lint/suspicious/noExplicitAny: keeps the inferred handle() result loosely typed for consumers
+      // oxlint-disable-next-line typescript/no-explicit-any -- keeps the inferred handle() result loosely typed for consumers
       serializer: (obj: any, _context?: SerializerContext): any => obj,
       serializerSchema: meta.model.schema,
       ...meta.model,
@@ -88,9 +88,7 @@ export function MetaGenerator(meta: MetaInput) {
 }
 
 export function metaSchemaProps(meta: MetaInput): Record<string, unknown> {
-  return {
-    ...(meta.tags?.length ? { tags: meta.tags } : {}),
-  };
+  return meta.tags?.length ? { tags: meta.tags } : {};
 }
 
 // Method syntax keeps parameters bivariant, so loggers with narrower signatures (e.g. `(msg: string) => void`) are accepted

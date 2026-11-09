@@ -16,7 +16,7 @@ export interface ApiExceptionOptions {
 export interface ApiErrorObject {
   code: number;
   message: string;
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, matches the `path` field of path-bearing exceptions
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, matches the `path` field of path-bearing exceptions
   path?: any;
   documentation_url?: string;
 }
@@ -100,7 +100,7 @@ export class InputValidationException extends ApiException {
   override default_message = "Input Validation Error";
   override status = 400;
   override code = 7001;
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers index into the error path
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, consumers index into the error path
   path: any = null;
   override includesPath = true;
 
@@ -229,7 +229,7 @@ export class UnprocessableEntityException extends ApiException {
   override status = 422;
   override code = 7007;
   override includesPath = true;
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers index into the error path
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, consumers index into the error path
   path: any = null;
 
   constructor(message?: string, path?: unknown, options?: ApiExceptionOptions) {

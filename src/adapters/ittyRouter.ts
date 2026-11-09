@@ -4,7 +4,7 @@ import type { RouterOptions } from "../types";
 
 // The underlying itty-router calls return values that are not tracked by these overloads,
 // historically typed as `any` so that consumers can keep chaining calls freely.
-// biome-ignore lint/suspicious/noExplicitAny: kept for backward compatibility of chained router calls
+// oxlint-disable-next-line typescript/no-explicit-any -- kept for backward compatibility of chained router calls
 type IttyRouterMethodResult = any;
 
 export type IttyRouterOpenAPIRouterType<M> = OpenAPIRouterType<M> & {
@@ -35,12 +35,12 @@ export class IttyRouterOpenAPIHandler extends OpenAPIHandler {
     return args[0] as Request;
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, consumers access bindings/params without narrowing
   override getUrlParams(args: unknown[]): Record<string, any> {
     return (args[0] as { params: Record<string, string> }).params;
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, consumers access bindings/params without narrowing
   override getBindings(args: unknown[]): Record<string, any> {
     return args[1] as Record<string, unknown>;
   }

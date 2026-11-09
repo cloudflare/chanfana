@@ -18,8 +18,8 @@ npm ci
 npm test                         # Typecheck (tsc) + run all tests (vitest)
 npm test -- <file>               # Run a single test file, e.g. npm test -- coverage-gaps.test.ts
 npm test -- --coverage           # Run tests with a coverage report
-npm run lint                     # Lint and format check via Biome
-npm run lint:fix                 # Apply Biome fixes
+npm run lint                     # Lint (oxlint) and format check (oxfmt)
+npm run lint:fix                 # Apply oxlint fixes and format with oxfmt
 npm run build                    # Build CJS + ESM bundles to dist/
 npm run docs:dev                 # Run the VitePress documentation site locally
 ```

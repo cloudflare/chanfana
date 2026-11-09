@@ -14,6 +14,7 @@ import {
   TooManyRequestsException,
   UnprocessableEntityException,
 } from "../../src";
+import type { Logger } from "../../src";
 
 export class BindingsEndpoint extends OpenAPIRoute {
   async handle() {
@@ -78,7 +79,7 @@ export function coerced() {
   return x;
 }
 
-export const loggerCompat: import("../../src").Logger = {
+export const loggerCompat: Logger = {
   log: (msg: string) => msg,
   info: (msg: string) => msg,
   warn: (msg: string) => msg,

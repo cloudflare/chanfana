@@ -62,7 +62,7 @@ function getEntries(data: object): Iterable<[string, unknown]> {
 export function coerceInputs(
   data: URLSearchParams | object,
   schema?: RouteParameter,
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, callers read coerced values without narrowing
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, callers read coerced values without narrowing
 ): Record<string, any> | null {
   // For older node versions, searchParams is just an object without the size property
   const size: unknown = Reflect.get(data, "size");

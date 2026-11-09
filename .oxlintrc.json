@@ -1,0 +1,47 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "options": {
+    "typeAware": true
+  },
+  "plugins": ["typescript", "oxc", "unicorn", "import"],
+  "categories": {
+    "correctness": "error"
+  },
+  "ignorePatterns": ["**/dist/**", "**/docs/**", "**/example/**", "**/coverage/**"],
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "prefer-const": "error",
+    "curly": "error",
+    "no-param-reassign": "error",
+    "array-callback-return": "error",
+    "oxc/no-accumulating-spread": "error",
+    "typescript/no-explicit-any": "error",
+    "typescript/no-wrapper-object-types": "error",
+    "typescript/no-unsafe-function-type": "error",
+    "typescript/no-empty-object-type": [
+      "error",
+      {
+        "allowInterfaces": "with-single-extends"
+      }
+    ],
+    "typescript/no-non-null-assertion": "error",
+    "typescript/consistent-type-imports": "error",
+    "typescript/consistent-type-exports": "error"
+  },
+  "overrides": [
+    {
+      "files": ["tests/**", "template/test/**"],
+      "rules": {
+        "typescript/no-explicit-any": "off"
+      }
+    }
+  ]
+}

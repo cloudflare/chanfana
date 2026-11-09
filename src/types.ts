@@ -4,7 +4,7 @@ import type { HeadersObject as HeadersObject31, LinksObject as LinksObject31 } f
 import type { ZodObject, ZodPipe, ZodType, z } from "zod";
 
 // Type alias for compatibility with Zod v4
-// biome-ignore lint/suspicious/noExplicitAny: public alias, `any` keeps z.output<AnyZodObject> loosely typed for consumers
+// oxlint-disable-next-line typescript/no-explicit-any -- public alias, `any` keeps z.output<AnyZodObject> loosely typed for consumers
 export type AnyZodObject = ZodObject<any, any>;
 
 export type OrderByDirection = "asc" | "desc";
@@ -87,7 +87,7 @@ export interface RouterOptions {
 }
 
 export interface RouteOptions {
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, custom router handlers may expose extra members
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, custom router handlers may expose extra members
   router: any;
   raiseUnknownParameters?: boolean | undefined;
   raiseOnError?: boolean | undefined;

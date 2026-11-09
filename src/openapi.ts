@@ -11,7 +11,7 @@ export type OpenAPIRouterType<M> = {
   original: M;
   options: RouterOptions;
   registry: OpenAPIRegistryMerger;
-  // biome-ignore lint/suspicious/noExplicitAny: public API, consumers index into the generated document freely (e.g. `schema.paths["/x"].get`)
+  // oxlint-disable-next-line typescript/no-explicit-any -- public API, consumers index into the generated document freely (e.g. `schema.paths["/x"].get`)
   schema: any;
 };
 
@@ -43,7 +43,7 @@ export type HttpMethod = "get" | "head" | "post" | "put" | "delete" | "patch";
  * will be excluded from the generated OpenAPI specification by the CLI tool.
  */
 export class OpenAPIHandler {
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access members of the underlying router
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, consumers access members of the underlying router
   router: any;
   options: RouterOptions;
   registry: OpenAPIRegistryMerger;
@@ -480,7 +480,7 @@ export class OpenAPIHandler {
    * Must be implemented by subclasses.
    * @param _args - Handler arguments
    */
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, consumers access bindings/params without narrowing
   getUrlParams(_args: unknown[]): Record<string, any> {
     throw new Error("getUrlParams not implemented");
   }
@@ -490,7 +490,7 @@ export class OpenAPIHandler {
    * Must be implemented by subclasses.
    * @param _args - Handler arguments
    */
-  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers access bindings/params without narrowing
+  // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, consumers access bindings/params without narrowing
   getBindings(_args: unknown[]): Record<string, any> {
     throw new Error("getBindings not implemented");
   }
