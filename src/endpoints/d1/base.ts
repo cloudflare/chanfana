@@ -1,4 +1,5 @@
 import { ApiException, InputValidationException } from "../../exceptions";
+import { getDocumentationUrl } from "../../internal/errorExtras";
 import type { OrderByDirection } from "../../types";
 import type { FilterCondition, Filters, Logger } from "../types";
 
@@ -227,7 +228,9 @@ export function handleDbError(
       if (constraintsMessages[constraintName]) {
         // Clone the exception to avoid sharing mutable state across concurrent requests
         const template = constraintsMessages[constraintName];
-        throw new InputValidationException(template.message, template.path);
+        throw new InputValidationException(template.message, template.path, {
+          documentation_url: getDocumentationUrl(template),
+        });
       }
     }
   }

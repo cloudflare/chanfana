@@ -597,7 +597,7 @@ describe("bodyParametersValidation", () => {
           path: ["headers", "p_hostname"],
         },
       ],
-      result: {},
+      result: null,
       success: false,
     });
   });

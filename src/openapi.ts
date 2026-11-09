@@ -153,7 +153,7 @@ export class OpenAPIHandler {
       this.router.get(routeBase + openapiUrl, () => {
         return new Response(JSON.stringify(this.getGeneratedSchema()), {
           headers: {
-            "content-type": "application/json;charset=UTF-8",
+            "content-type": "application/json",
           },
           status: 200,
         });

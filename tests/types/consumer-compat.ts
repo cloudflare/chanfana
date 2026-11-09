@@ -2,11 +2,16 @@
 import type { Context } from "hono";
 import { z } from "zod";
 import {
+  type ApiErrorObject,
   ApiException,
   coerceInputs,
   contentJson,
   InputValidationException,
+  MultiException,
   OpenAPIRoute,
+  ResponseValidationException,
+  ServiceUnavailableException,
+  TooManyRequestsException,
   UnprocessableEntityException,
 } from "../../src";
 
@@ -81,3 +86,38 @@ export const loggerCompat: import("../../src").Logger = {
   debug: (msg: string) => msg,
   trace: (msg: string) => msg,
 };
+
+export function errorObjects() {
+  const docs = { documentation_url: "https://example.com/docs" };
+  const code: Array<{ code: number }> = new ApiException("x").buildResponse();
+  const message: Array<{ message: string }> = new ApiException("x", docs).buildResponse();
+  const pathCode: Array<{ code: number; path?: string[] }> = new InputValidationException(
+    "bad",
+    ["body"],
+    docs,
+  ).buildResponse();
+  const unprocessable: ApiErrorObject[] = new UnprocessableEntityException("bad", ["body"], docs).buildResponse();
+  const multi: ApiErrorObject[] = new MultiException([new ApiException("x")]).buildResponse();
+  return [
+    code,
+    message,
+    pathCode,
+    unprocessable,
+    multi,
+    new TooManyRequestsException("slow", 10, docs),
+    new ServiceUnavailableException("down", 10, docs),
+    new ResponseValidationException("bad", { cause: new Error("x"), ...docs }),
+  ];
+}
+
+export function structuralApiException(): ApiException {
+  return Object.assign(new Error("x"), {
+    isVisible: true,
+    message: "x",
+    default_message: "",
+    status: 500,
+    code: 7000,
+    includesPath: false,
+    buildResponse: () => [{ code: 7000, message: "x" }],
+  });
+}

@@ -1,5 +1,25 @@
 import { z } from "zod";
 import { contentJson } from "./contentTypes";
+import { setDocumentationUrlOption, withErrorExtras } from "./internal/errorExtras";
+
+/**
+ * Options accepted by {@link ApiException} constructors.
+ */
+export interface ApiExceptionOptions {
+  /** URL pointing to documentation about this error, included in the error response. */
+  documentation_url?: string | undefined;
+}
+
+/**
+ * Shape of a single error object in a chanfana error response.
+ */
+export interface ApiErrorObject {
+  code: number;
+  message: string;
+  // biome-ignore lint/suspicious/noExplicitAny: public back-compat, matches the `path` field of path-bearing exceptions
+  path?: any;
+  documentation_url?: string;
+}
 
 /**
  * Base exception class for API errors.
@@ -17,25 +37,28 @@ export class ApiException extends Error {
   status = 500;
   code = 7000;
   includesPath = false;
+  /** Optional URL documenting this error. When set, it is included in each error object of the response. */
+  documentation_url?: string | undefined;
 
-  constructor(message = "") {
+  constructor(message = "", options?: ApiExceptionOptions) {
     super(message);
     this.message = message;
+    setDocumentationUrlOption(this, options?.documentation_url);
   }
 
-  buildResponse() {
+  buildResponse(): ApiErrorObject[] {
     return [
-      {
+      withErrorExtras(this, {
         code: this.code,
         message: this.isVisible ? this.message || this.default_message : "Internal Error",
-      },
+      }),
     ];
   }
 
   static schema() {
     const inst = new this();
 
-    const errorSchema = inst.includesPath
+    const baseSchema = inst.includesPath
       ? z.object({
           code: z.number(),
           message: z.string(),
@@ -45,6 +68,9 @@ export class ApiException extends Error {
           code: z.number(),
           message: z.string(),
         });
+    const errorSchema = inst.documentation_url
+      ? baseSchema.extend({ documentation_url: z.string().optional() })
+      : baseSchema;
 
     return {
       [inst.status]: {
@@ -78,18 +104,18 @@ export class InputValidationException extends ApiException {
   path: any = null;
   override includesPath = true;
 
-  constructor(message?: string, path?: unknown) {
-    super(message);
+  constructor(message?: string, path?: unknown, options?: ApiExceptionOptions) {
+    super(message, options);
     this.path = path;
   }
 
-  override buildResponse() {
+  override buildResponse(): ApiErrorObject[] {
     return [
-      {
+      withErrorExtras(this, {
         code: this.code,
         message: this.isVisible ? this.message : "Internal Error",
         path: this.path,
-      },
+      }),
     ];
   }
 }
@@ -97,6 +123,7 @@ export class InputValidationException extends ApiException {
 /**
  * Exception that aggregates multiple API exceptions.
  * The highest status code among all errors will be used as the response status.
+ * It does not accept a `documentation_url`: each child exception carries its own.
  *
  * @example
  * ```typescript
@@ -127,7 +154,7 @@ export class MultiException extends ApiException {
     }
   }
 
-  override buildResponse() {
+  override buildResponse(): ApiErrorObject[] {
     return this.errors.flatMap((err) => err.buildResponse());
   }
 }
@@ -205,18 +232,18 @@ export class UnprocessableEntityException extends ApiException {
   // biome-ignore lint/suspicious/noExplicitAny: public back-compat, consumers index into the error path
   path: any = null;
 
-  constructor(message?: string, path?: unknown) {
-    super(message);
+  constructor(message?: string, path?: unknown, options?: ApiExceptionOptions) {
+    super(message, options);
     this.path = path;
   }
 
-  override buildResponse() {
+  override buildResponse(): ApiErrorObject[] {
     return [
-      {
+      withErrorExtras(this, {
         code: this.code,
         message: this.isVisible ? this.message || this.default_message : "Internal Error",
         path: this.path,
-      },
+      }),
     ];
   }
 }
@@ -232,8 +259,8 @@ export class TooManyRequestsException extends ApiException {
   override code = 7008;
   retryAfter?: number | undefined;
 
-  constructor(message?: string, retryAfter?: number) {
-    super(message);
+  constructor(message?: string, retryAfter?: number, options?: ApiExceptionOptions) {
+    super(message, options);
     this.retryAfter = retryAfter;
   }
 }
@@ -274,8 +301,8 @@ export class ServiceUnavailableException extends ApiException {
   override code = 7011;
   retryAfter?: number | undefined;
 
-  constructor(message?: string, retryAfter?: number) {
-    super(message);
+  constructor(message?: string, retryAfter?: number, options?: ApiExceptionOptions) {
+    super(message, options);
     this.retryAfter = retryAfter;
   }
 }
@@ -303,8 +330,8 @@ export class ResponseValidationException extends ApiException {
   override status = 500;
   override code = 7013;
 
-  constructor(message?: string, options?: ErrorOptions) {
-    super(message ?? "");
+  constructor(message?: string, options?: ErrorOptions & ApiExceptionOptions) {
+    super(message ?? "", options);
     if (message) {
       this.message = message;
     }

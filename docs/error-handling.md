@@ -383,7 +383,7 @@ This exception is **not intended to be thrown manually**. It is raised internall
 {
     "success": false,
     "errors": [{ "code": 7013, "message": "Internal Error" }],
-    "result": {}
+    "result": null
 }
 ```
 
@@ -556,7 +556,7 @@ When request validation fails (e.g., a required field is missing or has the wron
             "path": ["body", "age"]
         }
     ],
-    "result": {}
+    "result": null
 }
 ```
 
@@ -564,6 +564,41 @@ Each validation error includes:
 - **`code`:** `7001` (the `InputValidationException` error code)
 - **`message`:** The human-readable validation error message from Zod
 - **`path`:** Array of strings indicating the location of the invalid field (e.g., `["body", "name"]`, `["query", "page"]`)
+
+Error responses are served with `content-type: application/json`. Error responses formatted by chanfana always return `"result": null`.
+
+### Linking to Documentation
+
+Set `documentation_url` on an exception (as a class property or via the constructor options) to include it in every error object of the response:
+
+```typescript
+class QuotaExceededException extends ApiException {
+  override status = 429;
+  override code = 8001;
+  override documentation_url = "https://example.com/docs/errors/quota";
+}
+
+// or per instance
+throw new ApiException("Quota exceeded", { documentation_url: "https://example.com/docs/errors/quota" });
+```
+
+Throwing `new QuotaExceededException("Quota exceeded")` produces a `429` response like:
+
+```json
+{
+  "success": false,
+  "errors": [
+    {
+      "code": 8001,
+      "message": "Quota exceeded",
+      "documentation_url": "https://example.com/docs/errors/quota"
+    }
+  ],
+  "result": null
+}
+```
+
+When set on the class, `schema()` documents `documentation_url` as an optional field. A `documentation_url` passed to the constructor takes precedence over the class property. Constructors that take extra arguments (`InputValidationException`, `UnprocessableEntityException`, `TooManyRequestsException`, `ServiceUnavailableException`) accept the options as their last argument, and `ResponseValidationException` accepts them alongside `cause`. `MultiException` does not take a `documentation_url`; each child exception carries its own.
 
 ## The `handleError` Hook
 
