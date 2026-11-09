@@ -1,5 +1,29 @@
 # chanfana
 
+## 3.5.0
+
+### Minor Changes
+
+- [#379](https://github.com/cloudflare/chanfana/pull/379) [`3c021fd`](https://github.com/cloudflare/chanfana/commit/3c021fd10b9ba2a19be1c679ad02a432ac99d9d1) Thanks [@G4brym](https://github.com/G4brym)! - Align error responses with the Cloudflare API response guidelines.
+  
+  Visible by default:
+  
+  - Error responses formatted by chanfana now always return `result: null` instead of `result: {}`. Clients that check `result` for truthiness or expect it to be an object may be affected.
+  - JSON responses (including `openapi.json`) use `content-type: application/json`; the `;charset=UTF-8` suffix was dropped.
+  
+  Additions:
+  
+  - Exceptions accept an optional `documentation_url` (class property or `{ documentation_url }` constructor option, which takes precedence) that is included in each error object and documented in `schema()` when set on the class.
+  - New exported `ApiErrorObject` type describes the objects returned by `buildResponse()`.
+
+### Patch Changes
+
+- [#373](https://github.com/cloudflare/chanfana/pull/373) [`71cb068`](https://github.com/cloudflare/chanfana/commit/71cb068a9d2ecd8f6f0ebc67f059e78442e7be9d) Thanks [@kwy404](https://github.com/kwy404)! - Document a route registered at `/` under the `/` path in the generated OpenAPI schema. It was listed under an empty path, which is not a valid OpenAPI path.
+  
+  This is a visible change in generated schemas: if you relied on the `""` path key (e.g. in snapshots or client generators), you will now see `/`. Root routes of nested routers are documented at the mount path, without a trailing slash.
+
+- [#379](https://github.com/cloudflare/chanfana/pull/379) [`3c021fd`](https://github.com/cloudflare/chanfana/commit/3c021fd10b9ba2a19be1c679ad02a432ac99d9d1) Thanks [@G4brym](https://github.com/G4brym)! - Build with `exactOptionalPropertyTypes` and `noPropertyAccessFromIndexSignature`, and replace several unchecked casts with type guards. `handleDbError()` now accepts `unknown` errors (non-`Error` values are wrapped). No runtime behavior changes for valid inputs; `hono.on(method, path, Endpoint)` now throws the "single method+path" error early when `path` is not a string.
+
 ## 3.4.2
 
 ### Patch Changes
