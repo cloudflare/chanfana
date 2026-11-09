@@ -154,6 +154,45 @@ describe("openapi schema generation", () => {
     expect(Object.keys(router.schema.paths)).toEqual(["/", "/foo"]);
   });
 
+  it("documents the root route with a base as the base path", async () => {
+    const router = fromHono(new Hono(), { base: "/api" });
+    router.get("/", YamlRoundTripEndpoint);
+
+    expect(Object.keys(router.schema.paths)).toEqual(["/api"]);
+  });
+
+  it("documents a nested root route mounted at / under a parent base", async () => {
+    const child = fromHono(new Hono());
+    child.get("/", YamlRoundTripEndpoint);
+    child.get("/foo", YamlRoundTripEndpoint);
+
+    const router = fromHono(new Hono(), { base: "/api" });
+    router.route("/", child);
+
+    expect(Object.keys(router.schema.paths)).toEqual(["/api", "/api/foo"]);
+  });
+
+  it("documents a deeply nested root route", async () => {
+    const grandchild = fromHono(new Hono());
+    grandchild.get("/", YamlRoundTripEndpoint);
+
+    const child = fromHono(new Hono());
+    child.route("/b", grandchild);
+
+    const router = fromHono(new Hono());
+    router.route("/a", child);
+
+    expect(Object.keys(router.schema.paths)).toEqual(["/a/b"]);
+  });
+
+  it("generates operationId get for the root route", async () => {
+    const router = fromHono(new Hono());
+    // Anonymous handler so the operationId falls back to the path-based id
+    router.get("/", class extends YamlRoundTripEndpoint {});
+
+    expect(router.schema.paths["/"].get.operationId).toBe("get");
+  });
+
   it("documents zod v4 string formats", async () => {
     const router = fromHono(new Hono());
     router.get("/formats", StringFormatsEndpoint);
