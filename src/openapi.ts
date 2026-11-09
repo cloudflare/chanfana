@@ -201,9 +201,7 @@ export class OpenAPIHandler {
     const path = params.nestedRouter.options?.base
       ? undefined
       : params.path
-        ? ((this.options.base || "") + params.path)
-            .replaceAll(/\/+(\/|$)/g, "$1") // strip double & trailing slash
-            .replaceAll(/:(\w+)/g, "{$1}") // convert parameters into openapi compliant
+        ? this.normalizePath(params.path)
         : undefined;
 
     const nestedIds = params.nestedRouter.generatedOperationIds;
@@ -227,10 +225,19 @@ export class OpenAPIHandler {
    * @returns The parsed and formatted path
    */
   parseRoute(path: string): string {
-    const route = ((this.options.base || "") + path)
+    // OpenAPI paths must start with "/"; an empty result means the root route
+    return this.normalizePath(path) || "/";
+  }
+
+  /**
+   * Applies the base path, strips double and trailing slashes, and converts parameters to OpenAPI format.
+   * @param path - The route path to normalize
+   * @returns The normalized path, or an empty string for the root route
+   */
+  private normalizePath(path: string): string {
+    return ((this.options.base || "") + path)
       .replaceAll(/\/+(\/|$)/g, "$1") // strip double & trailing slash
       .replaceAll(/:(\w+)/g, "{$1}"); // convert parameters into openapi compliant
-    return route || "/"; // the root route is "/", openapi paths must start with a slash
   }
 
   /**

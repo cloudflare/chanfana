@@ -132,6 +132,28 @@ describe("openapi schema generation", () => {
     expect(Object.keys(router.schema.paths)).toEqual(["/", "/child"]);
   });
 
+  it("documents the root route as / with itty-router", async () => {
+    const child = fromIttyRouter(AutoRouter({ base: "/child" }), { base: "/child" });
+    child.get("/", YamlRoundTripEndpoint);
+
+    const router = fromIttyRouter(AutoRouter());
+    router.get("/", YamlRoundTripEndpoint);
+    router.all("/child/*", child);
+
+    expect(Object.keys(router.schema.paths)).toEqual(["/", "/child"]);
+  });
+
+  it("documents a nested root route mounted at /", async () => {
+    const child = fromHono(new Hono());
+    child.get("/", YamlRoundTripEndpoint);
+    child.get("/foo", YamlRoundTripEndpoint);
+
+    const router = fromHono(new Hono());
+    router.route("/", child);
+
+    expect(Object.keys(router.schema.paths)).toEqual(["/", "/foo"]);
+  });
+
   it("documents zod v4 string formats", async () => {
     const router = fromHono(new Hono());
     router.get("/formats", StringFormatsEndpoint);
