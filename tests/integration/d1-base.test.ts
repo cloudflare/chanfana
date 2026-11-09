@@ -201,6 +201,22 @@ describe("D1 Base Utilities", () => {
   });
 
   describe("handleDbError", () => {
+    it("should preserve the template documentation_url", () => {
+      const constraintsMessages = {
+        "users.email": new InputValidationException("Email already exists", ["body", "email"], {
+          documentation_url: "https://example.com/unique",
+        }),
+      };
+      try {
+        handleDbError(new Error("UNIQUE constraint failed: users.email"), constraintsMessages);
+      } catch (e) {
+        expect((e as InputValidationException).buildResponse()[0]?.documentation_url).toBe(
+          "https://example.com/unique",
+        );
+      }
+      expect.assertions(1);
+    });
+
     it("should throw sanitized error for generic errors", () => {
       const error = new Error("some internal error");
       expect(() => handleDbError(error, {})).toThrow("Database operation failed");

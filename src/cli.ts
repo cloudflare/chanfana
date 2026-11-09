@@ -6,6 +6,10 @@ import { dirname, join } from "node:path";
 const READY_KEYWORD = "ready on";
 const URL_REGEX = /ready on\s+(https?:\/\/[\w.-]+:\d+)/i;
 
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 // Parse command-line arguments
 let outputFile = "schema.json";
 const wranglerArgs: string[] = ["wrangler", "dev"];
@@ -40,9 +44,11 @@ for (let i = 0; i < args.length; i++) {
     }
     outputFile = filePath;
     i++;
-  } else if (typeof args[i] === "string") {
-    // Ensure args[i] is a defined string
-    wranglerArgs.push(args[i] as string);
+  } else {
+    const arg = args[i];
+    if (typeof arg === "string") {
+      wranglerArgs.push(arg);
+    }
   }
 }
 
@@ -122,8 +128,7 @@ childProcess.stdout.on("data", async (data: Buffer) => {
           await writeFile(resolvedOutputFile, schemaString);
           console.log(`Schema written to ${resolvedOutputFile}`);
         } catch (err: unknown) {
-          const error = err as Error;
-          console.error(`Error writing schema to ${resolvedOutputFile}: ${error.message}`);
+          console.error(`Error writing schema to ${resolvedOutputFile}: ${errorMessage(err)}`);
           console.error("Buffered output:", outputBuffer.join("\n"));
           childProcess.kill("SIGTERM");
           process.exit(1);
@@ -133,8 +138,7 @@ childProcess.stdout.on("data", async (data: Buffer) => {
         childProcess.kill("SIGTERM");
         process.exit(0);
       } catch (err: unknown) {
-        const error = err as Error;
-        console.error(`Fetch error: ${error.message}`);
+        console.error(`Fetch error: ${errorMessage(err)}`);
         console.error("Buffered output:", outputBuffer.join("\n"));
         childProcess.kill("SIGTERM");
         process.exit(1);
@@ -175,8 +179,7 @@ process.on("SIGTERM", () => {
   process.exit(0);
 });
 process.on("uncaughtException", (err: unknown) => {
-  const error = err as Error;
-  console.error("Uncaught Exception:", error.message);
+  console.error("Uncaught Exception:", errorMessage(err));
   console.error("Buffered output:", outputBuffer.join("\n"));
   cleanup();
   process.exit(1);

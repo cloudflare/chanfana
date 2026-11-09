@@ -265,7 +265,8 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       return undefined;
     }
 
-    const responseConfig = responses[String(statusCode)] ?? responses.default;
+    // biome-ignore lint/complexity/useLiteralKeys: noPropertyAccessFromIndexSignature
+    const responseConfig = responses[String(statusCode)] ?? responses["default"];
     if (!responseConfig) {
       return undefined;
     }
@@ -369,14 +370,17 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 
     const rawSchema: Record<string, z.ZodType> = {};
     if (schema.request?.params) {
-      rawSchema.params = schema.request.params;
+      // biome-ignore lint/complexity/useLiteralKeys: noPropertyAccessFromIndexSignature
+      rawSchema["params"] = schema.request.params;
     }
     if (schema.request?.query) {
-      rawSchema.query = schema.request.query;
+      // biome-ignore lint/complexity/useLiteralKeys: noPropertyAccessFromIndexSignature
+      rawSchema["query"] = schema.request.query;
     }
 
     if (schema.request?.headers) {
-      rawSchema.headers = schema.request.headers as AnyZodObject;
+      // biome-ignore lint/complexity/useLiteralKeys: noPropertyAccessFromIndexSignature
+      rawSchema["headers"] = schema.request.headers as AnyZodObject;
     }
 
     if (
@@ -384,7 +388,8 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       schema.request?.body?.content?.["application/json"]?.schema
     ) {
       // Non-Zod (plain OpenAPI) body schemas are not supported for validation
-      rawSchema.body = schema.request.body.content["application/json"].schema as z.ZodType;
+      // biome-ignore lint/complexity/useLiteralKeys: noPropertyAccessFromIndexSignature
+      rawSchema["body"] = schema.request.body.content["application/json"].schema as z.ZodType;
     }
 
     const validationSchema: z.ZodType =

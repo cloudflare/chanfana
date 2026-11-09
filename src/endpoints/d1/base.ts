@@ -1,4 +1,5 @@
 import { ApiException, InputValidationException } from "../../exceptions";
+import { getDocumentationUrl } from "../../internal/errorExtras";
 import type { OrderByDirection } from "../../types";
 import type { FilterCondition, Filters, Logger } from "../types";
 
@@ -81,6 +82,10 @@ export function validateColumnName(columnName: string, validColumns?: string[]):
   return validated;
 }
 
+function isOrderByDirection(value: string): value is OrderByDirection {
+  return VALID_ORDER_DIRECTIONS.has(value);
+}
+
 /**
  * Validates and normalizes an ORDER BY direction.
  *
@@ -89,7 +94,7 @@ export function validateColumnName(columnName: string, validColumns?: string[]):
  */
 export function validateOrderDirection(direction: string | undefined): OrderByDirection {
   const normalized = (direction || "asc").toLowerCase().trim();
-  return VALID_ORDER_DIRECTIONS.has(normalized) ? (normalized as OrderByDirection) : "asc";
+  return isOrderByDirection(normalized) ? normalized : "asc";
 }
 
 /**
@@ -193,11 +198,15 @@ export function getD1Binding<Args extends Array<unknown>>(
     throw new ApiException(`Binding "${dbName}" is not defined in worker`);
   }
 
-  if (Reflect.get(Object(binding), "prepare") === undefined) {
+  if (!isD1Database(binding)) {
     throw new ApiException(`Binding "${dbName}" is not a D1 binding`);
   }
 
-  return binding as D1Database;
+  return binding;
+}
+
+function isD1Database(value: unknown): value is D1Database {
+  return Reflect.get(Object(value), "prepare") !== undefined;
 }
 
 /**
@@ -210,11 +219,12 @@ export function getD1Binding<Args extends Array<unknown>>(
  * @throws The mapped InputValidationException or a sanitized ApiException
  */
 export function handleDbError(
-  error: Error,
+  rawError: unknown,
   constraintsMessages: Record<string, InputValidationException>,
   logger?: Logger,
   operation?: string,
 ): never {
+  const error = rawError instanceof Error ? rawError : new Error(String(rawError));
   if (logger && operation) {
     logger.error(`Database error during ${operation}: ${error.message}`);
   }
@@ -227,7 +237,9 @@ export function handleDbError(
       if (constraintsMessages[constraintName]) {
         // Clone the exception to avoid sharing mutable state across concurrent requests
         const template = constraintsMessages[constraintName];
-        throw new InputValidationException(template.message, template.path);
+        throw new InputValidationException(template.message, template.path, {
+          documentation_url: getDocumentationUrl(template),
+        });
       }
     }
   }

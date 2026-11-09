@@ -288,7 +288,7 @@ router.get("/user/:id", GetUserEndpoint);
 {
     "success": false,
     "errors": [{ "code": 7013, "message": "Internal Error" }],
-    "result": {}
+    "result": null
 }
 ```
 

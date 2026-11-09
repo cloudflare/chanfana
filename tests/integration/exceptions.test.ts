@@ -251,7 +251,7 @@ describe("Exception Handling", () => {
     expect(resp.errors).toHaveLength(1);
     expect(resp.errors[0].code).toBe(7000);
     expect(resp.errors[0].message).toBe("Something went wrong");
-    expect(resp.result).toEqual({});
+    expect(resp.result).toBeNull();
   });
 
   it("should catch NotFoundException and return 404", async () => {

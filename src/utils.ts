@@ -18,7 +18,7 @@ export function jsonResp(data: unknown, params?: object): Response {
   const init = params as ResponseInit | undefined;
   return new Response(JSON.stringify(data), {
     headers: {
-      "content-type": "application/json;charset=UTF-8",
+      "content-type": "application/json",
     },
     status: init?.status ? init.status : 200,
     ...init,
@@ -52,7 +52,7 @@ export function formatChanfanaError(e: unknown): Response | null {
           path: issue.path.map(String),
         })),
         success: false,
-        result: {},
+        result: null,
       },
       {
         status: 400,
@@ -64,7 +64,7 @@ export function formatChanfanaError(e: unknown): Response | null {
   if (isApiExceptionLike(e)) {
     const apiError = e;
     const headers: Record<string, string> = {
-      "content-type": "application/json;charset=UTF-8",
+      "content-type": "application/json",
     };
     if (apiError.retryAfter !== undefined) {
       headers["Retry-After"] = String(apiError.retryAfter);
@@ -73,7 +73,7 @@ export function formatChanfanaError(e: unknown): Response | null {
       JSON.stringify({
         success: false,
         errors: apiError.buildResponse(),
-        result: {},
+        result: null,
       }),
       {
         status: apiError.status,
