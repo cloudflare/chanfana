@@ -136,5 +136,7 @@ have an OpenAPI-compliant schema without worrying about implementation details o
 chanfana is considered stable and production ready and is being used with
 the [Radar 2.0 public API](https://developers.cloudflare.com/radar/) and many other Cloudflare products.
 
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to set up the project and submit changes.
+
 You can also talk to us in the [Cloudflare Community](https://community.cloudflare.com/) or
 the [Radar Discord Channel](https://discord.com/channels/595317990191398933/1035553707116478495)
