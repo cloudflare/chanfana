@@ -91,6 +91,65 @@ describe("optional headers", () => {
   });
 });
 
+class ArrayParametersEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      query: z.object({
+        ids: z.number().array().optional(),
+        flags: z.array(z.boolean()).optional(),
+        days: z.array(z.date()).optional(),
+        tags: z.array(z.string()).default([]),
+      }),
+    },
+  };
+
+  async handle() {
+    return this.getValidatedData<typeof this.schema>();
+  }
+}
+
+const arrayParametersRouter = fromIttyRouter(AutoRouter());
+arrayParametersRouter.get("/array-parameters", ArrayParametersEndpoint);
+
+describe("array parameter coercion", () => {
+  it("coerces every item of a repeated query parameter", async () => {
+    const response = await arrayParametersRouter.fetch(
+      new Request(
+        "https://example.com/array-parameters?ids=1&ids=2.5&flags=true&flags=FALSE&days=2024-01-02&days=2024-03-04&tags=1&tags=true",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      query: {
+        ids: [1, 2.5],
+        flags: [true, false],
+        days: ["2024-01-02T00:00:00.000Z", "2024-03-04T00:00:00.000Z"],
+        tags: ["1", "true"],
+      },
+    });
+  });
+
+  it("coerces a single query parameter into an array", async () => {
+    const response = await arrayParametersRouter.fetch(new Request("https://example.com/array-parameters?ids=7"));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ query: { ids: [7], tags: [] } });
+  });
+
+  it("rejects an invalid item", async () => {
+    const response = await arrayParametersRouter.fetch(
+      new Request("https://example.com/array-parameters?ids=1&ids=abc"),
+    );
+    const resp = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(resp.errors).toEqual([
+      { code: 7001, message: "Invalid input: expected number, received NaN", path: ["query", "ids", "1"] },
+    ]);
+  });
+});
+
 describe("queryParametersValidation", () => {
   it("requiredFields", async () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: "/todos" }));
