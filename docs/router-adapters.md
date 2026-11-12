@@ -150,11 +150,34 @@ The `fromHono` function returns an object of type `HonoOpenAPIRouterType`. This 
 
 **Key extensions provided by `HonoOpenAPIRouterType`:**
 
-*   **OpenAPI Routing Methods:**  `get()`, `post()`, `put()`, `delete()`, `patch()`, `all()`, `on()`, `route()` methods are extended to handle `OpenAPIRoute` classes and automatically register them for OpenAPI documentation and validation.
+*   **OpenAPI Routing Methods:**  `get()`, `post()`, `put()`, `delete()`, `patch()`, `all()`, `on()`, `route()` methods are extended to handle `OpenAPIRoute` classes (optionally after route middleware, see [Route Middleware and `chanfanaValidator()`](#route-middleware-and-chanfanavalidator)) and automatically register them for OpenAPI documentation and validation.
 *   **`original` Property:**  Provides access to the original Hono application instance.
 *   **`options` Property:**  Provides access to the `RouterOptions` passed to `fromHono`.
 *   **`registry` Property:**  Provides access to the OpenAPI registry used by Chanfana to collect schema definitions.
 *   **`schema()` Method:**  Returns the generated OpenAPI schema as a JavaScript object.
+
+### Route Middleware and `chanfanaValidator()`
+
+Route registrations accept Hono middleware before the endpoint class, typed like in Hono (each middleware sees your app's `Env` and the `Variables` set by the middleware before it):
+
+```typescript
+openapi.post('/users', authMiddleware, CreateUser);
+```
+
+To use the endpoint's validated data in those middleware, add the `chanfanaValidator()` marker. Middleware after it can read the validated, typed request data with `c.req.valid('json' | 'query' | 'param' | 'header')`, and the endpoint reuses that data instead of validating the request again:
+
+```typescript
+import { chanfanaValidator } from 'chanfana';
+
+openapi.post('/users', authMiddleware, chanfanaValidator(), async (c, next) => {
+    const { email } = c.req.valid('json'); // typed from CreateUser's schema
+    return next();
+}, CreateUser);
+```
+
+The marker is opt-in: routes without it keep validating lazily, in the endpoint. Invalid requests get the same `400` response as without it. It is only supported with `fromHono()`, and middleware are typed for up to 5 middleware before the endpoint. See [Validated Request Data in Middleware](./advanced-topics-patterns.md#middleware-and-interceptors) for the details and limitations.
+
+The `OpenAPIRouteHonoValidatedInput<typeof Endpoint, "post">` type gives the Hono `Input` that `chanfanaValidator()` adds, if you write reusable middleware typed for a specific endpoint.
 
 ### Typed RPC Client (`hono/client`)
 
@@ -242,7 +265,7 @@ Response types describe the JSON the client receives, the same way Hono types `c
 *   Bodies declared with `contentJson()` use the schema's output type, because `contentJson()` doesn't keep the schema's input type. Fields with a `.default()` are then required in the client, and a `z.preprocess()` body is typed with its parsed type. Use `{ content: { "application/json": { schema } } }` directly to get the input type (fields with defaults become optional; a `z.preprocess()` body accepts `unknown`).
 *   Response types are declared, not checked: they come from the schema, not from what `handle()` returns. Enable [`validateResponse`](./openapi-configuration-customization.md#validateresponse-response-body-validation) to enforce them at runtime.
 *   Form, cookie and non-JSON request bodies are not typed. Routes registered with `on()` are not typed.
-*   Route-level middleware combined with an endpoint class (`openapi.get(path, middleware, Endpoint)`) works at runtime but is not accepted by the TypeScript types. Register the middleware with `app.use(path, middleware)` instead.
+*   Route-level middleware before an endpoint class (`openapi.get(path, middleware, Endpoint)`) keeps the endpoint's client types. Responses returned by the middleware are not added to the client's response types.
 *   Routes must be chained (or the type of each step reassigned); registering them as separate statements keeps the router's type unchanged, as in Hono.
 
 ### Example with Hono

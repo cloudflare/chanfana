@@ -1,4 +1,4 @@
-import type { Context, Hono, Input } from "hono";
+import type { Context, Hono, Input, MiddlewareHandler } from "hono";
 import type {
   BlankInput,
   BlankSchema,
@@ -14,8 +14,15 @@ import type {
 import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
 import type { JSONParsed } from "hono/utils/types";
 import type { z, ZodType } from "zod";
-import { type NestedRouter, OpenAPIHandler, type OpenAPIRouterType, type RouteHandler } from "../openapi";
-import type { OpenAPIRouteClass } from "../route";
+import {
+  CHANFANA_VALIDATOR,
+  isValidatorMarker,
+  type NestedRouter,
+  OpenAPIHandler,
+  type OpenAPIRouterType,
+  type RouteHandler,
+} from "../openapi";
+import type { OpenAPIRoute, OpenAPIRouteClass, PrevalidatedData } from "../route";
 import type { AnyZodObject, IsEqual, RouterOptions, Simplify } from "../types";
 import { formatChanfanaError, validateBasePath } from "../utils";
 
@@ -129,6 +136,195 @@ type OpenAPIRouteToSchema<
   BasePath extends string,
 > = ToSchema<M, MergePath<BasePath, P>, OpenAPIRouteHonoInput<T>, OpenAPIRouteHonoOutput<T>>;
 
+// Types used to type `c.req.valid()` in middleware placed after chanfanaValidator(). Unlike OpenAPIRouteHonoInput
+// (the client-side input), these are the validated Zod outputs, with coercions and defaults applied.
+
+// An endpoint with a non-literal schema can't be typed, `any` keeps c.req.valid() usable for every target chanfana validates
+type UntypedInput = {
+  // oxlint-disable-next-line typescript/no-explicit-any -- see above
+  out: { json: any; query: any; param: any; header: any };
+};
+
+// Like the built-in NoInfer (TypeScript 5.4+): the input carried from the previous middleware isn't inferred from the
+// next one, so a middleware with its own (usually empty) input doesn't drop the validated input
+type NoInferInput<T> = [T][T extends unknown ? 0 : never];
+
+type ValidatedRequestPart<Request, Part extends string, Target extends string> =
+  Request extends Record<Part, infer V>
+    ? IsDeclared<V> extends true
+      ? V extends ZodType
+        ? { [K in Target]: z.output<V> }
+        : NoInput
+      : NoInput
+    : NoInput;
+
+type ValidatedRequestJson<Request, M extends string> = M extends "get" | "head"
+  ? NoInput
+  : Request extends { body: infer B }
+    ? B extends { content: { "application/json": { schema: infer Z } } }
+      ? Z extends ZodType
+        ? { json: z.output<Z> }
+        : NoInput
+      : NoInput
+    : NoInput;
+
+type ValidatedRouteRequest<Request, M extends string> =
+  IsDeclared<Request> extends true
+    ? ValidatedRequestPart<Request, "params", "param"> &
+        ValidatedRequestPart<Request, "query", "query"> &
+        ValidatedRequestPart<Request, "headers", "header"> &
+        ValidatedRequestJson<Request, M>
+    : NoInput;
+
+/**
+ * Hono `Input` with the request data validated by chanfanaValidator() for an OpenAPIRoute class: `c.req.valid()` returns
+ * the Zod output of the endpoint's params, query, headers and JSON body (no JSON body for GET/HEAD routes).
+ * Endpoints with a non-literal schema (e.g. annotated as `OpenAPIRouteSchema` or built in `getSchema()`) give `any`.
+ */
+export type OpenAPIRouteHonoValidatedInput<T extends OpenAPIRouteClass, M extends string> =
+  Record<never, never> extends InstanceType<T>["schema"]
+    ? UntypedInput
+    : InstanceType<T>["schema"] extends { request: infer Request }
+      ? ValidatedRouteRequest<Request, Lowercase<M>> extends infer Out
+        ? { out: { [K in keyof Out]: Out[K] } }
+        : BlankInput
+      : { out: NoInput };
+
+type ValidatorMarker = { readonly [CHANFANA_VALIDATOR]: true };
+
+/** Input of the handler that follows `Mw`: adds the endpoint's validated input after the chanfanaValidator() marker. */
+type After<Mw, I extends Input, T extends OpenAPIRouteClass, M extends string> = Mw extends ValidatorMarker
+  ? I & OpenAPIRouteHonoValidatedInput<T, M>
+  : I;
+
+// Local copy of Hono's IntersectNonAnyTypes (not exported by every supported Hono version): `any` and the wide `Env`
+// don't contribute to the intersection, so untyped middleware keep the Env of the router
+type ProcessEnv<T> = 0 extends 1 & T ? NoInput : T extends Env ? (Env extends T ? NoInput : T) : T;
+type IntersectEnv<T extends unknown[]> = T extends [infer Head, ...infer Rest]
+  ? ProcessEnv<Head> & IntersectEnv<Rest>
+  : NoInput;
+
+// oxlint-disable-next-line typescript/no-explicit-any -- untyped fallback for longer chains, like Hono's own variadic overloads
+type UntypedHandler = H<any, any, UntypedInput>;
+
+// The chain overloads read the router's Env, Schema and BasePath from `this` instead of taking them as type parameters.
+// This keeps them out of HonoOpenAPIRouterType's variance measurement, which otherwise compares every overload
+// against Hono's own (very large) handler overloads and exceeds TypeScript's instantiation limits.
+type RouterOriginal<Self> = Self extends { original: infer O } ? O : never;
+type EnvOf<Self> = RouterOriginal<Self> extends Hono<infer E, infer _S, infer _BP> ? E : Env;
+type BaseOf<Self> = RouterOriginal<Self> extends Hono<infer _E, infer _S, infer BP> ? BP : string;
+type EndpointChainResult<Self, M extends string, P extends string, T extends OpenAPIRouteClass> =
+  RouterOriginal<Self> extends Hono<infer E, infer S, infer BP>
+    ? HonoOpenAPIRouterType<E, S & OpenAPIRouteToSchema<M, P, T, BP>, BP>
+    : never;
+
+/**
+ * Overloads for routes that run middleware before an OpenAPIRoute endpoint, e.g. `post(path, authMw, Endpoint)`.
+ * Up to 5 middleware are typed: each one sees the Env of the middleware before it and, after chanfanaValidator(),
+ * the endpoint's validated input. Longer chains fall back to untyped handlers.
+ */
+interface HonoEndpointChain<Method extends string> {
+  <Self, P extends string, T extends OpenAPIRouteClass, E2 extends Env = EnvOf<Self>, I extends Input = BlankInput>(
+    this: Self,
+    path: P,
+    m1: H<E2, MergePath<BaseOf<Self>, P>, I>,
+    endpoint: T,
+  ): EndpointChainResult<Self, Method, P, T>;
+  <
+    Self,
+    P extends string,
+    T extends OpenAPIRouteClass,
+    E2 extends Env = EnvOf<Self>,
+    E3 extends Env = IntersectEnv<[EnvOf<Self>, E2]>,
+    I extends Input = BlankInput,
+    M1 extends H<E2, MergePath<BaseOf<Self>, P>, I> = H<E2, MergePath<BaseOf<Self>, P>, I>,
+    I2 extends Input = After<M1, I, T, Method>,
+  >(
+    this: Self,
+    path: P,
+    m1: H<E2, MergePath<BaseOf<Self>, P>, I> & M1,
+    m2: H<E3, MergePath<BaseOf<Self>, P>, NoInferInput<I2>>,
+    endpoint: T,
+  ): EndpointChainResult<Self, Method, P, T>;
+  <
+    Self,
+    P extends string,
+    T extends OpenAPIRouteClass,
+    E2 extends Env = EnvOf<Self>,
+    E3 extends Env = IntersectEnv<[EnvOf<Self>, E2]>,
+    E4 extends Env = IntersectEnv<[EnvOf<Self>, E2, E3]>,
+    I extends Input = BlankInput,
+    M1 extends H<E2, MergePath<BaseOf<Self>, P>, I> = H<E2, MergePath<BaseOf<Self>, P>, I>,
+    I2 extends Input = After<M1, I, T, Method>,
+    M2 extends H<E3, MergePath<BaseOf<Self>, P>, I2> = H<E3, MergePath<BaseOf<Self>, P>, I2>,
+    I3 extends Input = After<M2, I2, T, Method>,
+  >(
+    this: Self,
+    path: P,
+    m1: H<E2, MergePath<BaseOf<Self>, P>, I> & M1,
+    m2: H<E3, MergePath<BaseOf<Self>, P>, NoInferInput<I2>> & M2,
+    m3: H<E4, MergePath<BaseOf<Self>, P>, NoInferInput<I3>>,
+    endpoint: T,
+  ): EndpointChainResult<Self, Method, P, T>;
+  <
+    Self,
+    P extends string,
+    T extends OpenAPIRouteClass,
+    E2 extends Env = EnvOf<Self>,
+    E3 extends Env = IntersectEnv<[EnvOf<Self>, E2]>,
+    E4 extends Env = IntersectEnv<[EnvOf<Self>, E2, E3]>,
+    E5 extends Env = IntersectEnv<[EnvOf<Self>, E2, E3, E4]>,
+    I extends Input = BlankInput,
+    M1 extends H<E2, MergePath<BaseOf<Self>, P>, I> = H<E2, MergePath<BaseOf<Self>, P>, I>,
+    I2 extends Input = After<M1, I, T, Method>,
+    M2 extends H<E3, MergePath<BaseOf<Self>, P>, I2> = H<E3, MergePath<BaseOf<Self>, P>, I2>,
+    I3 extends Input = After<M2, I2, T, Method>,
+    M3 extends H<E4, MergePath<BaseOf<Self>, P>, I3> = H<E4, MergePath<BaseOf<Self>, P>, I3>,
+    I4 extends Input = After<M3, I3, T, Method>,
+  >(
+    this: Self,
+    path: P,
+    m1: H<E2, MergePath<BaseOf<Self>, P>, I> & M1,
+    m2: H<E3, MergePath<BaseOf<Self>, P>, NoInferInput<I2>> & M2,
+    m3: H<E4, MergePath<BaseOf<Self>, P>, NoInferInput<I3>> & M3,
+    m4: H<E5, MergePath<BaseOf<Self>, P>, NoInferInput<I4>>,
+    endpoint: T,
+  ): EndpointChainResult<Self, Method, P, T>;
+  <
+    Self,
+    P extends string,
+    T extends OpenAPIRouteClass,
+    E2 extends Env = EnvOf<Self>,
+    E3 extends Env = IntersectEnv<[EnvOf<Self>, E2]>,
+    E4 extends Env = IntersectEnv<[EnvOf<Self>, E2, E3]>,
+    E5 extends Env = IntersectEnv<[EnvOf<Self>, E2, E3, E4]>,
+    E6 extends Env = IntersectEnv<[EnvOf<Self>, E2, E3, E4, E5]>,
+    I extends Input = BlankInput,
+    M1 extends H<E2, MergePath<BaseOf<Self>, P>, I> = H<E2, MergePath<BaseOf<Self>, P>, I>,
+    I2 extends Input = After<M1, I, T, Method>,
+    M2 extends H<E3, MergePath<BaseOf<Self>, P>, I2> = H<E3, MergePath<BaseOf<Self>, P>, I2>,
+    I3 extends Input = After<M2, I2, T, Method>,
+    M3 extends H<E4, MergePath<BaseOf<Self>, P>, I3> = H<E4, MergePath<BaseOf<Self>, P>, I3>,
+    I4 extends Input = After<M3, I3, T, Method>,
+    M4 extends H<E5, MergePath<BaseOf<Self>, P>, I4> = H<E5, MergePath<BaseOf<Self>, P>, I4>,
+    I5 extends Input = After<M4, I4, T, Method>,
+  >(
+    this: Self,
+    path: P,
+    m1: H<E2, MergePath<BaseOf<Self>, P>, I> & M1,
+    m2: H<E3, MergePath<BaseOf<Self>, P>, NoInferInput<I2>> & M2,
+    m3: H<E4, MergePath<BaseOf<Self>, P>, NoInferInput<I3>> & M3,
+    m4: H<E5, MergePath<BaseOf<Self>, P>, NoInferInput<I4>> & M4,
+    m5: H<E6, MergePath<BaseOf<Self>, P>, NoInferInput<I5>>,
+    endpoint: T,
+  ): EndpointChainResult<Self, Method, P, T>;
+  <Self, P extends string, T extends OpenAPIRouteClass>(
+    this: Self,
+    path: P,
+    ...handlers: [...UntypedHandler[], T]
+  ): EndpointChainResult<Self, Method, P, T>;
+}
+
 const HIJACKED_METHODS = new Set(["basePath", "on", "route", "delete", "get", "patch", "post", "put", "all"]);
 
 export type HonoOpenAPIRouterType<
@@ -198,6 +394,15 @@ export type HonoOpenAPIRouterType<
     endpoint: OpenAPIRouteClass | H,
   ): HonoOpenAPIRouterType<E, S & ToSchema<"put", MergePath<BasePath, P>, I, MergeTypedResponse<R>>, BasePath>;
   put(path: string, router: Hono<E, S, BasePath>): Hono<E, S, BasePath>["put"];
+} & {
+  // Middleware before an endpoint class, typed with chanfanaValidator()
+  all: HonoEndpointChain<"all">;
+  delete: HonoEndpointChain<"delete">;
+  get: HonoEndpointChain<"get">;
+  patch: HonoEndpointChain<"patch">;
+  post: HonoEndpointChain<"post">;
+  put: HonoEndpointChain<"put">;
+  on<Self>(this: Self, method: string, path: string, ...handlers: [...UntypedHandler[], OpenAPIRouteClass]): Self;
   // Hono must be defined last, for the overwrite method to have priority!
 } & Hono<E, S, BasePath>;
 
@@ -223,6 +428,17 @@ function getHonoBasePath(router: unknown): string | undefined {
   }
   return bp;
 }
+
+// Endpoint instance that validated the request in chanfanaValidator(), per request context
+const prevalidatedRoutes = new WeakMap<Context, OpenAPIRoute>();
+
+/** Hono validation targets filled by chanfanaValidator(), mapped to chanfana's validated data keys. */
+const VALIDATED_TARGETS = [
+  ["json", "body"],
+  ["query", "query"],
+  ["param", "params"],
+  ["header", "headers"],
+] as const;
 
 export class HonoOpenAPIHandler extends OpenAPIHandler {
   protected override get routerHandlesBasePrefix(): boolean {
@@ -254,6 +470,63 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
     };
   }
 
+  protected override bindValidator(createEndpoint: () => OpenAPIRoute): unknown {
+    // Uses wrapHandler() so that validation errors reach Hono exactly like errors thrown by the endpoint
+    const validate = this.wrapHandler(async (...args) => {
+      const c = args[0] as Context;
+      const route = createEndpoint();
+      const errorResponse = await route.prevalidate(c);
+      if (errorResponse) {
+        return errorResponse;
+      }
+
+      const data: Record<string, unknown> = route.validatedData ?? {};
+      for (const [target, key] of VALIDATED_TARGETS) {
+        if (data[key] !== undefined) {
+          c.req.addValidatedData(target, data[key] as Record<string, unknown>);
+        }
+      }
+      prevalidatedRoutes.set(c, route);
+      // No response: the middleware below continues the chain
+      return undefined as unknown as Response;
+    });
+
+    return async (c: Context, next: () => Promise<void>) => {
+      const errorResponse = await validate(c);
+      if (errorResponse) {
+        return errorResponse;
+      }
+      await next();
+      return undefined;
+    };
+  }
+
+  override getPrevalidatedData(args: unknown[], route: OpenAPIRoute): PrevalidatedData | undefined {
+    const c = args[0];
+    if (typeof c !== "object" || c === null) {
+      return undefined;
+    }
+
+    const prevalidated = prevalidatedRoutes.get(c as Context);
+    if (
+      prevalidated === undefined ||
+      prevalidated.constructor !== route.constructor ||
+      prevalidated.params.route !== route.params.route
+    ) {
+      return undefined;
+    }
+
+    return { validatedData: prevalidated.validatedData, unvalidatedData: prevalidated.unvalidatedData };
+  }
+
+  override readJsonBody(args: unknown[], route: OpenAPIRoute): Promise<unknown> {
+    // Hono caches the body read by c.req.json(), so other middleware can still read it after chanfanaValidator()
+    if (this.validatorRouteOptions.has(route.params)) {
+      return (args[0] as Context).req.json();
+    }
+    return super.readJsonBody(args, route);
+  }
+
   override getRequest(args: unknown[]): Request {
     return (args[0] as Context).req.raw;
   }
@@ -281,6 +554,32 @@ function isRouteLike(value: unknown): boolean {
     value !== null &&
     Boolean(Reflect.get(value, "isRoute"))
   );
+}
+
+/**
+ * Marks where chanfana validates the request in a Hono route's middleware chain. Middleware placed after it can read
+ * the endpoint's validated, typed request data with `c.req.valid("json" | "query" | "param" | "header")`, and the
+ * endpoint reuses that data instead of validating the request again.
+ *
+ * Only works on routes registered through `fromHono()`, placed before the endpoint class:
+ *
+ * @example
+ * ```typescript
+ * openapi.post("/users", authMiddleware, chanfanaValidator(), (c, next) => {
+ *   const body = c.req.valid("json"); // typed from CreateUser's schema
+ *   return next();
+ * }, CreateUser);
+ * ```
+ */
+// oxlint-disable-next-line typescript/no-explicit-any, typescript/no-empty-object-type -- the marker fits any route's Env/path, and adds no input itself
+export function chanfanaValidator(): MiddlewareHandler<any, any, {}> & { readonly [CHANFANA_VALIDATOR]: true } {
+  const marker = async () => {
+    throw new Error(
+      "chanfanaValidator() was called outside of a chanfana route. Register it in a route of a fromHono() router, " +
+        "before the endpoint class: openapi.post(path, chanfanaValidator(), Endpoint)",
+    );
+  };
+  return Object.assign(marker, { [CHANFANA_VALIDATOR]: true as const });
 }
 
 export function fromHono<
@@ -355,7 +654,7 @@ export function fromHono<
             return proxy;
           }
 
-          if (prop === "all" && handlers.length === 1 && isRouteLike(firstHandler)) {
+          if (prop === "all" && isRouteLike(handlers[handlers.length - 1])) {
             handlers = openapiRouter.registerRoute({
               method: prop,
               path: route,
@@ -383,6 +682,11 @@ export function fromHono<
             });
 
             handlers = [paths, ...handlers];
+          } else if (isValidatorMarker(route) || handlers.some(isValidatorMarker)) {
+            throw new Error(
+              `chanfanaValidator() is not supported in ${prop}(), use it in a route registration (get, post, put, ` +
+                `patch, delete, all or on), placed before an OpenAPIRoute endpoint class`,
+            );
           }
         }
 

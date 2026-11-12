@@ -15,6 +15,13 @@ export type UnvalidatedData = {
   body?: unknown;
 };
 
+/** Request data validated ahead of an endpoint, used by execute() to skip validating the same request twice. */
+export type PrevalidatedData = {
+  // oxlint-disable-next-line typescript/no-explicit-any -- mirrors the public `validatedData` cache
+  validatedData: any;
+  unvalidatedData: UnvalidatedData | undefined;
+};
+
 /**
  * Base class for all OpenAPI route handlers.
  * Provides request validation, error handling, and response formatting.
@@ -117,7 +124,11 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
       schema.request?.body?.content?.["application/json"]?.schema
     ) {
       try {
-        unvalidatedData.body = await request.json();
+        const router = this.params.router;
+        unvalidatedData.body =
+          typeof router?.readJsonBody === "function"
+            ? await router.readJsonBody(this.args, this)
+            : await request.json();
       } catch (_e) {
         // JSON parse error - store empty body and let Zod validation handle required fields
         unvalidatedData.body = {};
@@ -213,6 +224,13 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     this.unvalidatedData = undefined;
     this.args = args;
 
+    // Reuse the data validated earlier in this request by a validator middleware (e.g. chanfanaValidator())
+    const prevalidated: PrevalidatedData | undefined = this.params?.router?.getPrevalidatedData?.(args, this);
+    if (prevalidated) {
+      this.validatedData = prevalidated.validatedData;
+      this.unvalidatedData = prevalidated.unvalidatedData;
+    }
+
     let resp: unknown;
     try {
       resp = await this.handle(...args);
@@ -226,22 +244,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
         }
       }
     } catch (rawError) {
-      if (this.params?.passthroughErrors) {
-        throw rawError;
-      }
-
-      const e = this.handleError(rawError) ?? rawError;
-
-      if (this.params?.raiseOnError) {
-        throw e;
-      }
-
-      const errorResponse = formatChanfanaError(e);
-      if (errorResponse) {
-        return errorResponse;
-      }
-
-      throw e;
+      return this.handleExecutionError(rawError);
     }
 
     // Auto-convert plain objects to JSON responses
@@ -250,6 +253,51 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
     }
 
     return resp;
+  }
+
+  /**
+   * Validates the request without calling handle(), so that a middleware can run the validation ahead of the endpoint.
+   * Caches are reset first, like in execute(). Validation failures go through the same error handling as execute()
+   * (passthroughErrors, handleError(), raiseOnError and the default error response).
+   *
+   * @param args - Handler arguments from the router
+   * @returns The error response when validation fails, or undefined when the request is valid
+   */
+  async prevalidate(...args: HandleArgs): Promise<Response | undefined> {
+    this.validatedData = undefined;
+    this.unvalidatedData = undefined;
+    this.args = args;
+
+    try {
+      await this.getValidatedData();
+    } catch (rawError) {
+      return this.handleExecutionError(rawError);
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Error handling shared by execute() and prevalidate(): returns the formatted chanfana error response,
+   * or re-throws the error when it is unknown or the route is configured to raise errors.
+   */
+  private handleExecutionError(rawError: unknown): Response {
+    if (this.params?.passthroughErrors) {
+      throw rawError;
+    }
+
+    const e = this.handleError(rawError) ?? rawError;
+
+    if (this.params?.raiseOnError) {
+      throw e;
+    }
+
+    const errorResponse = formatChanfanaError(e);
+    if (errorResponse) {
+      return errorResponse;
+    }
+
+    throw e;
   }
 
   /**
