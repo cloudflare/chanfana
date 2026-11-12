@@ -112,8 +112,8 @@ class UpdateProfileEndpoint extends OpenAPIRoute {
     };
 
     async handle() {
-        // A body like { "displayName": "Ann", "role": "admin" } never gets here:
-        // validation fails with a 400 and error code 7001
+        // For a body like { "displayName": "Ann", "role": "admin" }, getValidatedData()
+        // rejects it with a 400 and error code 7001; the return below is not reached
         const data = await this.getValidatedData<typeof this.schema>();
         return { displayName: data.body.displayName };
     }

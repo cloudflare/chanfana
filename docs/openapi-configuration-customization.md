@@ -196,6 +196,12 @@ class CreateUserEndpoint extends OpenAPIRoute {
         },
         // ... responses
     };
+
+    async handle() {
+        // Validation runs here, so unknown fields are rejected before the return
+        const data = await this.getValidatedData<typeof this.schema>();
+        return { name: data.body.name };
+    }
 }
 ```
 
