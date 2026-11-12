@@ -3,7 +3,14 @@ import { HTTPException } from "hono/http-exception";
 import { AutoRouter } from "itty-router";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { fromHono, fromIttyRouter, InputValidationException, MultiException, OpenAPIRoute } from "../../src";
+import {
+  formatChanfanaError,
+  fromHono,
+  fromIttyRouter,
+  InputValidationException,
+  MultiException,
+  OpenAPIRoute,
+} from "../../src";
 import { contentJson } from "../../src/contentTypes";
 
 const SECRET_FIELD = "internalSecretColumn";
@@ -146,5 +153,83 @@ describe("ZodErrors thrown from handle() (Hono)", () => {
     expect(resp.status).toBe(400);
     expect(body.errors).toEqual([{ code: 7001, message: expect.any(String), path: ["body", "name"] }]);
     expect(errors[0]).toBeInstanceOf(HTTPException);
+  });
+});
+
+describe("formatChanfanaError with ZodErrors", () => {
+  it("returns null for a raw ZodError", () => {
+    const error = new z.ZodError([{ code: "custom", message: "bad", path: [SECRET_FIELD], input: undefined }]);
+    expect(formatChanfanaError(error)).toBeNull();
+  });
+
+  it("still formats request-validation MultiExceptions", async () => {
+    const resp = formatChanfanaError(new MultiException([new InputValidationException("bad", ["body", "name"])]));
+    expect(resp?.status).toBe(400);
+    const body: any = await resp?.json();
+    expect(body.errors).toEqual([{ code: 7001, message: "bad", path: ["body", "name"] }]);
+  });
+});
+
+describe("ZodErrors thrown from handle() with a custom itty-router catch", () => {
+  it("receives the original ZodError", async () => {
+    const caught: unknown[] = [];
+    const router = fromIttyRouter(
+      AutoRouter({
+        catch: (error: unknown) => {
+          caught.push(error);
+          return Response.json(
+            { success: false, errors: [{ code: 7000, message: "Internal Server Error" }] },
+            { status: 500 },
+          );
+        },
+      }),
+    );
+    router.get("/internal", InternalZodErrorEndpoint);
+
+    const resp = await router.fetch(new Request("https://example.com/internal"), {}, {});
+    const text = await resp.text();
+
+    expect(resp.status).toBe(500);
+    expect(text).not.toContain(SECRET_FIELD);
+    expect(caught).toHaveLength(1);
+    expect(caught[0]).toBeInstanceOf(z.ZodError);
+    expect((caught[0] as z.ZodError).issues[0]?.path).toEqual([SECRET_FIELD]);
+  });
+});
+
+describe("ZodErrors thrown from handle() with passthroughErrors", () => {
+  it("stay raw on itty-router", async () => {
+    const caught: unknown[] = [];
+    const router = fromIttyRouter(
+      AutoRouter({
+        catch: (error: unknown) => {
+          caught.push(error);
+          return new Response("error", { status: 500 });
+        },
+      }),
+      { passthroughErrors: true },
+    );
+    router.get("/internal", InternalZodErrorEndpoint);
+
+    const resp = await router.fetch(new Request("https://example.com/internal"), {}, {});
+
+    expect(resp.status).toBe(500);
+    expect(caught[0]).toBeInstanceOf(z.ZodError);
+  });
+
+  it("stay raw on Hono", async () => {
+    const app = new Hono();
+    const errors: unknown[] = [];
+    app.onError((err, c) => {
+      errors.push(err);
+      return c.text("error", 500);
+    });
+    fromHono(app, { passthroughErrors: true }).get("/internal", InternalZodErrorEndpoint);
+
+    const resp = await app.request("/internal");
+
+    expect(resp.status).toBe(500);
+    expect(errors[0]).toBeInstanceOf(z.ZodError);
+    expect(errors[0]).not.toBeInstanceOf(HTTPException);
   });
 });

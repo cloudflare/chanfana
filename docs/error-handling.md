@@ -569,7 +569,26 @@ Error responses are served with `content-type: application/json`. Error response
 
 ### ZodErrors Thrown From Your Own Code
 
-Only request validation produces `400` / `7001` responses. A `ZodError` thrown by your own logic inside `handle()` (for example, parsing a database row or an upstream API response with Zod) is treated like any other unknown error: chanfana re-throws it to the router instead of turning it into a validation response, so internal schema details are not returned to the client as if the request was invalid.
+Only request-validation `ZodError`s are automatically converted into `400` / `7001` responses; explicitly thrown chanfana exceptions (such as `InputValidationException`, including the D1 constraint mappings) are unchanged. A `ZodError` thrown by your own logic inside `handle()` (for example, parsing a database row or an upstream API response with Zod) is treated like any other unknown error: chanfana re-throws it to the router instead of turning it into a validation response, so internal schema details are not returned to the client as if the request was invalid.
+
+What the client receives then depends on your router's error handling. Hono's default `onError` returns a plain `500 Internal Server Error`. itty-router's default `AutoRouter` `catch`, however, still includes the error message in its `500` body, and a `ZodError`'s message contains its issues (paths and messages). To hide it, use a custom `catch`:
+
+```typescript
+import { AutoRouter } from 'itty-router';
+import { fromIttyRouter } from 'chanfana';
+
+const router = fromIttyRouter(
+    AutoRouter({
+        catch: (error) => {
+            console.error(error);
+            return Response.json(
+                { success: false, errors: [{ code: 7000, message: 'Internal Server Error' }], result: null },
+                { status: 500 },
+            );
+        },
+    }),
+);
+```
 
 If you want a `ZodError` from your own code to be returned as a validation error, convert it explicitly, either at the call site or in the [`handleError()`](#the-handleerror-hook) hook:
 
@@ -821,6 +840,8 @@ This is useful when you want to:
 ### itty-router: Internal Error Formatting
 
 itty-router does not have an `onError` mechanism. When using `fromIttyRouter()`, chanfana catches errors internally and formats them into JSON responses directly -- the same behavior as previous versions. No additional error handling setup is needed.
+
+Errors that chanfana does not recognize (including `ZodError`s thrown from your own code) are re-thrown to itty-router's `catch`. The default `AutoRouter` `catch` includes the error message in its `500` body; see [ZodErrors Thrown From Your Own Code](#zoderrors-thrown-from-your-own-code) for a custom `catch` that hides it.
 
 ---
 
