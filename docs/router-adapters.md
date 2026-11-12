@@ -156,6 +156,95 @@ The `fromHono` function returns an object of type `HonoOpenAPIRouterType`. This 
 *   **`registry` Property:**  Provides access to the OpenAPI registry used by Chanfana to collect schema definitions.
 *   **`schema()` Method:**  Returns the generated OpenAPI schema as a JavaScript object.
 
+### Typed RPC Client (`hono/client`)
+
+Routes registered on the router returned by `fromHono` keep Hono's route types, so you can use [Hono's RPC client](https://hono.dev/docs/guides/rpc) (`hc`) with Chanfana endpoints. As with plain Hono, **chain** the route registrations and export the type of the result:
+
+```typescript
+// server.ts
+import { Hono } from "hono";
+import { contentJson, fromHono, OpenAPIRoute } from "chanfana";
+import { z } from "zod";
+
+const Task = z.object({ id: z.number(), name: z.string() });
+
+class TaskFetch extends OpenAPIRoute {
+  schema = {
+    request: {
+      params: z.object({ id: z.number() }),
+      query: z.object({ verbose: z.boolean().optional() }),
+    },
+    responses: {
+      "200": { description: "The task", ...contentJson(z.object({ task: Task })) },
+      "404": { description: "Not found", ...contentJson(z.object({ error: z.string() })) },
+    },
+  };
+
+  async handle() {
+    const { params } = await this.getValidatedData<typeof this.schema>();
+    return { task: { id: params.id, name: "Write docs" } };
+  }
+}
+
+class TaskCreate extends OpenAPIRoute {
+  schema = {
+    request: { body: contentJson(z.object({ name: z.string() })) },
+    responses: { "201": { description: "Created", ...contentJson(Task) } },
+  };
+
+  async handle() {
+    const { body } = await this.getValidatedData<typeof this.schema>();
+    return Response.json({ id: 1, name: body.name }, { status: 201 });
+  }
+}
+
+const app = new Hono();
+const openapi = fromHono(app);
+
+const routes = openapi.get("/tasks/:id", TaskFetch).post("/tasks", TaskCreate);
+
+export type AppType = typeof routes;
+export default app;
+```
+
+```typescript
+// client.ts
+import { hc } from "hono/client";
+import type { AppType } from "./server";
+
+const client = hc<AppType>("https://api.example.com");
+
+const res = await client.tasks[":id"].$get({ param: { id: "1" }, query: { verbose: "true" } });
+if (res.status === 200) {
+  const { task } = await res.json(); // { id: number; name: string }
+}
+
+await client.tasks.$post({ json: { name: "Write docs" } });
+```
+
+The client types are inferred from the endpoint's `schema` property:
+
+| Endpoint schema | RPC client |
+| --- | --- |
+| `request.params` | `param` (values typed as strings) |
+| `request.query` | `query` (values typed as strings, string enums kept) |
+| `request.headers` (Zod object) | `header` (values typed as strings) |
+| `request.body` with an `application/json` Zod schema | `json` |
+| `responses[status]` with an `application/json` Zod schema | `res.json()` for that status (JSON-serialized output type) |
+
+Path, query and header values travel as strings in the URL and headers, so the client accepts strings; Chanfana coerces them to the types in your schema on the server. A `query`, `param` or `header` object whose fields are all optional can be omitted.
+
+Response types describe the JSON the client receives, the same way Hono types `c.json()`: the schema's output type is mapped through Hono's `JSONParsed`, so a `z.date()` field is a `string` in `res.json()`, and values that `JSON.stringify()` can't serialize (such as `bigint`) become `never`.
+
+**Limitations:**
+
+*   Only the declared type of the `schema` property is used. If it is annotated as `OpenAPIRouteSchema` (for example `schema: OpenAPIRouteSchema = {...}`), built in `getSchema()`, or generated at runtime (auto endpoints such as `CreateEndpoint`), the route is still registered, but its input and output are untyped, as with a plain Hono handler without validators.
+*   Bodies declared with `contentJson()` use the schema's output type, because `contentJson()` doesn't keep the schema's input type. Fields with a `.default()` are then required in the client, and a `z.preprocess()` body is typed with its parsed type. Use `{ content: { "application/json": { schema } } }` directly to get the input type (fields with defaults become optional; a `z.preprocess()` body accepts `unknown`).
+*   Response types are declared, not checked: they come from the schema, not from what `handle()` returns. Enable [`validateResponse`](./openapi-configuration-customization.md#validateresponse-response-body-validation) to enforce them at runtime.
+*   Form, cookie and non-JSON request bodies are not typed. Routes registered with `on()` are not typed.
+*   Route-level middleware combined with an endpoint class (`openapi.get(path, middleware, Endpoint)`) works at runtime but is not accepted by the TypeScript types. Register the middleware with `app.use(path, middleware)` instead.
+*   Routes must be chained (or the type of each step reassigned); registering them as separate statements keeps the router's type unchanged, as in Hono.
+
 ### Example with Hono
 
 Refer to the [Quick Start with Hono](./getting-started.md#quick-start-with-hono) section for a complete example of setting up Chanfana with Hono and creating a basic endpoint.
