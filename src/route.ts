@@ -198,6 +198,36 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
   }
 
   /**
+   * Lifecycle hook that runs after the request is validated and before handle().
+   * Override it to run reusable pre-handle logic (authorization, business rules)
+   * against the validated request data. Throw an error, for example an
+   * ApiException, to stop the request; it is handled like an error thrown in handle().
+   *
+   * When a route overrides this hook, the request is validated before handle()
+   * runs, even if handle() never calls getValidatedData(). Routes that do not
+   * override it keep the default lazy validation. The hook is not called when
+   * validation fails.
+   *
+   * @example
+   * ```typescript
+   * class CreateUser extends OpenAPIRoute {
+   *   schema = { request: { body: contentJson(z.object({ email: z.email() })) } };
+   *
+   *   override async onValidated(data: ValidatedData<typeof this.schema>) {
+   *     if (data.body.email.endsWith("@example.com")) {
+   *       throw new InputValidationException("Email domain not allowed", ["body", "email"]);
+   *     }
+   *   }
+   * }
+   * ```
+   *
+   * @param _data - The validated request data, the same object getValidatedData() returns.
+   *   Annotate it as `ValidatedData<typeof this.schema>` in the override for typed access.
+   * @param _args - Handler arguments from the router (e.g. the Hono context)
+   */
+  onValidated(_data: unknown, ..._args: HandleArgs): void | Promise<void> {}
+
+  /**
    * Main execution method called by the router.
    * Handles validation, error catching, and response formatting.
    *
@@ -215,6 +245,10 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
 
     let resp: unknown;
     try {
+      if (this.onValidated !== OpenAPIRoute.prototype.onValidated) {
+        await this.onValidated(await this.getValidatedData(), ...args);
+      }
+
       resp = await this.handle(...args);
 
       if (this.params?.validateResponse) {

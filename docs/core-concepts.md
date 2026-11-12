@@ -48,6 +48,7 @@ The `OpenAPIRoute` class is the central building block for defining your API end
 *   **`handle` Method:**  This is the core method where you implement the actual logic of your endpoint. It's executed after successful request validation.
 *   **`getValidatedData()` Method:**  Provides access to the validated request data (body, query parameters, path parameters, headers) within your `handle` method, ensuring you are working with data that conforms to your schema.
 *   **`getUnvalidatedData()` Method (Zod 4+):** Returns raw request data before Zod applies defaults or transformations. This is essential for partial updates where you need to distinguish between "field not sent" and "field sent with default value".
+*   **`onValidated()` Hook:** Optional hook that runs after request validation and before `handle()`, receiving the validated data and the router arguments. Use it for reusable pre-handle logic such as authorization or business rules; throw an `ApiException` to stop the request. See [Middleware and Interceptors](./advanced-topics-patterns.md#middleware-and-interceptors).
 *   **Lifecycle Hooks (e.g., `before`, `after`, `create`, `update`, `delete`, `fetch`, `list` in auto endpoints):**  Some subclasses of `OpenAPIRoute`, like the predefined CRUD endpoints, offer lifecycle hooks to customize behavior at different stages of the request processing.
 
 ### getValidatedData() vs getUnvalidatedData()

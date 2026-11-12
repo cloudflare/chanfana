@@ -13,6 +13,7 @@ import {
   ServiceUnavailableException,
   TooManyRequestsException,
   UnprocessableEntityException,
+  type ValidatedData,
 } from "../../src";
 import type { Logger } from "../../src";
 
@@ -46,6 +47,31 @@ export class ValidatedDataEndpoint extends OpenAPIRoute {
     const validated = await this.validateRequest(new Request("http://localhost"));
     const raw = await this.getUnvalidatedData();
     return { name, cached, validatedName: validated.body.name, sent: "name" in raw.body };
+  }
+}
+
+export class OnValidatedEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      body: contentJson(z.object({ email: z.string() })),
+    },
+  };
+
+  async onValidated(data: ValidatedData<typeof this.schema>, c: Context) {
+    const email: string = data.body.email;
+    c.header("x-email", email);
+  }
+
+  async handle() {
+    return {};
+  }
+}
+
+export abstract class OnValidatedBaseRoute extends OpenAPIRoute<[Context]> {
+  onValidated(_data: unknown, c: Context) {
+    if (!c.req.header("authorization")) {
+      throw new ApiException("unauthorized");
+    }
   }
 }
 

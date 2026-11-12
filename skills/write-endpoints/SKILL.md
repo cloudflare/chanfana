@@ -263,6 +263,31 @@ class MyEndpoint extends OpenAPIRoute {
 }
 ```
 
+### Pre-Handle Logic with onValidated()
+
+Router middleware runs before validation. For reusable checks that need validated data, override `onValidated(data, ...args)`. It runs after validation (never on invalid requests) and before `handle()`. Throw an `ApiException` to stop the request:
+
+```typescript
+import { ForbiddenException, type ValidatedData } from "chanfana";
+
+class CreateUser extends OpenAPIRoute {
+    schema = { request: { body: contentJson(z.object({ email: z.email() })) } };
+
+    async onValidated(data: ValidatedData<typeof this.schema>, c: AppContext) {
+        if (data.body.email.endsWith("@blocked.example")) {
+            throw new ForbiddenException("Email domain not allowed");
+        }
+    }
+
+    async handle(c: AppContext) {
+        const data = await this.getValidatedData<typeof this.schema>();
+        return { email: data.body.email };
+    }
+}
+```
+
+Do not confuse it with the auto endpoints' `before()`/`after()` hooks, which run inside their `handle()`.
+
 ### Using getUnvalidatedData() for Partial Updates
 
 In Zod v4, optional fields with `.default()` always have values in validated data. Use `getUnvalidatedData()` to detect what was actually sent:

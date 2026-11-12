@@ -145,6 +145,59 @@ export default app;
 
 In this example, we define an `authMiddleware` function that checks for an API key in the request headers. We then apply this middleware to the `/protected` route when registering the `ProtectedEndpoint` using `openapi.get('/protected', authMiddleware, ProtectedEndpoint)`. The middleware will be executed before the `ProtectedEndpoint`'s `handle` method, ensuring that only authenticated requests reach the endpoint logic.
 
+**Accessing Validated Data Before `handle()` (`onValidated` Hook):**
+
+Router middleware runs before Chanfana validates the request, so it cannot see the validated (parsed, coerced, defaulted) request data. When pre-handle logic needs that data, for example an authorization check that depends on a path parameter or a business rule on `data.body.email`, override the `onValidated()` hook on your endpoint or on a shared base class.
+
+`onValidated(data, ...args)` runs after the request is validated and before `handle()`. It receives the validated data (the same cached object that `getValidatedData()` returns) followed by the router handler arguments (the Hono context, or itty-router's `request, env, ctx`). Throw an error, such as any `ApiException`, to stop the request. The error is handled like an error thrown from `handle()`: it is formatted into the standard error response, or re-thrown when `raiseOnError`/`passthroughErrors` is set.
+
+```typescript
+import { type Context } from 'hono';
+import { contentJson, ForbiddenException, OpenAPIRoute, UnauthorizedException, type ValidatedData } from 'chanfana';
+import { z } from 'zod';
+
+// Reusable base class: the hook runs for every endpoint that extends it
+abstract class AuthenticatedRoute extends OpenAPIRoute<[Context]> {
+    async onValidated(_data: unknown, c: Context) {
+        const apiKey = c.req.header('X-API-Key');
+        if (apiKey !== 'valid-api-key') {
+            throw new UnauthorizedException();
+        }
+        c.set('apiKey', apiKey);
+    }
+}
+
+class CreateUser extends AuthenticatedRoute {
+    schema = {
+        request: {
+            body: contentJson(z.object({ email: z.email() })),
+        },
+        responses: { "200": { description: 'User created' } },
+    };
+
+    // Per-endpoint hook with typed validated data
+    async onValidated(data: ValidatedData<typeof this.schema>, c: Context) {
+        await super.onValidated(data, c); // keep the base class check
+        if (data.body.email.endsWith('@blocked.example')) {
+            throw new ForbiddenException('Email domain not allowed');
+        }
+    }
+
+    async handle(c: Context) {
+        const data = await this.getValidatedData<typeof this.schema>();
+        return { email: data.body.email };
+    }
+}
+```
+
+Things to know about `onValidated`:
+
+*   It is not called when validation fails; the client gets the usual `400` validation error response.
+*   Annotate the `data` parameter as `ValidatedData<typeof this.schema>` to get typed access. In a base class whose schema is defined by subclasses, type it as `unknown` (or as the fields you rely on).
+*   When a route overrides `onValidated`, the request is validated before `handle()` runs, even if `handle()` never calls `getValidatedData()`. Routes that do not override it keep the default behavior, where validation only happens when `handle()` calls `getValidatedData()`.
+*   It also works with the auto endpoints. It runs before their `handle()`, so before their `before()`/`after()` hooks.
+*   To share values with `handle()`, set them on the router context (`c.set()` in Hono) or on a class property.
+
 **Interceptors (Before/After Hooks in Endpoints):**
 
 Chanfana's auto endpoints (e.g., `CreateEndpoint`, `ReadEndpoint`, `UpdateEndpoint`, `DeleteEndpoint`, `ListEndpoint`) provide `before` and `after` lifecycle methods that act as interceptors. You can override these methods to perform actions before and after the core logic of these endpoints (e.g., data transformation, logging, authorization checks).
@@ -342,6 +395,8 @@ export default app;
 ```
 
 In this example, we create an abstract class `AuthenticatedRoute` that extends `OpenAPIRoute`. It includes an abstract `isAuthenticated()` method that subclasses must implement to provide authentication logic. It also overrides the `execute` method to include a custom `beforeHandle()` hook that checks authentication before proceeding with the endpoint logic. Concrete endpoints that require authentication can then extend `AuthenticatedRoute` and implement the `isAuthenticated()` method.
+
+The custom `beforeHandle()` above runs before request validation. If the shared logic needs the validated request data, override the built-in [`onValidated()` hook](#middleware-and-interceptors) instead of `execute()`.
 
 ## Versioned APIs
 
