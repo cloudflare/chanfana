@@ -111,7 +111,7 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
   }
 
   /**
-   * Wraps route handlers to catch chanfana errors (ZodError, ApiException)
+   * Wraps route handlers to catch chanfana errors (ApiException)
    * and convert them to Hono HTTPException instances. This allows errors to
    * flow through Hono's onError handler while preserving chanfana's default
    * error response format via HTTPException.getResponse().

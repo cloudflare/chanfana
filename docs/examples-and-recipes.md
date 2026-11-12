@@ -416,19 +416,19 @@ If you want full control over error responses and don't want chanfana to format 
 
 ```ts
 import { Hono } from 'hono'
-import { fromHono, ApiException } from 'chanfana'
-import { ZodError } from 'zod'
+import { fromHono, ApiException, MultiException } from 'chanfana'
 
 const app = new Hono()
 
 app.onError((err, c) => {
   // Errors arrive as raw exceptions — handle them directly
-  if (err instanceof ApiException) {
-    return c.json({ ok: false, code: err.code, message: err.message }, err.status as any)
+  // Request validation errors arrive as a MultiException of InputValidationException
+  if (err instanceof MultiException) {
+    return c.json({ ok: false, validationErrors: err.buildResponse() }, 400)
   }
 
-  if (err instanceof ZodError) {
-    return c.json({ ok: false, validationErrors: err.issues }, 400)
+  if (err instanceof ApiException) {
+    return c.json({ ok: false, code: err.code, message: err.message }, err.status as any)
   }
 
   return c.json({ ok: false, message: 'Internal Server Error' }, 500)

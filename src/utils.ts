@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 /**
  * Validates the format of a base path option.
  * @param base - The base path string to validate
@@ -36,30 +34,14 @@ function isApiExceptionLike(e: unknown): e is ApiExceptionLike {
 }
 
 /**
- * Formats a chanfana error (ZodError or ApiException) into a JSON Response.
+ * Formats a chanfana error (ApiException) into a JSON Response.
  * Returns null if the error is not a recognized chanfana error type.
+ *
+ * Raw ZodErrors are intentionally not handled here: request validation failures are already
+ * wrapped in InputValidationException by validateRequest(), so any other ZodError comes from
+ * the handler's own logic and is treated as an unknown error.
  */
 export function formatChanfanaError(e: unknown): Response | null {
-  // ZodError: convert to InputValidationException format ({code: 7001, message, path})
-  // so that direct z.ZodError throws from handle() produce the same shape as
-  // validation errors from validateRequest().
-  if (e instanceof z.ZodError) {
-    return jsonResp(
-      {
-        errors: e.issues.map((issue) => ({
-          code: 7001,
-          message: issue.message,
-          path: issue.path.map(String),
-        })),
-        success: false,
-        result: null,
-      },
-      {
-        status: 400,
-      },
-    );
-  }
-
   // ApiException: check by shape to avoid circular dependency with exceptions.ts
   if (isApiExceptionLike(e)) {
     const apiError = e;

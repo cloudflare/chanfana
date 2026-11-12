@@ -203,7 +203,7 @@ The `getValidatedData<S = any>()` method is crucial for accessing the validated 
 
 *   **Type Safety:**  By using `getValidatedData<typeof this.schema>()`, you get strong TypeScript type inference. The returned `data` object will have properties (`body`, `query`, `params`, `headers`) that are typed according to your schema definitions. This significantly improves code safety and developer experience.
 *   **Asynchronous Operation:** `getValidatedData()` is an asynchronous method because it performs request validation. You need to `await` its result before accessing the validated data.
-*   **Error Handling:** If the request validation fails, `getValidatedData()` will throw a `ZodError` exception. Chanfana automatically catches this exception and returns a `400 Bad Request` response. You typically don't need to handle validation errors explicitly within your `handle` method unless you want to customize the error response further.
+*   **Error Handling:** If the request validation fails, `getValidatedData()` will throw a `MultiException` of `InputValidationException`s. Chanfana automatically catches this exception and returns a `400 Bad Request` response. Note that only request validation is reported this way: a `ZodError` thrown by your own logic in `handle()` is treated as an unknown error, not a `400`. You typically don't need to handle validation errors explicitly within your `handle` method unless you want to customize the error response further.
 
 **Example: Using `getValidatedData()`**
 
