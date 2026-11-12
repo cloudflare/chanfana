@@ -150,6 +150,214 @@ describe("array parameter coercion", () => {
   });
 });
 
+class CoercedArrayParametersEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      query: z.object({
+        flags: z.array(z.coerce.boolean()).optional(),
+        nums: z.coerce.number().array().optional(),
+        scores: z.array(z.number().catch(0)).optional(),
+      }),
+    },
+  };
+
+  async handle() {
+    return this.getValidatedData<typeof this.schema>();
+  }
+}
+
+class BigIntArrayParametersEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      query: z.object({ ids: z.array(z.bigint()) }),
+    },
+  };
+
+  async handle() {
+    const { query } = await this.getValidatedData<typeof this.schema>();
+    return { ids: query.ids.map((id) => id.toString()), types: query.ids.map((id) => typeof id) };
+  }
+}
+
+class WrappedElementArrayParametersEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      query: z.object({
+        optionalNums: z.array(z.number().optional()).optional(),
+        nullableFlags: z.array(z.boolean().nullable()).optional(),
+        defaultNums: z.array(z.number().default(5)).optional(),
+      }),
+    },
+  };
+
+  async handle() {
+    return this.getValidatedData<typeof this.schema>();
+  }
+}
+
+class PathAndHeaderArrayParametersEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      params: z.object({ ids: z.array(z.number()) }),
+      headers: z.object({ "x-flags": z.array(z.boolean()) }),
+    },
+  };
+
+  async handle() {
+    return this.getValidatedData<typeof this.schema>();
+  }
+}
+
+const coercedArrayParametersRouter = fromIttyRouter(AutoRouter());
+coercedArrayParametersRouter.get("/coerced-array-parameters", CoercedArrayParametersEndpoint);
+coercedArrayParametersRouter.get("/bigint-array-parameters", BigIntArrayParametersEndpoint);
+coercedArrayParametersRouter.get("/wrapped-array-parameters", WrappedElementArrayParametersEndpoint);
+coercedArrayParametersRouter.get("/path-array-parameters/:ids", PathAndHeaderArrayParametersEndpoint);
+
+describe("array parameter element coercion", () => {
+  it("reads false as false for z.coerce.boolean() items", async () => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request("https://example.com/coerced-array-parameters?flags=false&flags=TRUE&flags=False"),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ query: { flags: [false, true, false] } });
+  });
+
+  it("reads a single false value as [false] for z.coerce.boolean() items", async () => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request("https://example.com/coerced-array-parameters?flags=false"),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ query: { flags: [false] } });
+  });
+
+  it("accepts decimal items for z.coerce.number() arrays", async () => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request("https://example.com/coerced-array-parameters?nums=1&nums=-2.5&nums=1e3"),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ query: { nums: [1, -2.5, 1000] } });
+  });
+
+  it.each([
+    ["hex", "0x10"],
+    ["binary", "0b1"],
+    ["whitespace", "%20"],
+  ])("rejects a %s item for z.coerce.number() arrays", async (_case, item) => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request(`https://example.com/coerced-array-parameters?nums=1&nums=${item}`),
+    );
+    const resp = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(resp.errors).toEqual([
+      { code: 7001, message: "Invalid input: expected number, received NaN", path: ["query", "nums", "1"] },
+    ]);
+  });
+
+  it("rejects a single hex value for z.coerce.number() arrays", async () => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request("https://example.com/coerced-array-parameters?nums=0x10"),
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  it("keeps valid items and applies the fallback to invalid items for .catch() elements", async () => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request("https://example.com/coerced-array-parameters?scores=3&scores=abc&scores=4.5&scores=0x10"),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ query: { scores: [3, 0, 4.5, 0] } });
+  });
+
+  it("coerces bigint items", async () => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request("https://example.com/bigint-array-parameters?ids=1&ids=9007199254740993"),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      ids: ["1", "9007199254740993"],
+      types: ["bigint", "bigint"],
+    });
+  });
+
+  it("coerces a single bigint value into an array", async () => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request("https://example.com/bigint-array-parameters?ids=42"),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ ids: ["42"], types: ["bigint"] });
+  });
+
+  it("rejects an invalid bigint item", async () => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request("https://example.com/bigint-array-parameters?ids=1&ids=abc"),
+    );
+    const resp = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(resp.errors[0].path).toEqual(["query", "ids", "1"]);
+  });
+
+  it("coerces optional, nullable and default wrapped items", async () => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request(
+        "https://example.com/wrapped-array-parameters?optionalNums=1&optionalNums=2&nullableFlags=true&nullableFlags=false&defaultNums=7&defaultNums=8.5",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      query: { optionalNums: [1, 2], nullableFlags: [true, false], defaultNums: [7, 8.5] },
+    });
+  });
+
+  it("coerces single optional, nullable and default wrapped items into arrays", async () => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request("https://example.com/wrapped-array-parameters?optionalNums=1&nullableFlags=false&defaultNums=7"),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      query: { optionalNums: [1], nullableFlags: [false], defaultNums: [7] },
+    });
+  });
+
+  it("coerces single-value path and header parameters into arrays", async () => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request("https://example.com/path-array-parameters/12", { headers: { "x-flags": "false" } }),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      params: { ids: [12] },
+      headers: { "x-flags": [false] },
+    });
+  });
+
+  it("rejects invalid single-value path and header array items", async () => {
+    const response = await coercedArrayParametersRouter.fetch(
+      new Request("https://example.com/path-array-parameters/12abc", { headers: { "x-flags": "nope" } }),
+    );
+    const resp = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(resp.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: ["params", "ids", "0"] }),
+        expect.objectContaining({ path: ["headers", "x-flags", "0"] }),
+      ]),
+    );
+  });
+});
+
 describe("queryParametersValidation", () => {
   it("requiredFields", async () => {
     const request = await todoRouter.fetch(buildRequest({ method: "GET", path: "/todos" }));
