@@ -21,6 +21,7 @@ import {
   OpenAPIHandler,
   type OpenAPIRouterType,
   type RouteHandler,
+  type ValidatorRegistration,
 } from "../openapi";
 import type { OpenAPIRoute, OpenAPIRouteClass, PrevalidatedData } from "../route";
 import type { AnyZodObject, IsEqual, RouterOptions, Simplify } from "../types";
@@ -158,12 +159,13 @@ type ValidatedRequestPart<Request, Part extends string, Target extends string> =
       : NoInput
     : NoInput;
 
+// GET and HEAD requests have no validated JSON body, so routes that also match them (all()) may not have one either
 type ValidatedRequestJson<Request, M extends string> = M extends "get" | "head"
   ? NoInput
   : Request extends { body: infer B }
     ? B extends { content: { "application/json": { schema: infer Z } } }
       ? Z extends ZodType
-        ? { json: z.output<Z> }
+        ? { json: M extends "all" ? z.output<Z> | undefined : z.output<Z> }
         : NoInput
       : NoInput
     : NoInput;
@@ -178,7 +180,8 @@ type ValidatedRouteRequest<Request, M extends string> =
 
 /**
  * Hono `Input` with the request data validated by chanfanaValidator() for an OpenAPIRoute class: `c.req.valid()` returns
- * the Zod output of the endpoint's params, query, headers and JSON body (no JSON body for GET/HEAD routes).
+ * the Zod output of the endpoint's params, query, headers and JSON body (no JSON body for GET/HEAD routes, and possibly
+ * `undefined` for `all()` routes, which also match GET/HEAD requests).
  * Endpoints with a non-literal schema (e.g. annotated as `OpenAPIRouteSchema` or built in `getSchema()`) give `any`.
  */
 export type OpenAPIRouteHonoValidatedInput<T extends OpenAPIRouteClass, M extends string> =
@@ -429,8 +432,8 @@ function getHonoBasePath(router: unknown): string | undefined {
   return bp;
 }
 
-// Endpoint instance that validated the request in chanfanaValidator(), per request context
-const prevalidatedRoutes = new WeakMap<Context, OpenAPIRoute>();
+// Endpoint instances that validated the request in chanfanaValidator(), per request context and route registration
+const prevalidatedRoutes = new WeakMap<Context, Map<ValidatorRegistration, OpenAPIRoute>>();
 
 /** Hono validation targets filled by chanfanaValidator(), mapped to chanfana's validated data keys. */
 const VALIDATED_TARGETS = [
@@ -486,7 +489,15 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
           c.req.addValidatedData(target, data[key] as Record<string, unknown>);
         }
       }
-      prevalidatedRoutes.set(c, route);
+      const registration = this.validatorRegistrations.get(route.params);
+      if (registration) {
+        let routes = prevalidatedRoutes.get(c);
+        if (routes === undefined) {
+          routes = new Map();
+          prevalidatedRoutes.set(c, routes);
+        }
+        routes.set(registration, route);
+      }
       // No response: the middleware below continues the chain
       return undefined as unknown as Response;
     });
@@ -507,21 +518,21 @@ export class HonoOpenAPIHandler extends OpenAPIHandler {
       return undefined;
     }
 
-    const prevalidated = prevalidatedRoutes.get(c as Context);
-    if (
-      prevalidated === undefined ||
-      prevalidated.constructor !== route.constructor ||
-      prevalidated.params.route !== route.params.route
-    ) {
+    // Only the endpoint of the registration whose marker validated the request reuses the data, once
+    const registration = this.validatorRegistrations.get(route.params);
+    const routes = prevalidatedRoutes.get(c as Context);
+    const prevalidated = registration ? routes?.get(registration) : undefined;
+    if (registration === undefined || prevalidated === undefined) {
       return undefined;
     }
+    routes?.delete(registration);
 
     return { validatedData: prevalidated.validatedData, unvalidatedData: prevalidated.unvalidatedData };
   }
 
   override readJsonBody(args: unknown[], route: OpenAPIRoute): Promise<unknown> {
     // Hono caches the body read by c.req.json(), so other middleware can still read it after chanfanaValidator()
-    if (this.validatorRouteOptions.has(route.params)) {
+    if (this.validatorRegistrations.has(route.params)) {
       return (args[0] as Context).req.json();
     }
     return super.readJsonBody(args, route);

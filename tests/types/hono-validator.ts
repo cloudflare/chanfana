@@ -180,12 +180,13 @@ openapi.post(
   CreateUser,
 );
 
-// all() and on() accept middleware too
+// all() and on() accept middleware too. all() also matches GET/HEAD requests, which have no validated JSON body
 openapi.all(
   "/orgs/:org/users",
   chanfanaValidator(),
   async (c, next) => {
-    expectTypeOf(c.req.valid("json")).toEqualTypeOf<CreateBody>();
+    expectTypeOf(c.req.valid("json")).toEqualTypeOf<CreateBody | undefined>();
+    expectTypeOf(c.req.valid("query")).toEqualTypeOf<{ notify: boolean }>();
     await next();
   },
   CreateUser,
@@ -220,4 +221,8 @@ expectTypeOf<OpenAPIRouteHonoValidatedInput<typeof SearchUsers, "post">["out"]>(
 }>();
 expectTypeOf<OpenAPIRouteHonoValidatedInput<typeof SearchUsers, "get">["out"]>().toEqualTypeOf<{
   query: { q: string; limit: number };
+}>();
+expectTypeOf<OpenAPIRouteHonoValidatedInput<typeof SearchUsers, "all">["out"]>().toEqualTypeOf<{
+  query: { q: string; limit: number };
+  json: { ignored: string } | undefined;
 }>();

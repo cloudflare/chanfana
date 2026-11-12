@@ -175,7 +175,7 @@ openapi.post('/users', authMiddleware, chanfanaValidator(), async (c, next) => {
 }, CreateUser);
 ```
 
-The marker is opt-in: routes without it keep validating lazily, in the endpoint. Invalid requests get the same `400` response as without it. It is only supported with `fromHono()`, and middleware are typed for up to 5 middleware before the endpoint. See [Validated Request Data in Middleware](./advanced-topics-patterns.md#middleware-and-interceptors) for the details and limitations.
+The marker is opt-in: routes without it keep validating lazily, in the endpoint. The endpoint class must be the last handler of the route. Invalid requests get the same `400` response as without it. It is only supported with `fromHono()`, and middleware are typed for up to 5 middleware before the endpoint. See [Validated Request Data in Middleware](./advanced-topics-patterns.md#middleware-and-interceptors) for the details and limitations.
 
 The `OpenAPIRouteHonoValidatedInput<typeof Endpoint, "post">` type gives the Hono `Input` that `chanfanaValidator()` adds, if you write reusable middleware typed for a specific endpoint.
 

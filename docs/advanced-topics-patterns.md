@@ -197,19 +197,19 @@ openapi.post(
 );
 ```
 
-`c.req.valid()` accepts the targets declared in the endpoint's schema: `'json'` (the JSON body), `'query'`, `'param'` and `'header'`. The values are the Zod output, with coercions and defaults applied, the same data `getValidatedData()` returns.
+`c.req.valid()` accepts the targets declared in the endpoint's schema: `'json'` (the JSON body), `'query'`, `'param'` and `'header'`. The values are the Zod output, with coercions and defaults applied, the same data `getValidatedData()` returns. GET and HEAD requests have no JSON body, so `'json'` isn't available on `get()` routes, and is typed as possibly `undefined` on `all()` routes.
 
 How it behaves:
 
 *   **Opt-in:** routes without the marker are unchanged and keep validating lazily.
 *   **Same errors:** an invalid request stops at the marker and gets the same `400` response (code `7001`) as without it. `handleError()`, `raiseOnError`, `passthroughErrors` and Hono's `onError` apply the same way, and the middleware after the marker and the endpoint don't run.
-*   **Validated once:** the endpoint reuses the data validated by the marker. `getUnvalidatedData()` keeps working, so auto endpoints like `UpdateEndpoint` work too.
+*   **Validated once:** the endpoint of the same route reuses the data validated by the marker. Other routes matching the same request (for example when the endpoint calls `next()`) validate the request themselves. `getUnvalidatedData()` keeps working, so auto endpoints like `UpdateEndpoint` work too.
 *   **Body still readable:** the body is read with `c.req.json()`, which Hono caches, so middleware and the endpoint can still read it after the marker.
 *   **Validation runs eagerly:** on routes with the marker, the request is validated even if `handle()` never calls `getValidatedData()`.
 
 Limitations:
 
-*   Only supported with `fromHono()`. Registering it with `fromIttyRouter()`, in `app.use()`, more than once in a route, or without an endpoint class after it throws an error when the route is registered. On a plain Hono app (not wrapped with `fromHono()`) it throws when a request reaches it.
+*   Only supported with `fromHono()`. Registering it with `fromIttyRouter()`, in `app.use()`, more than once in a route, or in a route that doesn't end with a single endpoint class throws an error when the route is registered. On a plain Hono app (not wrapped with `fromHono()`) it throws when a request reaches it.
 *   Middleware are typed for up to 5 middleware before the endpoint. Longer chains still work, but their handlers are untyped (`c.req.valid()` returns `any`).
 *   `c.req.valid()` is only typed when the endpoint's `schema` property has a literal type. If it is annotated as `OpenAPIRouteSchema`, built in `getSchema()`, or generated (auto endpoints), `c.req.valid()` returns `any`.
 *   The endpoint class itself is not typed from the middleware chain: its `handle()` arguments and `this` don't know about the middleware's `Variables`. Type the endpoint's context yourself (for example `handle(c: AppContext)`).

@@ -43,6 +43,9 @@ export function isValidatorMarker(value: unknown): boolean {
   return typeof value === "function" && Reflect.get(value, CHANFANA_VALIDATOR) === true;
 }
 
+/** Identity of a route registration that uses a validator marker, compared by reference. */
+export type ValidatorRegistration = Record<never, never>;
+
 /**
  * Valid HTTP methods for OpenAPI routes.
  * These are the standard methods supported by the OpenAPI specification.
@@ -69,8 +72,12 @@ export class OpenAPIHandler {
 
   allowedMethods: string[] = ["get", "head", "post", "put", "delete", "patch"];
 
-  /** Route options built for routes registered with a validator marker, see {@link OpenAPIHandler.bindValidator}. */
-  protected validatorRouteOptions: WeakSet<RouteOptions> = new WeakSet();
+  /**
+   * Route options built for routes registered with a validator marker, mapped to a token that is unique to the route
+   * registration. The bound marker and the endpoint handler of the same registration share the token, see
+   * {@link OpenAPIHandler.bindValidator}.
+   */
+  protected validatorRegistrations: WeakMap<RouteOptions, ValidatorRegistration> = new WeakMap();
 
   /**
    * When true, the underlying router handles base path prefixing for route
@@ -429,17 +436,17 @@ export class OpenAPIHandler {
       }
     }
 
-    const hasValidator = validatorIndex !== -1;
+    const registration: ValidatorRegistration | undefined = validatorIndex === -1 ? undefined : {};
     const endpoint = params.handlers.find(isOpenAPIRouteClass);
 
     return params.handlers.map((handler) => {
-      if (hasValidator && endpoint && isValidatorMarker(handler)) {
-        return this.bindValidator(() => new endpoint(this.buildRouteOptions(parsedRoute, urlParams, hasValidator)));
+      if (registration && endpoint && isValidatorMarker(handler)) {
+        return this.bindValidator(() => new endpoint(this.buildRouteOptions(parsedRoute, urlParams, registration)));
       }
 
       if (isOpenAPIRouteClass(handler)) {
         const fn: RouteHandler = (...args) =>
-          new handler(this.buildRouteOptions(parsedRoute, urlParams, hasValidator)).execute(...args);
+          new handler(this.buildRouteOptions(parsedRoute, urlParams, registration)).execute(...args);
         return this.wrapHandler(fn);
       }
 
@@ -448,10 +455,10 @@ export class OpenAPIHandler {
   }
 
   /**
-   * Finds the validator marker in a route's handlers, checking that there is at most one and that it is placed
-   * before the endpoint class.
+   * Finds the validator marker in a route's handlers, checking that there is at most one, and that the route ends
+   * with a single endpoint class placed after it.
    * @returns The index of the marker, or -1 when the route doesn't use one
-   * @throws Error when the marker is used more than once or without a following endpoint class
+   * @throws Error when the marker is used more than once, or the route doesn't end with exactly one endpoint class
    */
   private findValidatorMarker(method: string, path: string, handlers: unknown[]): number {
     const markerIndexes: number[] = [];
@@ -471,9 +478,15 @@ export class OpenAPIHandler {
       throw new Error(`chanfanaValidator() can only be used once per route (${route})`);
     }
 
-    const endpointIndex = handlers.findIndex(isOpenAPIRouteClass);
-    if (endpointIndex === -1 || endpointIndex < markerIndex) {
-      throw new Error(`chanfanaValidator() must be placed before an OpenAPIRoute endpoint class (${route})`);
+    const endpointCount = handlers.filter(isOpenAPIRouteClass).length;
+    if (endpointCount > 1) {
+      throw new Error(`chanfanaValidator() routes must have a single OpenAPIRoute endpoint class (${route})`);
+    }
+
+    if (endpointCount === 0 || !isOpenAPIRouteClass(handlers[handlers.length - 1])) {
+      throw new Error(
+        `chanfanaValidator() must be placed before an OpenAPIRoute endpoint class, as the last handler (${route})`,
+      );
     }
 
     return markerIndex;
@@ -510,7 +523,7 @@ export class OpenAPIHandler {
   /**
    * Builds the options passed to an {@link OpenAPIRoute} instance for a registered route.
    */
-  private buildRouteOptions(route: string, urlParams: string[], hasValidator: boolean): RouteOptions {
+  private buildRouteOptions(route: string, urlParams: string[], registration?: ValidatorRegistration): RouteOptions {
     const options: RouteOptions = {
       router: this,
       route,
@@ -520,8 +533,8 @@ export class OpenAPIHandler {
       raiseUnknownParameters: this.options?.raiseUnknownParameters,
       passthroughErrors: this.options?.passthroughErrors,
     };
-    if (hasValidator) {
-      this.validatorRouteOptions.add(options);
+    if (registration) {
+      this.validatorRegistrations.set(options, registration);
     }
     return options;
   }

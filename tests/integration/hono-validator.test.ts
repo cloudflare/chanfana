@@ -101,6 +101,35 @@ class CustomErrorEndpoint extends OpenAPIRoute {
   }
 }
 
+// Logs what each execution validated and saw, and hands the request to the next registration on its first run.
+// Uses the query string: unmarked routes read the raw body, which an earlier registration has already consumed.
+const phaseLog: Array<{ phase: string; value: string }> = [];
+let phaseValidations = 0;
+
+class PhaseEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      query: z.object({ value: z.string() }),
+    },
+  };
+
+  override async validateRequest(request: Request) {
+    phaseValidations++;
+    return super.validateRequest(request);
+  }
+
+  async handle(c: Context, next: Next) {
+    const data = await this.getValidatedData<typeof this.schema>();
+    const phase = phaseLog.length === 0 ? "first" : "second";
+    phaseLog.push({ phase, value: data.query.value });
+    if (phase === "first") {
+      await next();
+      return c.res;
+    }
+    return { phase, value: data.query.value };
+  }
+}
+
 const validHeaders = { "content-type": "application/json", "x-tenant": "acme" };
 const validBody = JSON.stringify({ name: "Ana", age: "not-a-number-is-invalid" });
 
@@ -418,6 +447,30 @@ describe("chanfanaValidator()", () => {
     expect(seen.query).toEqual({ q: "all", limit: 10 });
   });
 
+  it("has no json on all() routes for GET requests", async () => {
+    const seen: Array<Record<string, unknown>> = [];
+    const app = new Hono();
+    fromHono(app).all(
+      "/orgs/:org/users",
+      chanfanaValidator(),
+      async (c, next) => {
+        const body = c.req.valid("json" as never) as { name: string } | undefined;
+        seen.push({ name: body?.name, query: c.req.valid("query" as never) });
+        await next();
+      },
+      CreateUserEndpoint,
+    );
+
+    const get = await app.request("/orgs/1/users", { headers: validHeaders });
+    expect(get.status).toBe(200);
+    const post = await postUser(app, "/orgs/1/users", { name: "Ana", age: 30 });
+    expect(post.status).toBe(200);
+    expect(seen).toEqual([
+      { name: undefined, query: { notify: false } },
+      { name: "Ana", query: { notify: false } },
+    ]);
+  });
+
   it("works with all() and middleware without the marker", async () => {
     let called = false;
     const app = new Hono();
@@ -483,6 +536,73 @@ describe("chanfanaValidator()", () => {
     expect(lazy.status).toBe(200);
   });
 
+  describe("overlapping registrations", () => {
+    beforeEach(() => {
+      phaseLog.length = 0;
+      phaseValidations = 0;
+    });
+
+    // Mutates the validated query, so a later registration reusing it would see "mutated"
+    const mutate: MiddlewareHandler = async (c, next) => {
+      (c.req.valid("query" as never) as { value: string }).value = "mutated";
+      await next();
+    };
+
+    it("doesn't share validated data with an unmarked registration of the same endpoint", async () => {
+      const app = new Hono();
+      const openapi = fromHono(app);
+      openapi.post("/phase", chanfanaValidator(), mutate, PhaseEndpoint);
+      openapi.post("/phase", PhaseEndpoint);
+
+      const res = await app.request("/phase?value=sent", { method: "POST" });
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ phase: "second", value: "sent" });
+      expect(phaseLog).toEqual([
+        { phase: "first", value: "mutated" },
+        { phase: "second", value: "sent" },
+      ]);
+      expect(phaseValidations).toBe(2);
+    });
+
+    it("validates an unmarked registration that runs first", async () => {
+      const app = new Hono();
+      const openapi = fromHono(app);
+      openapi.post("/phase", PhaseEndpoint);
+      openapi.post("/phase", chanfanaValidator(), PhaseEndpoint);
+
+      const res = await app.request("/phase?value=sent", { method: "POST" });
+      expect(res.status).toBe(200);
+      expect(phaseLog.map((entry) => entry.value)).toEqual(["sent", "sent"]);
+      expect(phaseValidations).toBe(2);
+    });
+
+    it("gives each marked registration its own validated data", async () => {
+      const app = new Hono();
+      const openapi = fromHono(app);
+      openapi.post("/phase", chanfanaValidator(), mutate, PhaseEndpoint);
+      openapi.post("/phase", chanfanaValidator(), PhaseEndpoint);
+
+      const res = await app.request("/phase?value=sent", { method: "POST" });
+      expect(res.status).toBe(200);
+      expect(phaseLog).toEqual([
+        { phase: "first", value: "mutated" },
+        { phase: "second", value: "sent" },
+      ]);
+      expect(phaseValidations).toBe(2);
+    });
+
+    it("doesn't share validated data between routers", async () => {
+      const app = new Hono();
+      fromHono(app).post("/phase", chanfanaValidator(), mutate, PhaseEndpoint);
+      fromHono(app).post("/phase", PhaseEndpoint);
+
+      const res = await app.request("/phase?value=sent", { method: "POST" });
+      expect(res.status).toBe(200);
+      expect(phaseLog.map((entry) => entry.value)).toEqual(["mutated", "sent"]);
+      expect(phaseValidations).toBe(2);
+    });
+  });
+
   describe("UpdateEndpoint", () => {
     const UserSchema = z.object({
       id: z.number().optional(),
@@ -544,14 +664,30 @@ describe("chanfanaValidator()", () => {
 
     it("throws when the marker is placed after the endpoint", () => {
       expect(() => fromHono(new Hono()).post("/x", CreateUserEndpoint as any, chanfanaValidator())).toThrow(
-        "chanfanaValidator() must be placed before an OpenAPIRoute endpoint class (POST /x)",
+        "chanfanaValidator() must be placed before an OpenAPIRoute endpoint class, as the last handler (POST /x)",
       );
     });
 
     it("throws when the route has no endpoint class", () => {
       expect(() => fromHono(new Hono()).get("/x", chanfanaValidator(), (c: Context) => c.text("hi"))).toThrow(
-        "chanfanaValidator() must be placed before an OpenAPIRoute endpoint class (GET /x)",
+        "chanfanaValidator() must be placed before an OpenAPIRoute endpoint class, as the last handler (GET /x)",
       );
+    });
+
+    it("throws when the endpoint class is not the last handler", () => {
+      const mw: MiddlewareHandler = async (_c, next) => next();
+      expect(() => fromHono(new Hono()).post("/x", chanfanaValidator(), CreateUserEndpoint as any, mw as any)).toThrow(
+        "chanfanaValidator() must be placed before an OpenAPIRoute endpoint class, as the last handler (POST /x)",
+      );
+    });
+
+    it("throws when the route has more than one endpoint class", () => {
+      expect(() =>
+        fromHono(new Hono()).post("/x", chanfanaValidator(), SearchEndpoint as any, CreateUserEndpoint),
+      ).toThrow("chanfanaValidator() routes must have a single OpenAPIRoute endpoint class (POST /x)");
+      expect(() =>
+        fromHono(new Hono()).post("/x", SearchEndpoint as any, chanfanaValidator(), CreateUserEndpoint),
+      ).toThrow("chanfanaValidator() routes must have a single OpenAPIRoute endpoint class (POST /x)");
     });
 
     it("throws when the marker is passed to use()", () => {

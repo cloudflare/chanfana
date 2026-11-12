@@ -317,7 +317,8 @@ openapi.post(
 ```
 
 Rules:
-- `fromHono()` only. Using it with `fromIttyRouter()`, in `app.use()`, twice in a route, or without a following endpoint class throws at registration.
+- `fromHono()` only. Using it with `fromIttyRouter()`, in `app.use()`, twice in a route, or in a route that doesn't end with a single endpoint class throws at registration.
+- No `'json'` on `get()` routes; on `all()` routes it is typed `T | undefined` (GET/HEAD requests have no body).
 - Typed for up to 5 middleware before the endpoint; longer chains are untyped.
 - `c.req.valid()` is only typed when `schema` has a literal type (not annotated `OpenAPIRouteSchema`, not built in `getSchema()`); otherwise it is `any`.
 - The endpoint's `handle()` context is not typed from the chain. Middleware that mutate `c.req.valid()` objects change what the endpoint sees.
