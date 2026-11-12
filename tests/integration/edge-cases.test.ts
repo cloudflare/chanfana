@@ -149,6 +149,46 @@ class StrictParamsEndpoint extends OpenAPIRoute {
   }
 }
 
+// Body endpoints showing that body strictness comes from the body schema, not raiseUnknownParameters
+class ObjectBodyEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      body: contentJson(z.object({ name: z.string() })),
+    },
+  };
+
+  async handle() {
+    const data = await this.getValidatedData<typeof this.schema>();
+    return { body: data.body };
+  }
+}
+
+class StrictObjectBodyEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      body: contentJson(z.strictObject({ name: z.string() })),
+    },
+  };
+
+  async handle() {
+    const data = await this.getValidatedData<typeof this.schema>();
+    return { body: data.body };
+  }
+}
+
+class LooseObjectBodyEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      body: contentJson(z.looseObject({ name: z.string() })),
+    },
+  };
+
+  async handle() {
+    const data = await this.getValidatedData<typeof this.schema>();
+    return { body: data.body };
+  }
+}
+
 describe("Response Type Handling", () => {
   const router = fromIttyRouter(AutoRouter());
   router.get("/object-return", ObjectReturnEndpoint);
@@ -275,6 +315,139 @@ describe("raiseUnknownParameters", () => {
     expect(request.status).toEqual(200);
     const resp = await request.json();
     expect(resp.allowed).toBe("test");
+  });
+
+  it("should reject unknown query params when the query uses z.strictObject", async () => {
+    class StrictQueryEndpoint extends OpenAPIRoute {
+      schema = {
+        request: {
+          query: z.strictObject({ allowed: z.string() }),
+        },
+      };
+
+      async handle() {
+        const data = await this.getValidatedData<typeof this.schema>();
+        return { allowed: data.query.allowed };
+      }
+    }
+
+    const router = fromIttyRouter(AutoRouter(), { raiseUnknownParameters: false });
+    router.get("/strict-query", StrictQueryEndpoint);
+
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/strict-query?allowed=test&unknown=x" }));
+    const resp = await request.json();
+
+    expect(request.status).toEqual(400);
+    expect(resp.errors[0].code).toBe(7001);
+    expect(resp.errors[0].path).toEqual(["query"]);
+  });
+
+  it("should reject undeclared path params when params uses z.strictObject", async () => {
+    class StrictParamsSchemaEndpoint extends OpenAPIRoute {
+      schema = {
+        request: {
+          params: z.strictObject({ id: z.string() }),
+        },
+      };
+
+      async handle() {
+        const data = await this.getValidatedData<typeof this.schema>();
+        return { id: data.params.id };
+      }
+    }
+
+    const router = fromIttyRouter(AutoRouter(), { raiseUnknownParameters: true });
+    router.get("/items/:id/:extra", StrictParamsSchemaEndpoint);
+
+    const request = await router.fetch(buildRequest({ method: "GET", path: "/items/1/2" }));
+    const resp = await request.json();
+
+    expect(request.status).toEqual(400);
+    expect(resp.errors[0].code).toBe(7001);
+    expect(resp.errors[0].path).toEqual(["params"]);
+  });
+
+  it("should strip unknown fields from a z.object nested inside a z.strictObject body", async () => {
+    class NestedBodyEndpoint extends OpenAPIRoute {
+      schema = {
+        request: {
+          body: contentJson(z.strictObject({ address: z.object({ city: z.string() }) })),
+        },
+      };
+
+      async handle() {
+        const data = await this.getValidatedData<typeof this.schema>();
+        return { body: data.body };
+      }
+    }
+
+    const router = fromIttyRouter(AutoRouter(), { raiseUnknownParameters: true });
+    router.post("/nested", NestedBodyEndpoint);
+
+    const request = await router.fetch(
+      new Request("https://example.com/nested", {
+        method: "POST",
+        body: JSON.stringify({ address: { city: "Lisbon", zip: "1000" } }),
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    const resp = await request.json();
+
+    expect(request.status).toEqual(200);
+    expect(resp.body).toEqual({ address: { city: "Lisbon" } });
+  });
+
+  it("should strip unknown body fields from a z.object body even with raiseUnknownParameters true", async () => {
+    const router = fromIttyRouter(AutoRouter(), { raiseUnknownParameters: true });
+    router.post("/body-object", ObjectBodyEndpoint);
+
+    const request = await router.fetch(
+      new Request("https://example.com/body-object", {
+        method: "POST",
+        body: JSON.stringify({ name: "test", unknown: "ignored" }),
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    const resp = await request.json();
+
+    expect(request.status).toEqual(200);
+    expect(resp.body).toEqual({ name: "test" });
+  });
+
+  it("should reject unknown body fields when the body uses z.strictObject", async () => {
+    const router = fromIttyRouter(AutoRouter(), { raiseUnknownParameters: false });
+    router.post("/body-strict", StrictObjectBodyEndpoint);
+
+    const request = await router.fetch(
+      new Request("https://example.com/body-strict", {
+        method: "POST",
+        body: JSON.stringify({ name: "test", unknown: "rejected" }),
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    const resp = await request.json();
+
+    expect(request.status).toEqual(400);
+    expect(resp.success).toBe(false);
+    expect(resp.errors[0].code).toBe(7001);
+    expect(resp.errors[0].path).toEqual(["body"]);
+  });
+
+  it("should keep unknown body fields when the body uses z.looseObject", async () => {
+    const router = fromIttyRouter(AutoRouter(), { raiseUnknownParameters: true });
+    router.post("/body-loose", LooseObjectBodyEndpoint);
+
+    const request = await router.fetch(
+      new Request("https://example.com/body-loose", {
+        method: "POST",
+        body: JSON.stringify({ name: "test", extra: "kept" }),
+        headers: { "content-type": "application/json" },
+      }),
+    );
+    const resp = await request.json();
+
+    expect(request.status).toEqual(200);
+    expect(resp.body).toEqual({ name: "test", extra: "kept" });
   });
 });
 
