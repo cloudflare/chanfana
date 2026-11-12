@@ -36,6 +36,57 @@ function unwrapAndCheck(schema: unknown, ZodClass: ZodConstructor): boolean {
   return false;
 }
 
+/**
+ * Unwraps optional/nullable/default wrappers and returns the array schema, if any.
+ *
+ * @param schema - The Zod schema to check
+ * @returns The unwrapped ZodArray, or undefined when the schema is not an array
+ */
+function unwrapArray(schema: unknown): z.ZodArray | undefined {
+  let current = schema;
+  while (!(current instanceof z.ZodArray)) {
+    if (!hasUnwrap(current)) {
+      return undefined;
+    }
+    current = current.unwrap();
+  }
+  return current;
+}
+
+/**
+ * Soft transforms a single string value into the type expected by the schema.
+ * Values that are not strings, or that do not match a supported type, are returned unchanged.
+ *
+ * @param value - The raw value
+ * @param innerType - The Zod schema to guide coercion
+ * @returns The coerced value
+ */
+function coerceValue(value: unknown, innerType: unknown): unknown {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  if (unwrapAndCheck(innerType, z.ZodBoolean)) {
+    const _val = value.toLowerCase().trim();
+    if (_val === "true" || _val === "false") {
+      return _val === "true";
+    }
+  } else if (unwrapAndCheck(innerType, z.ZodNumber)) {
+    const numericValue = value.trim();
+    return DECIMAL_NUMBER_PATTERN.test(numericValue) ? Number(numericValue) : Number.NaN;
+  } else if (unwrapAndCheck(innerType, z.ZodBigInt)) {
+    try {
+      return BigInt(value);
+    } catch {
+      // If BigInt conversion fails, leave as string for Zod to handle validation
+    }
+  } else if (unwrapAndCheck(innerType, z.ZodDate)) {
+    return new Date(value);
+  }
+
+  return value;
+}
+
 function getEntries(data: object): Iterable<[string, unknown]> {
   if ("entries" in data && typeof data.entries === "function") {
     return data.entries() as Iterable<[string, unknown]>;
@@ -49,7 +100,7 @@ function getEntries(data: object): Iterable<[string, unknown]> {
  *
  * Transformations:
  * - Empty strings → null
- * - Duplicate keys → arrays
+ * - Duplicate keys → arrays (items are coerced with the array element type)
  * - String "true"/"false" → boolean (for ZodBoolean)
  * - Numeric strings → numbers (for ZodNumber)
  * - Numeric strings → BigInt (for ZodBigInt)
@@ -73,8 +124,18 @@ export function coerceInputs(
   const shape: Record<string, unknown> | undefined = (schema as AnyZodObject | undefined)?.shape;
   const params: Record<string, unknown> = {};
   for (const [key, rawValue] of getEntries(data)) {
+    let innerType: unknown;
+    if (shape?.[key]) {
+      innerType = shape[key];
+    } else if (schema) {
+      // Fallback for Zod effects
+      innerType = schema;
+    }
+    const arrayType = innerType ? unwrapArray(innerType) : undefined;
+
     // Query, path and headers can be empty strings, that should equal to null as nothing was provided
-    const value = rawValue === "" ? null : rawValue;
+    // Array items are coerced one by one with the element type, e.g. ?ids=1&ids=2 for z.number().array()
+    const value = rawValue === "" ? null : arrayType ? coerceValue(rawValue, arrayType.element) : rawValue;
 
     const existing = params[key];
     if (existing === undefined) {
@@ -85,36 +146,16 @@ export function coerceInputs(
       params[key] = [existing, value];
     }
 
-    let innerType: unknown;
-    if (shape?.[key]) {
-      innerType = shape[key];
-    } else if (schema) {
-      // Fallback for Zod effects
-      innerType = schema;
-    }
-
     const current = params[key];
 
     // Soft transform query strings into expected types
     if (innerType && current !== null) {
-      if (unwrapAndCheck(innerType, z.ZodArray) && !Array.isArray(current)) {
-        params[key] = [current];
-      } else if (unwrapAndCheck(innerType, z.ZodBoolean) && typeof current === "string") {
-        const _val = current.toLowerCase().trim();
-        if (_val === "true" || _val === "false") {
-          params[key] = _val === "true";
+      if (arrayType) {
+        if (!Array.isArray(current)) {
+          params[key] = [current];
         }
-      } else if (unwrapAndCheck(innerType, z.ZodNumber) && typeof current === "string") {
-        const numericValue = current.trim();
-        params[key] = DECIMAL_NUMBER_PATTERN.test(numericValue) ? Number(numericValue) : Number.NaN;
-      } else if (unwrapAndCheck(innerType, z.ZodBigInt) && typeof current === "string") {
-        try {
-          params[key] = BigInt(current);
-        } catch {
-          // If BigInt conversion fails, leave as string for Zod to handle validation
-        }
-      } else if (unwrapAndCheck(innerType, z.ZodDate) && typeof current === "string") {
-        params[key] = new Date(current);
+      } else {
+        params[key] = coerceValue(current, innerType);
       }
     }
   }
