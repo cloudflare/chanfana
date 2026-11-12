@@ -1,3 +1,5 @@
+import type { ReDocOptions } from "./types";
+
 export function getSwaggerUI(rawSchemaUrl: string): string {
   const schemaUrl = rawSchemaUrl.replace(/\/+(\/|$)/g, "$1"); // strip double & trailing splash
   return `<!DOCTYPE html>
@@ -30,8 +32,27 @@ export function getSwaggerUI(rawSchemaUrl: string): string {
 </html>`;
 }
 
-export function getReDocUI(rawSchemaUrl: string): string {
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/** Render ReDoc with optional kebab-case HTML configuration attributes. */
+export function getReDocUI(rawSchemaUrl: string, options?: ReDocOptions): string {
   const schemaUrl = rawSchemaUrl.replace(/\/+(\/|$)/g, "$1"); // strip double & trailing splash
+  const attributes: string[] = [];
+  for (const [name, value] of Object.entries(options ?? {})) {
+    if (!/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(name) || /^on[a-z0-9]+$/.test(name) || name === "spec-url") {
+      throw new Error(`Invalid ReDoc attribute: ${name}`);
+    }
+    if (value !== undefined) {
+      attributes.push(` ${name}="${escapeHtmlAttribute(String(value))}"`);
+    }
+  }
   return `<!DOCTYPE html>
     <html>
     <head>
@@ -54,7 +75,7 @@ export function getReDocUI(rawSchemaUrl: string): string {
     </style>
     </head>
     <body>
-    <redoc spec-url="${schemaUrl}"></redoc>
+    <redoc spec-url="${escapeHtmlAttribute(schemaUrl)}"${attributes.join("")}></redoc>
     <script src="https://cdn.jsdelivr.net/npm/redoc@2.1.5/bundles/redoc.standalone.js" integrity="sha256-vlwzMMjDW4/OsppbdVKtRb/8L9lJT+LhqC+pQXnrX48=" crossorigin="anonymous"></script>
     </body>
     </html>`;

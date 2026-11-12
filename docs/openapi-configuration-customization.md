@@ -346,6 +346,34 @@ While `RouterOptions` allows you to configure the overall OpenAPI document, you 
 
 Refer to the [Zod-to-OpenAPI documentation](https://github.com/asteasolutions/zod-to-openapi) and [Zod documentation](https://zod.dev/) for more details on schema customization options.
 
+### `redoc_options`: Customizing ReDoc
+
+Pass ReDoc configuration attributes through `redoc_options` when initializing either `fromHono` or `fromIttyRouter`:
+
+```typescript
+const openapi = fromHono(new Hono(), {
+    redoc_options: {
+        'show-extensions': 'x-filter-fields',
+        'disable-search': true,
+    },
+});
+```
+
+Use kebab-case attribute names, as expected by the ReDoc HTML element. Values may be strings, numbers, or booleans. Boolean values are rendered explicitly as `"true"` or `"false"`; `undefined` values are omitted. With no options, the default ReDoc configuration is preserved.
+
+For `show-extensions`, use `true` to display all supported custom extensions, `false` to hide them, or a comma-separated string such as `'x-filter-fields,x-other'` to select extensions.
+
+The exported HTML helper accepts the same options directly:
+
+```typescript
+import { getReDocUI, type ReDocOptions } from 'chanfana';
+
+const options: ReDocOptions = { 'show-extensions': 'x-filter-fields' };
+const html = getReDocUI('/openapi.json', options);
+```
+
+Attribute values are HTML-escaped. Invalid attribute names, event handler attributes such as `onclick`, and `spec-url` throw an error. Set the schema URL through `openapi_url` (for automatic routes) or the first argument to `getReDocUI()`. Objects and functions are not accepted as attribute values.
+
 ## Serving OpenAPI Documentation (Swagger UI, ReDoc)
 
 Chanfana makes it easy to serve interactive API documentation using Swagger UI and ReDoc. By default, if you provide `docs_url` and `openapi_url` (or `redoc_url` and `openapi_url`) in `RouterOptions`, Chanfana automatically sets up routes to serve these documentation UIs.
