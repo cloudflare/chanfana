@@ -11,10 +11,11 @@ import type {
   ToSchema,
   TypedResponse,
 } from "hono/types";
-import type { ContentfulStatusCode } from "hono/utils/http-status";
+import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
+import type { z, ZodType } from "zod";
 import { type NestedRouter, OpenAPIHandler, type OpenAPIRouterType, type RouteHandler } from "../openapi";
 import type { OpenAPIRouteClass } from "../route";
-import type { RouterOptions } from "../types";
+import type { AnyZodObject, RouterOptions, Simplify } from "../types";
 import { formatChanfanaError, validateBasePath } from "../utils";
 
 type MergeTypedResponse<T> =
@@ -34,6 +35,98 @@ type DefaultHandlerResponse = any;
 
 type HonoMethodFn = (...args: unknown[]) => unknown;
 
+// Types used to expose an OpenAPIRoute's schema to Hono's RPC client (`hc` from "hono/client").
+// They only read the type of the endpoint's `schema` property; endpoints with a non-literal schema
+// (e.g. annotated as `OpenAPIRouteSchema` or built in `getSchema()`) fall back to Hono's untyped defaults.
+
+type NoInput = Record<never, never>;
+
+type IsDeclared<T> = undefined extends T ? false : true;
+
+// Query, path and header values always travel as strings, so the client accepts strings (keeping string literal unions)
+type StringifyValue<V> = V extends string
+  ? V
+  : V extends undefined
+    ? undefined
+    : V extends readonly (infer U)[]
+      ? (U extends string ? U : string)[]
+      : string;
+type StringifyRecord<T> = Simplify<{ [K in keyof T]: StringifyValue<T[K]> }>;
+
+// `contentJson()` types its schema as `z.ZodType<T>`, whose input type is `unknown`; fall back to the output type
+type ZodClientInput<T extends ZodType> = unknown extends z.input<T> ? z.output<T> : z.input<T>;
+
+type RequestPartInput<Request, Part extends string, Target extends string> =
+  Request extends Record<Part, infer V>
+    ? IsDeclared<V> extends true
+      ? V extends AnyZodObject
+        ? NoInput extends z.input<V>
+          ? { [K in Target]?: StringifyRecord<z.input<V>> }
+          : { [K in Target]: StringifyRecord<z.input<V>> }
+        : NoInput
+      : NoInput
+    : NoInput;
+
+type RequestJsonInput<Request> = Request extends { body: infer B }
+  ? B extends { content: { "application/json": { schema: infer Z } } }
+    ? Z extends ZodType
+      ? { json: ZodClientInput<Z> }
+      : NoInput
+    : NoInput
+  : NoInput;
+
+type RouteRequestInput<Request> =
+  IsDeclared<Request> extends true
+    ? RequestPartInput<Request, "params", "param"> &
+        RequestPartInput<Request, "query", "query"> &
+        RequestPartInput<Request, "headers", "header"> &
+        RequestJsonInput<Request>
+    : NoInput;
+
+/** Hono `Input` inferred from an OpenAPIRoute class' `schema.request` (params, query, headers and JSON body). */
+export type OpenAPIRouteHonoInput<T extends OpenAPIRouteClass> = InstanceType<T>["schema"] extends {
+  request: infer Request;
+}
+  ? RouteRequestInput<Request> extends infer In
+    ? keyof In extends never
+      ? BlankInput
+      : { in: { [K in keyof In]: In[K] }; out: { [K in keyof In]: In[K] } }
+    : BlankInput
+  : BlankInput;
+
+type StatusFromKey<K> = K extends StatusCode ? K : K extends `${infer N extends StatusCode}` ? N : never;
+
+type ResponsesToTypedResponse<Responses> = {
+  [K in keyof Responses]: Responses[K] extends { content: { "application/json": { schema: infer Z } } }
+    ? Z extends ZodType
+      ? [StatusFromKey<K>] extends [never]
+        ? never
+        : TypedResponse<z.output<Z>, StatusFromKey<K>, "json">
+      : never
+    : never;
+}[keyof Responses];
+
+/**
+ * Hono handler response inferred from an OpenAPIRoute class' `schema.responses`: one `TypedResponse` per status code
+ * with an `application/json` Zod schema. Falls back to `any` (Hono's untyped default) when nothing can be inferred.
+ */
+export type OpenAPIRouteHonoOutput<T extends OpenAPIRouteClass> = InstanceType<T>["schema"] extends {
+  responses: infer Responses;
+}
+  ? IsDeclared<Responses> extends true
+    ? [ResponsesToTypedResponse<Responses>] extends [never]
+      ? DefaultHandlerResponse
+      : ResponsesToTypedResponse<Responses>
+    : DefaultHandlerResponse
+  : DefaultHandlerResponse;
+
+type OpenAPIRouteToSchema<
+  M extends string,
+  P extends string,
+  T extends OpenAPIRouteClass,
+  BasePath extends string,
+> = ToSchema<M, MergePath<BasePath, P>, OpenAPIRouteHonoInput<T>, OpenAPIRouteHonoOutput<T>>;
+
 const HIJACKED_METHODS = new Set(["basePath", "on", "route", "delete", "get", "patch", "post", "put", "all"]);
 
 export type HonoOpenAPIRouterType<
@@ -47,33 +140,57 @@ export type HonoOpenAPIRouterType<
   route<SubPath extends string, SubEnv extends Env, SubSchema extends Schema, SubBasePath extends string>(
     path: SubPath,
     app: HonoOpenAPIRouterType<SubEnv, SubSchema, SubBasePath>,
-  ): HonoOpenAPIRouterType<E, MergeSchemaPath<SubSchema, MergePath<BasePath, SubPath>> | S, BasePath>;
+  ): HonoOpenAPIRouterType<E, MergeSchemaPath<SubSchema, MergePath<BasePath, SubPath>> & S, BasePath>;
 
+  all<P extends string, T extends OpenAPIRouteClass>(
+    path: P,
+    endpoint: T,
+  ): HonoOpenAPIRouterType<E, S & OpenAPIRouteToSchema<"all", P, T, BasePath>, BasePath>;
   all<P extends string, I extends Input = BlankInput, R extends AnyHandlerResponse = DefaultHandlerResponse>(
     path: P,
     endpoint: OpenAPIRouteClass | H,
   ): HonoOpenAPIRouterType<E, S & ToSchema<"all", MergePath<BasePath, P>, I, MergeTypedResponse<R>>, BasePath>;
 
+  delete<P extends string, T extends OpenAPIRouteClass>(
+    path: P,
+    endpoint: T,
+  ): HonoOpenAPIRouterType<E, S & OpenAPIRouteToSchema<"delete", P, T, BasePath>, BasePath>;
   delete<P extends string, I extends Input = BlankInput, R extends AnyHandlerResponse = DefaultHandlerResponse>(
     path: P,
     endpoint: OpenAPIRouteClass | H,
   ): HonoOpenAPIRouterType<E, S & ToSchema<"delete", MergePath<BasePath, P>, I, MergeTypedResponse<R>>, BasePath>;
   delete(path: string, router: Hono<E, S, BasePath>): Hono<E, S, BasePath>["delete"];
+  get<P extends string, T extends OpenAPIRouteClass>(
+    path: P,
+    endpoint: T,
+  ): HonoOpenAPIRouterType<E, S & OpenAPIRouteToSchema<"get", P, T, BasePath>, BasePath>;
   get<P extends string, I extends Input = BlankInput, R extends AnyHandlerResponse = DefaultHandlerResponse>(
     path: P,
     endpoint: OpenAPIRouteClass | H,
   ): HonoOpenAPIRouterType<E, S & ToSchema<"get", MergePath<BasePath, P>, I, MergeTypedResponse<R>>, BasePath>;
   get(path: string, router: Hono<E, S, BasePath>): Hono<E, S, BasePath>["get"];
+  patch<P extends string, T extends OpenAPIRouteClass>(
+    path: P,
+    endpoint: T,
+  ): HonoOpenAPIRouterType<E, S & OpenAPIRouteToSchema<"patch", P, T, BasePath>, BasePath>;
   patch<P extends string, I extends Input = BlankInput, R extends AnyHandlerResponse = DefaultHandlerResponse>(
     path: P,
     endpoint: OpenAPIRouteClass | H,
   ): HonoOpenAPIRouterType<E, S & ToSchema<"patch", MergePath<BasePath, P>, I, MergeTypedResponse<R>>, BasePath>;
   patch(path: string, router: Hono<E, S, BasePath>): Hono<E, S, BasePath>["patch"];
+  post<P extends string, T extends OpenAPIRouteClass>(
+    path: P,
+    endpoint: T,
+  ): HonoOpenAPIRouterType<E, S & OpenAPIRouteToSchema<"post", P, T, BasePath>, BasePath>;
   post<P extends string, I extends Input = BlankInput, R extends AnyHandlerResponse = DefaultHandlerResponse>(
     path: P,
     endpoint: OpenAPIRouteClass | H,
   ): HonoOpenAPIRouterType<E, S & ToSchema<"post", MergePath<BasePath, P>, I, MergeTypedResponse<R>>, BasePath>;
   post(path: string, router: Hono<E, S, BasePath>): Hono<E, S, BasePath>["post"];
+  put<P extends string, T extends OpenAPIRouteClass>(
+    path: P,
+    endpoint: T,
+  ): HonoOpenAPIRouterType<E, S & OpenAPIRouteToSchema<"put", P, T, BasePath>, BasePath>;
   put<P extends string, I extends Input = BlankInput, R extends AnyHandlerResponse = DefaultHandlerResponse>(
     path: P,
     endpoint: OpenAPIRouteClass | H,
