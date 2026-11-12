@@ -168,6 +168,17 @@ z.object({ name: z.string() }).strict()
 z.strictObject({ name: z.string() })
 ```
 
+**Q: Why are unknown body fields accepted even though `raiseUnknownParameters` is `true`?**
+
+**A:** `raiseUnknownParameters` only applies to the top-level object of request sections (`params`, `query`, `headers`, `body`). It doesn't change how each section handles unknown keys. A body defined with `z.object()` strips unknown fields. To reject them with a `400` (error code `7001`), use `z.strictObject()`. To keep them in the validated data, use `z.looseObject()`:
+
+```typescript
+body: contentJson(z.strictObject({ name: z.string() })) // unknown fields are rejected
+body: contentJson(z.looseObject({ name: z.string() }))  // unknown fields are kept
+```
+
+See [Request Validation - Unknown Body Fields](./endpoints/request-validation.md#unknown-body-fields).
+
 ---
 **Q: Can I use Chanfana with routers other than Hono and itty-router?**
 

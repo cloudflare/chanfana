@@ -169,10 +169,41 @@ The `generateOperationIds` option controls whether Chanfana should automatically
 *   **Type:** `boolean`
 *   **Default:** `true`
 
-The `raiseUnknownParameters` option controls whether Chanfana should perform strict validation of request parameters (query, path, headers, body).
+The `raiseUnknownParameters` option controls the strictness of the top-level object that Chanfana validates. That object holds the request sections your endpoint declares: `params`, `query`, `headers` and `body`.
 
-*   `true`: (Default) Strict validation is enabled. If the incoming request contains parameters that are **not** defined in your schema, Chanfana will consider it a validation error and return a `400 Bad Request` response. This is generally recommended for API robustness and security.
-*   `false`: Strict validation is disabled. Chanfana will only validate the parameters that are defined in your schema and ignore any unknown parameters in the request. This can be useful for backward compatibility or when you want to allow clients to send extra parameters that your API might not explicitly handle.
+*   `true`: (Default) The top-level object is validated with `z.strictObject()`, so it rejects any key that is not one of the declared sections.
+*   `false`: The top-level object is validated with `z.object()`.
+
+Chanfana only collects the sections your endpoint declares, so in practice this option rarely rejects a request on its own. It does **not** reach inside those sections. Each section follows the strictness of its own Zod schema, whatever `raiseUnknownParameters` is set to:
+
+*   `z.object({...})`: unknown keys are accepted and stripped from the validated data.
+*   `z.strictObject({...})`: unknown keys are rejected with a `400 Bad Request` (error code `7001`).
+*   `z.looseObject({...})`: unknown keys are accepted and kept in the validated data.
+
+So with the default settings, a body defined with `z.object()` silently drops fields it doesn't know, and a query schema defined with `z.object()` ignores extra query parameters. To reject unknown fields, use `z.strictObject()` for that section:
+
+```typescript
+import { OpenAPIRoute, contentJson } from 'chanfana';
+import { z } from 'zod';
+
+class CreateUserEndpoint extends OpenAPIRoute {
+    schema = {
+        request: {
+            // { "name": "Ann", "admin": true } is rejected with a 400
+            body: contentJson(z.strictObject({ name: z.string() })),
+            // ?page=1&unknown=x is rejected with a 400
+            query: z.strictObject({ page: z.number().optional() }),
+        },
+        // ... responses
+    };
+}
+```
+
+Strictness is not inherited by nested objects either: a `z.object()` nested inside a `z.strictObject()` still strips its own unknown keys. Use `z.strictObject()` at every level you want to be strict.
+
+Headers are a special case: Chanfana only reads the headers declared in your schema, so other request headers are never rejected, even with `z.strictObject()`.
+
+See [Request Validation - Unknown Body Fields](./endpoints/request-validation.md#unknown-body-fields) for more examples.
 
 ### `raiseOnError`: Error Propagation to Router Error Handlers
 

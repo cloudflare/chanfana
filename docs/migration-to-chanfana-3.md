@@ -453,13 +453,15 @@ contentJson(z.object({ success: z.boolean(), result: z.object({ id: z.string() }
 
 ### `raiseUnknownParameters` Now Enforced
 
-The `raiseUnknownParameters` router option was previously accepted but not enforced. It is now fully functional. If you had this option set to `true`, unknown query/path/header parameters will now cause 400 validation errors.
+The `raiseUnknownParameters` router option was previously accepted but not enforced. It is now enforced on the top-level object of request sections (`params`, `query`, `headers`, `body`). It does not make the sections themselves strict: unknown query parameters or body fields are still stripped when the section uses `z.object()`. To reject them, define that section with `z.strictObject()` (see [`raiseUnknownParameters`](./openapi-configuration-customization.md#raiseunknownparameters-strict-parameter-validation)).
 
 ```typescript
-// If you see unexpected 400 errors after upgrading, check your router options:
-const router = fromHono(app, {
-  raiseUnknownParameters: false, // Set to false to allow unknown parameters
-});
+// Unknown query parameters and body fields are stripped, whatever raiseUnknownParameters is set to
+query: z.object({ page: z.number() })
+
+// Unknown query parameters and body fields are rejected with a 400
+query: z.strictObject({ page: z.number() })
+body: contentJson(z.strictObject({ name: z.string() }))
 ```
 
 ### D1 Endpoint Security Improvements

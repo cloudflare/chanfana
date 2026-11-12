@@ -69,7 +69,7 @@ You can use the full power of Zod to define complex validation rules for your re
 *   **Date/Time Formats (Zod v4):** `z.iso.datetime()`, `z.iso.date()`, `z.iso.time()`, etc.
 *   **Number Validations:** `int()`, `positive()`, `negative()`, `min()`, `max()`, etc.
 *   **Array Validations:** `min()`, `max()`, `nonempty()`, etc.
-*   **Object Validations:** `optional()`, `partial()`, `strict()`, `refine()`, etc.
+*   **Object Validations:** `z.strictObject()`, `z.looseObject()`, `optional()`, `partial()`, `refine()`, etc.
 *   **Transformations:** `transform()`, `preprocess()`, etc.
 *   **Effects:** `refine()`, `superRefine()`, etc.
 
@@ -83,6 +83,59 @@ In Zod v4, many string format validations are now top-level functions:
 :::
 
 Refer to the [Zod documentation](https://zod.dev/) for a comprehensive list of validation methods and features.
+
+### Unknown Body Fields
+
+The body schema decides what happens to fields it doesn't define. The [`raiseUnknownParameters`](../openapi-configuration-customization.md#raiseunknownparameters-strict-parameter-validation) router option does not change this, even when it is `true` (the default).
+
+| Body schema | Unknown fields | Example: `{ "name": "Ann", "admin": true }` |
+|---|---|---|
+| `z.object({...})` | Accepted and stripped | `data.body` is `{ name: "Ann" }` |
+| `z.strictObject({...})` | Rejected | `400 Bad Request` with error code `7001` |
+| `z.looseObject({...})` | Accepted and kept | `data.body` is `{ name: "Ann", admin: true }` |
+
+To reject requests that send fields your API doesn't expect, use `z.strictObject()`:
+
+```typescript
+import { OpenAPIRoute, contentJson } from 'chanfana';
+import { z } from 'zod';
+
+class UpdateProfileEndpoint extends OpenAPIRoute {
+    schema = {
+        request: {
+            body: contentJson(z.strictObject({
+                displayName: z.string(),
+                bio: z.string().optional(),
+            })),
+        },
+        // ... responses
+    };
+
+    async handle() {
+        // A body like { "displayName": "Ann", "role": "admin" } never gets here:
+        // validation fails with a 400 and error code 7001
+        const data = await this.getValidatedData<typeof this.schema>();
+        return { displayName: data.body.displayName };
+    }
+}
+```
+
+Strictness applies to one object only. A `z.object()` nested inside a `z.strictObject()` still strips its own unknown fields, so use `z.strictObject()` for each nested object you want to be strict:
+
+```typescript
+z.strictObject({
+    displayName: z.string(),
+    address: z.strictObject({
+        city: z.string(),
+    }),
+})
+```
+
+The same rules apply to `schema.request.query` and `schema.request.params`: use `z.strictObject()` there to reject unknown query or path parameters.
+
+::: tip
+Validation runs when `handle()` calls `this.getValidatedData()`. An endpoint that never calls it doesn't validate the request, so even a `z.strictObject()` body won't reject anything.
+:::
 
 ### Body Type Inference
 
