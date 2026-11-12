@@ -137,9 +137,10 @@ describe("path", () => {
     expect(body.errors[0]).toEqual({ code: 7001, message: "bad", path: [] });
   });
 
-  it("is set for ZodErrors thrown from handle()", async () => {
-    const body: any = await (await get(buildRouter(), "/zod")).json();
-    expect(body.errors[0]).toEqual({ code: 7001, message: expect.any(String), path: ["items", "1"] });
+  it("is not set for ZodErrors thrown from handle()", async () => {
+    const resp = await get(buildRouter(), "/zod");
+    expect(resp.status).toBe(500);
+    expect(await resp.text()).not.toContain("7001");
   });
 
   it("is documented in the schema without extra fields", () => {
@@ -171,7 +172,7 @@ describe("content-type", () => {
 describe("result on errors", () => {
   it("is always null", async () => {
     const router = buildRouter();
-    for (const path of ["/plain", "/zod", "/escaped"]) {
+    for (const path of ["/plain", "/escaped"]) {
       const body: any = await (await get(router, path)).json();
       expect(body.success).toBe(false);
       expect(body.result).toBeNull();

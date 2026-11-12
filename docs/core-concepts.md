@@ -109,7 +109,7 @@ Data validation is automatically performed by Chanfana based on the request sche
 3.  **Zod Validation:** Under the hood, Chanfana uses Zod to perform the actual validation. Zod checks if the incoming data conforms to the defined schema rules (data types, required fields, formats, etc.).
 4.  **Success or Failure:**
     *   **Success:** If the request data is valid according to the schema, Chanfana proceeds to execute your `handle` method. You can then access the validated data using `this.getValidatedData()`.
-    *   **Failure:** If the request data is invalid, Zod throws a `ZodError` exception. Chanfana catches this exception and automatically generates a `400 Bad Request` response. This response includes a JSON body containing detailed information about the validation errors, helping clients understand what went wrong and how to fix their requests.
+    *   **Failure:** If the request data is invalid, Chanfana converts the Zod validation issues into `InputValidationException`s (wrapped in a `MultiException`) and automatically generates a `400 Bad Request` response. This response includes a JSON body containing detailed information about the validation errors, helping clients understand what went wrong and how to fix their requests.
 
 ## Error Handling: Graceful API Responses
 

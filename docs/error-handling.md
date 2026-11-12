@@ -567,6 +567,32 @@ Each validation error includes:
 
 Error responses are served with `content-type: application/json`. Error responses formatted by chanfana always return `"result": null`.
 
+### ZodErrors Thrown From Your Own Code
+
+Only request validation produces `400` / `7001` responses. A `ZodError` thrown by your own logic inside `handle()` (for example, parsing a database row or an upstream API response with Zod) is treated like any other unknown error: chanfana re-throws it to the router instead of turning it into a validation response, so internal schema details are not returned to the client as if the request was invalid.
+
+If you want a `ZodError` from your own code to be returned as a validation error, convert it explicitly, either at the call site or in the [`handleError()`](#the-handleerror-hook) hook:
+
+```typescript
+import { InputValidationException, MultiException, OpenAPIRoute } from 'chanfana';
+import { z } from 'zod';
+
+class MyEndpoint extends OpenAPIRoute {
+    protected handleError(error: unknown): unknown {
+        if (error instanceof z.ZodError) {
+            return new MultiException(
+                error.issues.map((issue) => new InputValidationException(issue.message, issue.path.map(String))),
+            );
+        }
+        return error;
+    }
+
+    async handle() {
+        // ...
+    }
+}
+```
+
 ### Linking to Documentation
 
 Set `documentation_url` on an exception (as a class property or via the constructor options) to include it in every error object of the response:
@@ -733,7 +759,7 @@ In this example, `app.onError` receives all errors thrown within Hono routes:
 *   **Non-chanfana errors** (raw `Error`, `TypeError`, etc.) arrive as-is, allowing you to handle them separately.
 
 ::: tip
-Unknown errors that are not `ZodError` or `ApiException` subclasses are **not** wrapped in `HTTPException` -- they propagate to `onError` as-is.
+Errors that are not `ApiException` subclasses (including `ZodError`s thrown from your own code in `handle()`) are **not** wrapped in `HTTPException` -- they propagate to `onError` as-is.
 :::
 
 #### Bypassing Chanfana's Error Formatting
@@ -742,8 +768,7 @@ If you want errors to propagate to Hono's `onError` without chanfana touching th
 
 ```typescript
 import { Hono, type Context } from 'hono';
-import { fromHono, NotFoundException, ApiException } from 'chanfana';
-import { ZodError } from 'zod';
+import { fromHono, NotFoundException, ApiException, MultiException } from 'chanfana';
 
 export type Env = {
     // Example bindings, use your own
@@ -757,6 +782,14 @@ const app = new Hono<{ Bindings: Env }>();
 app.onError((err, c) => {
     console.error("Raw error:", err);
 
+    // Request validation errors arrive as a MultiException of InputValidationException
+    if (err instanceof MultiException) {
+        return c.json({
+            ok: false,
+            validationErrors: err.buildResponse(),
+        }, 400);
+    }
+
     // Chanfana exceptions arrive as-is — not wrapped in HTTPException
     if (err instanceof ApiException) {
         return c.json({
@@ -764,14 +797,6 @@ app.onError((err, c) => {
             code: err.code,
             message: err.message,
         }, err.status as any);
-    }
-
-    // Validation errors arrive as raw ZodError
-    if (err instanceof ZodError) {
-        return c.json({
-            ok: false,
-            validationErrors: err.issues,
-        }, 400);
     }
 
     return c.json({ ok: false, message: 'Internal Server Error' }, 500);
@@ -791,7 +816,7 @@ This means `err instanceof HTTPException` will **not** match chanfana errors in 
 This is useful when you want to:
 - Apply your own error response format instead of chanfana's standard `{ success, errors, result }` shape
 - Integrate with a shared error handler that doesn't understand `HTTPException`
-- Handle `ZodError` validation failures with your own logic
+- Handle request validation failures (`MultiException`) with your own logic
 
 ### itty-router: Internal Error Formatting
 

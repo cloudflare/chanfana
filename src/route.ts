@@ -358,7 +358,7 @@ export class OpenAPIRoute<HandleArgs extends Array<object> = any> {
    * Validates the incoming request against the schema.
    * @param request - The incoming Request object
    * @returns Validated and typed request data
-   * @throws ZodError if validation fails
+   * @throws MultiException of InputValidationException if validation fails
    */
   // oxlint-disable-next-line typescript/no-explicit-any -- public back-compat, the validated shape depends on the subclass schema
   async validateRequest(request: Request): Promise<any> {
