@@ -1,9 +1,16 @@
 // Compile-time only: checks that routes chained on fromHono() expose typed routes to Hono's RPC client (#215).
-import { Hono } from "hono";
+import { Hono, type MiddlewareHandler } from "hono";
 import { hc, type InferRequestType, type InferResponseType } from "hono/client";
 import { expectTypeOf } from "vitest";
 import { z } from "zod";
-import { contentJson, CreateEndpoint, fromHono, OpenAPIRoute, type OpenAPIRouteSchema } from "../../src";
+import {
+  contentJson,
+  CreateEndpoint,
+  fromHono,
+  type HonoOpenAPIRouterType,
+  OpenAPIRoute,
+  type OpenAPIRouteSchema,
+} from "../../src";
 
 const Task = z.object({ id: z.number(), name: z.string(), done: z.boolean() });
 
@@ -166,3 +173,99 @@ class TaskAutoCreate extends CreateEndpoint {
 const auto = fromHono(new Hono()).post("/auto", TaskAutoCreate);
 const autoClient = hc<typeof auto>("http://localhost");
 expectTypeOf<keyof InferRequestType<typeof autoClient.auto.$post>>().toBeNever();
+
+// Response types follow the JSON-serialized schema output, like Hono's c.json()
+export class SerializedEndpoint extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": {
+        description: "ok",
+        ...contentJson(
+          z.object({
+            createdAt: z.date(),
+            note: z.string().optional(),
+            maybe: z.string().or(z.undefined()),
+            nullable: z.string().nullable(),
+            big: z.bigint(),
+            nested: z.object({ at: z.date(), list: z.array(z.object({ d: z.date(), n: z.number().optional() })) }),
+            dates: z.array(z.date()),
+          }),
+        ),
+      },
+    },
+  };
+
+  async handle() {
+    return {};
+  }
+}
+const serialized = fromHono(new Hono()).get("/serialized", SerializedEndpoint);
+const serializedClient = hc<typeof serialized>("http://localhost");
+expectTypeOf<InferResponseType<typeof serializedClient.serialized.$get, 200>>().toEqualTypeOf<{
+  createdAt: string;
+  note?: string | undefined;
+  maybe: string | undefined;
+  nullable: string | null;
+  // bigint can't be serialized by JSON.stringify(), Hono maps it to never
+  big: never;
+  nested: { at: string; list: { d: string; n?: number | undefined }[] };
+  dates: string[];
+}>();
+
+// Only contentJson()'s erased schema falls back to the output type: other unknown-input schemas stay unknown
+export class PreprocessBodyEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      body: { content: { "application/json": { schema: z.preprocess((v) => Number(v), z.number()) } } },
+    },
+  };
+
+  async handle() {
+    return {};
+  }
+}
+export class PreprocessContentJsonEndpoint extends OpenAPIRoute {
+  schema = {
+    request: { body: contentJson(z.preprocess((v) => Number(v), z.number())) },
+  };
+
+  async handle() {
+    return {};
+  }
+}
+const preprocess = fromHono(new Hono())
+  .post("/raw", PreprocessBodyEndpoint)
+  .post("/content-json", PreprocessContentJsonEndpoint);
+const preprocessClient = hc<typeof preprocess>("http://localhost");
+expectTypeOf<InferRequestType<typeof preprocessClient.raw.$post>>().toEqualTypeOf<{ json: unknown }>();
+expectTypeOf<InferRequestType<(typeof preprocessClient)["content-json"]["$post"]>>().toEqualTypeOf<{
+  json: number;
+}>();
+
+// Explicit generics still select the original overload
+const explicit = fromHono(new Hono()).get<"/explicit", { in: { query: { q: string } }; out: { query: { q: string } } }>(
+  "/explicit",
+  TaskFetch,
+);
+const explicitClient = hc<typeof explicit>("http://localhost");
+expectTypeOf<InferRequestType<typeof explicitClient.explicit.$get>>().toEqualTypeOf<{ query: { q: string } }>();
+
+// Annotated routers, unchained registrations and reassignment keep compiling
+const annotated: HonoOpenAPIRouterType = fromHono(new Hono());
+annotated.get("/tasks/:id", TaskFetch);
+annotated.post("/handler", (c) => c.json({ ok: true }));
+annotated.route("/nested", fromHono(new Hono()).get("/tasks/:id", TaskFetch));
+let reassigned: HonoOpenAPIRouterType<any, any> = fromHono(new Hono());
+reassigned = reassigned.get("/tasks/:id", TaskFetch).route("/nested", annotated);
+expectTypeOf(reassigned.schema).toBeAny();
+
+// Middleware plus a plain Hono handler resolves to Hono's own overload, as before
+const mw: MiddlewareHandler = async (_c, next) => {
+  await next();
+};
+const withMiddleware = fromHono(new Hono()).get("/mw", mw, (c) => c.json({ ok: true }));
+const middlewareClient = hc<typeof withMiddleware>("http://localhost");
+expectTypeOf<InferResponseType<typeof middlewareClient.mw.$get>>().toEqualTypeOf<{ ok: true }>();
+// Middleware plus an endpoint class is accepted at runtime but has never been typed (unchanged by #215)
+// @ts-expect-error -- no overload accepts (path, middleware, OpenAPIRoute class)
+fromHono(new Hono()).get("/mw-endpoint", mw, TaskFetch);

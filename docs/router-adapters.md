@@ -230,16 +230,19 @@ The client types are inferred from the endpoint's `schema` property:
 | `request.query` | `query` (values typed as strings, string enums kept) |
 | `request.headers` (Zod object) | `header` (values typed as strings) |
 | `request.body` with an `application/json` Zod schema | `json` |
-| `responses[status]` with an `application/json` Zod schema | `res.json()` for that status |
+| `responses[status]` with an `application/json` Zod schema | `res.json()` for that status (JSON-serialized output type) |
 
 Path, query and header values travel as strings in the URL and headers, so the client accepts strings; Chanfana coerces them to the types in your schema on the server. A `query`, `param` or `header` object whose fields are all optional can be omitted.
+
+Response types describe the JSON the client receives, the same way Hono types `c.json()`: the schema's output type is mapped through Hono's `JSONParsed`, so a `z.date()` field is a `string` in `res.json()`, and values that `JSON.stringify()` can't serialize (such as `bigint`) become `never`.
 
 **Limitations:**
 
 *   Only the declared type of the `schema` property is used. If it is annotated as `OpenAPIRouteSchema` (for example `schema: OpenAPIRouteSchema = {...}`), built in `getSchema()`, or generated at runtime (auto endpoints such as `CreateEndpoint`), the route is still registered, but its input and output are untyped, as with a plain Hono handler without validators.
-*   Bodies declared with `contentJson()` use the schema's output type, so fields with a `.default()` are required in the client. Use `{ content: { "application/json": { schema } } }` directly to get the input type (fields with defaults become optional).
-*   Response types come from the schema, not from what `handle()` returns. Enable [`validateResponse`](./openapi-configuration-customization.md#validateresponse-response-body-validation) to enforce them at runtime.
+*   Bodies declared with `contentJson()` use the schema's output type, because `contentJson()` doesn't keep the schema's input type. Fields with a `.default()` are then required in the client, and a `z.preprocess()` body is typed with its parsed type. Use `{ content: { "application/json": { schema } } }` directly to get the input type (fields with defaults become optional; a `z.preprocess()` body accepts `unknown`).
+*   Response types are declared, not checked: they come from the schema, not from what `handle()` returns. Enable [`validateResponse`](./openapi-configuration-customization.md#validateresponse-response-body-validation) to enforce them at runtime.
 *   Form, cookie and non-JSON request bodies are not typed. Routes registered with `on()` are not typed.
+*   Route-level middleware combined with an endpoint class (`openapi.get(path, middleware, Endpoint)`) works at runtime but is not accepted by the TypeScript types. Register the middleware with `app.use(path, middleware)` instead.
 *   Routes must be chained (or the type of each step reassigned); registering them as separate statements keeps the router's type unchanged, as in Hono.
 
 ### Example with Hono

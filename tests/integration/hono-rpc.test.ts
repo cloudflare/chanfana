@@ -47,10 +47,25 @@ class RpcTaskCreateEndpoint extends OpenAPIRoute {
   }
 }
 
+class RpcDateEndpoint extends OpenAPIRoute {
+  schema = {
+    responses: {
+      "200": { description: "ok", ...contentJson(z.object({ createdAt: z.date() })) },
+    },
+  };
+
+  async handle() {
+    return { createdAt: new Date("2026-01-02T03:04:05.000Z") };
+  }
+}
+
 function buildApp() {
   const app = new Hono();
   const openapi = fromHono(app);
-  const routes = openapi.get("/tasks/:id", RpcTaskFetchEndpoint).post("/tasks", RpcTaskCreateEndpoint);
+  const routes = openapi
+    .get("/tasks/:id", RpcTaskFetchEndpoint)
+    .post("/tasks", RpcTaskCreateEndpoint)
+    .get("/date", RpcDateEndpoint);
   const client = hc<typeof routes>("http://localhost", { fetch: app.request });
   return { app, client };
 }
@@ -79,6 +94,16 @@ describe("Hono RPC client", () => {
     expect(await res.json()).toEqual({ id: 1, name: "write docs", done: true });
   });
 
+  it("types dates as the strings received over the wire", async () => {
+    const { client } = buildApp();
+
+    const res = await client.date.$get();
+    const body = await res.json();
+    const createdAt: string = body.createdAt;
+
+    expect(createdAt).toBe("2026-01-02T03:04:05.000Z");
+  });
+
   it("returns chanfana validation errors", async () => {
     const { client } = buildApp();
 
@@ -104,6 +129,6 @@ describe("Hono RPC client", () => {
     const res = await app.request("/openapi.json");
     const schema = (await res.json()) as { paths: Record<string, unknown> };
 
-    expect(Object.keys(schema.paths)).toEqual(["/tasks/{id}", "/tasks"]);
+    expect(Object.keys(schema.paths)).toEqual(["/tasks/{id}", "/tasks", "/date"]);
   });
 });

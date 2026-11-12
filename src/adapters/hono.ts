@@ -12,10 +12,11 @@ import type {
   TypedResponse,
 } from "hono/types";
 import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
+import type { JSONParsed } from "hono/utils/types";
 import type { z, ZodType } from "zod";
 import { type NestedRouter, OpenAPIHandler, type OpenAPIRouterType, type RouteHandler } from "../openapi";
 import type { OpenAPIRouteClass } from "../route";
-import type { AnyZodObject, RouterOptions, Simplify } from "../types";
+import type { AnyZodObject, IsEqual, RouterOptions, Simplify } from "../types";
 import { formatChanfanaError, validateBasePath } from "../utils";
 
 type MergeTypedResponse<T> =
@@ -53,8 +54,9 @@ type StringifyValue<V> = V extends string
       : string;
 type StringifyRecord<T> = Simplify<{ [K in keyof T]: StringifyValue<T[K]> }>;
 
-// `contentJson()` types its schema as `z.ZodType<T>`, whose input type is `unknown`; fall back to the output type
-type ZodClientInput<T extends ZodType> = unknown extends z.input<T> ? z.output<T> : z.input<T>;
+// `contentJson()` erases its schema to the base `z.ZodType<T>` (input `unknown`), so only that exact type falls back
+// to the output type. Other schemas with an `unknown` input (e.g. `z.preprocess()`) keep it.
+type ZodClientInput<T extends ZodType> = IsEqual<T, z.ZodType<z.output<T>>> extends true ? z.output<T> : z.input<T>;
 
 type RequestPartInput<Request, Part extends string, Target extends string> =
   Request extends Record<Part, infer V>
@@ -101,14 +103,14 @@ type ResponsesToTypedResponse<Responses> = {
     ? Z extends ZodType
       ? [StatusFromKey<K>] extends [never]
         ? never
-        : TypedResponse<z.output<Z>, StatusFromKey<K>, "json">
+        : TypedResponse<JSONParsed<z.output<Z>>, StatusFromKey<K>, "json">
       : never
     : never;
 }[keyof Responses];
 
 /**
  * Hono handler response inferred from an OpenAPIRoute class' `schema.responses`: one `TypedResponse` per status code
- * with an `application/json` Zod schema. Falls back to `any` (Hono's untyped default) when nothing can be inferred.
+ * with an `application/json` Zod schema, typed as the JSON-serialized schema output (like Hono's `c.json()`). Falls back to `any` (Hono's untyped default) when nothing can be inferred.
  */
 export type OpenAPIRouteHonoOutput<T extends OpenAPIRouteClass> = InstanceType<T>["schema"] extends {
   responses: infer Responses;
