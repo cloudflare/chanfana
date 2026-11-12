@@ -703,6 +703,27 @@ describe("chanfanaValidator()", () => {
       );
     });
 
+    it("throws with itty-router for methods that don't register an OpenAPI route", () => {
+      const router = fromIttyRouter(AutoRouter()) as any;
+      for (const method of ["all", "get", "trace"]) {
+        expect(() => router[method]("/x", chanfanaValidator(), CreateUserEndpoint)).toThrow(
+          "chanfanaValidator() is only supported with fromHono()",
+        );
+      }
+      expect(() => router.all("/x", chanfanaValidator())).toThrow(
+        "chanfanaValidator() is only supported with fromHono()",
+      );
+    });
+
+    it("keeps itty-router all() routes without the marker working", async () => {
+      const router = fromIttyRouter(AutoRouter());
+      (router as any).all("/plain", () => new Response("plain"));
+
+      const res = await router.fetch(new Request("https://example.com/plain"));
+      expect(res.status).toBe(200);
+      expect(await res.text()).toBe("plain");
+    });
+
     it("fails at request time on a plain Hono app", async () => {
       const app = new Hono();
       let message = "";

@@ -1,4 +1,4 @@
-import { type NestedRouter, OpenAPIHandler, type OpenAPIRouterType } from "../openapi";
+import { isValidatorMarker, type NestedRouter, OpenAPIHandler, type OpenAPIRouterType } from "../openapi";
 import type { OpenAPIRouteClass } from "../route";
 import type { RouterOptions } from "../types";
 
@@ -63,6 +63,11 @@ export function fromIttyRouter<M>(router: M, options?: RouterOptions): M & IttyR
         let handlers = rawHandlers;
 
         if (prop !== "fetch" && typeof prop === "string") {
+          // Checked for every method, since all() and nested routers don't go through registerRoute()
+          if (isValidatorMarker(route) || handlers.some(isValidatorMarker)) {
+            throw new Error("chanfanaValidator() is only supported with fromHono()");
+          }
+
           const firstHandler = handlers[0];
           if (handlers.length === 1 && isChanfanaRouter(firstHandler)) {
             handlers = openapiRouter.registerNestedRouter({
