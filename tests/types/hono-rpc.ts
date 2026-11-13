@@ -266,6 +266,5 @@ const mw: MiddlewareHandler = async (_c, next) => {
 const withMiddleware = fromHono(new Hono()).get("/mw", mw, (c) => c.json({ ok: true }));
 const middlewareClient = hc<typeof withMiddleware>("http://localhost");
 expectTypeOf<InferResponseType<typeof middlewareClient.mw.$get>>().toEqualTypeOf<{ ok: true }>();
-// Middleware plus an endpoint class is accepted at runtime but has never been typed (unchanged by #215)
-// @ts-expect-error -- no overload accepts (path, middleware, OpenAPIRoute class)
+// Middleware plus an endpoint class is typed since #84
 fromHono(new Hono()).get("/mw-endpoint", mw, TaskFetch);

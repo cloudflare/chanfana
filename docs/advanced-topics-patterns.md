@@ -104,9 +104,8 @@ Chanfana is designed to work seamlessly with the middleware capabilities of your
 **Example: Authentication Middleware in Hono**
 
 ```typescript
-import { Hono, type Context } from 'hono';
+import { Hono, type Context, type MiddlewareHandler } from 'hono';
 import { fromHono, OpenAPIRoute } from 'chanfana';
-import { z } from 'zod';
 
 export type Env = {
     // Example bindings, use your own
@@ -116,21 +115,21 @@ export type Env = {
 export type AppContext = Context<{ Bindings: Env }>
 
 // Authentication Middleware
-const authMiddleware = async (c, next) => {
+const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
     const apiKey = c.req.header('X-API-Key');
     if (apiKey !== 'valid-api-key') {
         return c.json({ success: false, message: 'Unauthorized' }, 401);
     }
-    await next();
+    return next();
 };
 
 class ProtectedEndpoint extends OpenAPIRoute {
     schema = {
         responses: { "200": { description: 'Protected resource' } },
     };
-    
-    async handle(c: AppContext) { 
-      return { message: 'Protected data' }; 
+
+    async handle(c: AppContext) {
+      return { message: 'Protected data' };
     }
 }
 
@@ -144,6 +143,77 @@ export default app;
 ```
 
 In this example, we define an `authMiddleware` function that checks for an API key in the request headers. We then apply this middleware to the `/protected` route when registering the `ProtectedEndpoint` using `openapi.get('/protected', authMiddleware, ProtectedEndpoint)`. The middleware will be executed before the `ProtectedEndpoint`'s `handle` method, ensuring that only authenticated requests reach the endpoint logic.
+
+Each middleware placed before the endpoint class is typed like in Hono: its context sees your app's `Env` and the `Variables` set by the middleware before it. Middleware can also be applied to a group of routes with `app.use(path, middleware)`.
+
+**Validated Request Data in Middleware (Hono)**
+
+By default, Chanfana validates the request lazily, when the endpoint calls `getValidatedData()`, so middleware that runs before the endpoint only has the raw request. To use the endpoint's validated data in route middleware, place the `chanfanaValidator()` marker before them. Chanfana then validates the request at that point, against the endpoint's schema, and middleware after the marker can read the result with Hono's `c.req.valid()`:
+
+```typescript
+import { Hono, type MiddlewareHandler } from 'hono';
+import { chanfanaValidator, contentJson, fromHono, OpenAPIRoute } from 'chanfana';
+import { z } from 'zod';
+
+type User = { id: string };
+
+const authMiddleware: MiddlewareHandler<{ Variables: { user: User } }> = async (c, next) => {
+    c.set('user', { id: 'user-1' });
+    await next();
+};
+
+class CreateUser extends OpenAPIRoute {
+    schema = {
+        request: {
+            query: z.object({ notify: z.boolean().default(false) }),
+            body: contentJson(z.object({ name: z.string(), email: z.email() })),
+        },
+    };
+
+    async handle() {
+        // Reuses the data validated by chanfanaValidator(), the request isn't validated twice
+        const { body } = await this.getValidatedData<typeof this.schema>();
+        return { created: body.email };
+    }
+}
+
+const app = new Hono();
+const openapi = fromHono(app);
+
+openapi.post(
+    '/users',
+    authMiddleware,           // runs before validation: c.req.valid() is not available here
+    chanfanaValidator(),      // validates the request against CreateUser's schema
+    async (c, next) => {
+        const { email } = c.req.valid('json');      // { name: string; email: string }
+        const { notify } = c.req.valid('query');    // { notify: boolean }, coerced and defaulted
+        const user = c.get('user');                 // typed by authMiddleware
+        if (email.endsWith('@blocked.example')) {
+            return c.json({ success: false, errors: [{ message: `Email not allowed for ${user.id}` }] }, 400);
+        }
+        return next();
+    },
+    CreateUser,
+);
+```
+
+`c.req.valid()` accepts the targets declared in the endpoint's schema: `'json'` (the JSON body), `'query'`, `'param'` and `'header'`. The values are the Zod output, with coercions and defaults applied, the same data `getValidatedData()` returns. GET and HEAD requests have no JSON body, so `'json'` isn't available on `get()` routes, and is typed as possibly `undefined` on `all()` routes.
+
+How it behaves:
+
+*   **Opt-in:** routes without the marker are unchanged and keep validating lazily.
+*   **Same errors:** an invalid request stops at the marker and gets the same `400` response (code `7001`) as without it. `handleError()`, `raiseOnError`, `passthroughErrors` and Hono's `onError` apply the same way, and the middleware after the marker and the endpoint don't run.
+*   **Validated once:** the endpoint of the same route reuses the data validated by the marker. Other routes matching the same request (for example when the endpoint calls `next()`) validate the request themselves. `getUnvalidatedData()` keeps working, so auto endpoints like `UpdateEndpoint` work too.
+*   **Body still readable:** the body is read with `c.req.json()`, which Hono caches, so middleware and the endpoint can still read it after the marker.
+*   **Validation runs eagerly:** on routes with the marker, the request is validated even if `handle()` never calls `getValidatedData()`.
+
+Limitations:
+
+*   Only supported with `fromHono()`. Registering it with `fromIttyRouter()`, in `app.use()`, more than once in a route, or in a route that doesn't end with a single endpoint class throws an error when the route is registered. On a plain Hono app (not wrapped with `fromHono()`) it throws when a request reaches it.
+*   Middleware are typed for up to 5 middleware before the endpoint. Longer chains still work, but their handlers are untyped (`c.req.valid()` returns `any`).
+*   `c.req.valid()` is only typed when the endpoint's `schema` property has a literal type. If it is annotated as `OpenAPIRouteSchema`, built in `getSchema()`, or generated (auto endpoints), `c.req.valid()` returns `any`.
+*   The endpoint class itself is not typed from the middleware chain: its `handle()` arguments and `this` don't know about the middleware's `Variables`. Type the endpoint's context yourself (for example `handle(c: AppContext)`).
+*   Middleware after the marker and the endpoint share the same validated objects: if a middleware mutates the object returned by `c.req.valid()`, the endpoint sees the change.
 
 **Interceptors (Before/After Hooks in Endpoints):**
 

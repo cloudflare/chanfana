@@ -295,6 +295,34 @@ class UpdateUser extends OpenAPIRoute {
 }
 ```
 
+### Route Middleware and Validated Data in Middleware (Hono only)
+
+Hono middleware can be placed before the endpoint class. To read the endpoint's validated data in middleware, add the opt-in `chanfanaValidator()` marker: middleware after it get typed `c.req.valid('json' | 'query' | 'param' | 'header')` (Zod output, coerced and defaulted), and the endpoint reuses that data instead of validating twice.
+
+```typescript
+import { chanfanaValidator } from 'chanfana';
+
+openapi.post('/users', authMiddleware, CreateUser); // plain middleware, typed like Hono
+
+openapi.post(
+    '/users',
+    authMiddleware,           // before the marker: no c.req.valid()
+    chanfanaValidator(),      // validates against CreateUser's schema, same 400/7001 on failure
+    async (c, next) => {
+        const { email } = c.req.valid('json'); // typed from CreateUser.schema
+        return next();
+    },
+    CreateUser,               // must come last, after the marker
+);
+```
+
+Rules:
+- `fromHono()` only. Using it with `fromIttyRouter()`, in `app.use()`, twice in a route, or in a route that doesn't end with a single endpoint class throws at registration.
+- No `'json'` on `get()` routes; on `all()` routes it is typed `T | undefined` (GET/HEAD requests have no body).
+- Typed for up to 5 middleware before the endpoint; longer chains are untyped.
+- `c.req.valid()` is only typed when `schema` has a literal type (not annotated `OpenAPIRouteSchema`, not built in `getSchema()`); otherwise it is `any`.
+- The endpoint's `handle()` context is not typed from the chain. Middleware that mutate `c.req.valid()` objects change what the endpoint sees.
+
 ## Part 2: CRUD Auto Endpoints
 
 ### Meta Object Definition
