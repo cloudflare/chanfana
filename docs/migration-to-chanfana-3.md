@@ -470,7 +470,7 @@ Several D1 endpoint behaviors have changed for security:
 
 - **Delete and Update operations** now only apply primary key filters to WHERE clauses. If you relied on filtering by non-primary-key fields, that will no longer work.
 - **Database error messages** are no longer exposed in responses. Use the `constraintsMessages` property to map constraint violations to user-friendly errors.
-- **`per_page` is now capped** at 100 by default (configurable via `maxPerPage` class property).
+- **`per_page` is now capped** at 100 by default. Override the `maxPerPage` class property on `ListEndpoint` (inherited by `D1ListEndpoint`) to change the limit; it governs both request validation (larger values return a 400) and the `maximum` shown in the OpenAPI schema.
 
 ### New Exception Types
 

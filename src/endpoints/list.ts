@@ -34,6 +34,15 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
   defaultOrderBy?: string;
   /** Default sort direction when order_by is used. Defaults to "asc". */
   defaultOrderByDirection: OrderByDirection = "asc";
+  /** Maximum allowed value for the per-page parameter. Larger values are rejected with a 400. Defaults to 100. */
+  maxPerPage = 100;
+  /** Default page size when the per-page parameter is omitted. Capped at `maxPerPage`. Defaults to 20. */
+  defaultPerPage = 20;
+
+  /** Effective default page size, never exceeding `maxPerPage`. */
+  protected get effectiveDefaultPerPage(): number {
+    return Math.min(this.defaultPerPage, this.maxPerPage);
+  }
 
   get optionFields(): string[] {
     return [this.pageFieldName, this.perPageFieldName, this.orderByFieldName, this.orderByDirectionFieldName];
@@ -63,7 +72,13 @@ export class ListEndpoint<HandleArgs extends Array<object> = Array<object>> exte
     let queryParameters: AnyZodObject = z
       .object({
         [this.pageFieldName]: z.number().int().min(1).optional().default(1),
-        [this.perPageFieldName]: z.number().int().min(1).max(100).optional().default(20),
+        [this.perPageFieldName]: z
+          .number()
+          .int()
+          .min(1)
+          .max(this.maxPerPage)
+          .optional()
+          .default(this.effectiveDefaultPerPage),
       })
       .extend(parsedQueryParameters);
 

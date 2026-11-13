@@ -21,8 +21,6 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
   dbName = "DB";
   /** Optional logger for debugging and error tracking */
   logger?: Logger;
-  /** Maximum number of results per page. Override to change the limit. */
-  maxPerPage = 100;
 
   /**
    * Gets the D1 database binding from the worker environment.
@@ -54,7 +52,10 @@ export class D1ListEndpoint<HandleArgs extends Array<object> = Array<object>> ex
     const validColumns = this.getValidColumns();
 
     // Safe pagination defaults — use custom field names for option keys
-    const perPage = Math.min(Math.max(1, Number(filters?.options?.[this.perPageFieldName]) || 20), this.maxPerPage);
+    const perPage = Math.min(
+      Math.max(1, Number(filters?.options?.[this.perPageFieldName]) || this.effectiveDefaultPerPage),
+      this.maxPerPage,
+    );
     const page = Math.max(1, Number(filters?.options?.[this.pageFieldName]) || 1);
     const limit = perPage;
     const offset = Math.max(0, (page - 1) * perPage);

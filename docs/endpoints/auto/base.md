@@ -675,7 +675,7 @@ In this example:
 *   The `GET /products` route is registered with `ListProducts`.
 
 `ListEndpoint` automatically generates OpenAPI schemas for:
-- **Pagination parameters:** `page` (default: 1), `per_page` (default: 20, max: 100)
+- **Pagination parameters:** `page` (default: 1), `per_page` (default: `defaultPerPage`, 20; max: `maxPerPage`, 100)
 - **Filtering parameters:** Based on `filterFields` for exact matching
 - **Search parameter:** `search` (or custom name via `searchFieldName`) for full-text search
 - **Ordering parameters:** `order_by`, `order_by_direction` (based on `orderByFields`)
