@@ -32,6 +32,17 @@ class SmallD1ListEndpoint extends D1ListEndpoint {
   maxPerPage = 10;
 }
 
+class CustomFieldD1ListEndpoint extends D1ListEndpoint {
+  _meta = rowsMeta;
+  perPageFieldName = "limit";
+  maxPerPage = 200;
+}
+
+class CustomDefaultD1ListEndpoint extends D1ListEndpoint {
+  _meta = rowsMeta;
+  defaultPerPage = 30;
+}
+
 class SmallListEndpoint extends ListEndpoint {
   _meta = rowsMeta;
   maxPerPage = 10;
@@ -64,6 +75,8 @@ describe("ListEndpoint maxPerPage", () => {
   router.get("/small", SmallD1ListEndpoint);
   router.get("/small-base", SmallListEndpoint);
   router.get("/custom-default", CustomDefaultListEndpoint);
+  router.get("/custom-field", CustomFieldD1ListEndpoint);
+  router.get("/custom-default-d1", CustomDefaultD1ListEndpoint);
 
   beforeEach(async () => {
     await env.DB.prepare("DROP TABLE IF EXISTS max_per_page_rows").run();
@@ -140,6 +153,40 @@ describe("ListEndpoint maxPerPage", () => {
     const data = (await response.json()) as any;
 
     expect(response.status).toBe(200);
+    expect(data.result_info.per_page).toBe(30);
+  });
+
+  it("applies maxPerPage to a custom per-page field name", async () => {
+    const okResponse = await router.fetch(new Request("https://example.com/custom-field?limit=150"), env);
+    const okData = (await okResponse.json()) as any;
+
+    expect(okResponse.status).toBe(200);
+    expect(okData.result).toHaveLength(150);
+    expect(okData.result_info.per_page).toBe(150);
+
+    const tooLargeResponse = await router.fetch(new Request("https://example.com/custom-field?limit=201"), env);
+    const tooLargeData = (await tooLargeResponse.json()) as any;
+
+    expect(tooLargeResponse.status).toBe(400);
+    expect(tooLargeData.success).toBe(false);
+    expect(tooLargeData.errors[0].code).toBe(7001);
+
+    const schemaResponse = await router.fetch(new Request("https://example.com/openapi.json"), env);
+    const schema = (await schemaResponse.json()) as any;
+    const queryParams = schema.paths["/custom-field"].get.parameters.filter((p: any) => p.in === "query");
+    const limitSchema = queryParams.find((p: any) => p.name === "limit").schema;
+
+    expect(limitSchema.maximum).toBe(200);
+    expect(limitSchema.default).toBe(20);
+    expect(queryParams.map((p: any) => p.name)).not.toContain("per_page");
+  });
+
+  it("uses a custom defaultPerPage on a D1 endpoint", async () => {
+    const response = await router.fetch(new Request("https://example.com/custom-default-d1"), env);
+    const data = (await response.json()) as any;
+
+    expect(response.status).toBe(200);
+    expect(data.result).toHaveLength(30);
     expect(data.result_info.per_page).toBe(30);
   });
 
