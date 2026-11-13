@@ -1,5 +1,50 @@
 # chanfana
 
+## 3.6.0
+
+### Minor Changes
+
+- [#388](https://github.com/cloudflare/chanfana/pull/388) [`f4ee2aa`](https://github.com/cloudflare/chanfana/commit/f4ee2aaed542e34d33e7653b4152f9c5c7f143e4) Thanks [@rafamolina1](https://github.com/rafamolina1)! - Allow configuring ReDoc HTML attributes through `redoc_options` on Hono and itty-router adapters and an optional second argument to `getReDocUI()`, including `show-extensions` filters.
+
+- [#386](https://github.com/cloudflare/chanfana/pull/386) [`43307ee`](https://github.com/cloudflare/chanfana/commit/43307ee2c14749a08d4c254a947de228ea98b4ce) Thanks [@G4brym](https://github.com/G4brym)! - Preserve Hono RPC route types in `fromHono()`. Routes chained on the Hono router now infer their `hc` client input (`param`, `query`, `header`, `json`) and per-status JSON output (typed as serialized JSON, like `c.json()`) from the endpoint's `schema`, so `hc<typeof routes>` from `hono/client` is fully typed. Nested routers mounted with `.route()` also keep their route types. Type-only change, no runtime behavior changes.
+
+- [#389](https://github.com/cloudflare/chanfana/pull/389) [`bcdac3a`](https://github.com/cloudflare/chanfana/commit/bcdac3a589b3bdf1f4f01e24eef045133ccdc158) Thanks [@G4brym](https://github.com/G4brym)! - Add `chanfanaValidator()`, an opt-in marker that gives Hono route middleware the endpoint's validated request data ([#84](https://github.com/cloudflare/chanfana/issues/84)).
+  
+  Place it before the endpoint class in a `fromHono()` route, and middleware after it can read the validated, typed data with `c.req.valid("json" | "query" | "param" | "header")`:
+  
+  ```ts
+  openapi.post("/users", authMw, chanfanaValidator(), emailCheckMw, CreateUser);
+  ```
+  
+  The request is validated once, at the marker, against the endpoint's schema, and the endpoint reuses that data. Invalid requests get the same `400` response as before, through the same `handleError()`, `passthroughErrors` and `onError` handling. Routes without the marker are unchanged.
+  
+  Route registrations on `fromHono()` are now also typed when middleware come before the endpoint class (`openapi.get(path, authMw, Endpoint)`, which previously needed a cast, [#273](https://github.com/cloudflare/chanfana/issues/273)), for up to 5 middleware. `all()` now also registers routes where middleware come before the endpoint class. The new `OpenAPIRouteHonoValidatedInput` type gives the Hono `Input` added by the marker.
+
+- [#384](https://github.com/cloudflare/chanfana/pull/384) [`b5edbda`](https://github.com/cloudflare/chanfana/commit/b5edbdae0866511afc5fb715e01e97da60f76a8d) Thanks [@G4brym](https://github.com/G4brym)! - Stop treating `ZodError`s thrown from `handle()` as request validation errors ([#166](https://github.com/cloudflare/chanfana/issues/166)).
+  
+  Previously, any `z.ZodError` thrown inside `handle()` (for example from parsing a database row or an upstream response with Zod) was turned into a `400` response with code `7001`, exposing internal schema details as if the client had sent an invalid request. Now only request-validation `ZodError`s (`getValidatedData()` / `validateRequest()`) are automatically converted into `400` / `7001` responses; explicitly thrown chanfana exceptions (such as `InputValidationException`, including the D1 constraint mappings) are unchanged. Any other `ZodError` is treated like an unknown error: chanfana re-throws it to the router (itty-router's `catch`, or Hono's `onError` as a raw `ZodError` instead of an `HTTPException`), which typically returns a `500`. Note that itty-router's default `AutoRouter` `catch` still includes the error message in its `500` body; use a custom `catch` if you need to hide it. The exported `formatChanfanaError()` helper now returns `null` for a raw `ZodError`. Request validation responses are unchanged.
+  
+  To keep the old behavior for a route, convert the error yourself, either where you parse or in the `handleError()` hook:
+  
+  ```ts
+  import { InputValidationException, MultiException } from "chanfana";
+  
+  protected handleError(error: unknown): unknown {
+    if (error instanceof z.ZodError) {
+      return new MultiException(
+        error.issues.map((issue) => new InputValidationException(issue.message, issue.path.map(String))),
+      );
+    }
+    return error;
+  }
+  ```
+
+### Patch Changes
+
+- [#382](https://github.com/cloudflare/chanfana/pull/382) [`53b09ec`](https://github.com/cloudflare/chanfana/commit/53b09ec1fd8af88a98e30dbd2d9ac61ce076b603) Thanks [@kwy404](https://github.com/kwy404)! - Coerce each item of array query, path and header parameters with the array element type, so schemas like `z.number().array()` or `z.array(z.boolean())` accept `?ids=1&ids=2` instead of failing with "expected number, received string". Array elements declared with `z.coerce.*` or `.catch()` now get the same pre-coercion as scalar parameters, for example `z.array(z.coerce.boolean())` reads `false` as `false`, and `z.coerce.number().array()` rejects hex, binary and blank items like scalar `z.coerce.number()` already does.
+
+- [#391](https://github.com/cloudflare/chanfana/pull/391) [`55ce314`](https://github.com/cloudflare/chanfana/commit/55ce31472128065cdbfee96cf05566d8e749502c) Thanks [@G4brym](https://github.com/G4brym)! - Respect `maxPerPage` in `ListEndpoint` `per_page` validation and OpenAPI output. `maxPerPage` (default 100) and a new `defaultPerPage` (default 20) are now declared on `ListEndpoint` and inherited by `D1ListEndpoint`, so raising `maxPerPage` allows larger pages instead of returning a 400, and the documented `maximum` matches the configured limit. The default page size is capped at `maxPerPage`. Note: endpoints that lower `maxPerPage` below 100 now reject larger `per_page` values with a 400 instead of silently clamping them.
+
 ## 3.5.0
 
 ### Minor Changes
