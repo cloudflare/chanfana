@@ -66,11 +66,16 @@ export interface ResponseConfig {
 }
 export type RouteParameter = AnyZodObject | ZodPipe<AnyZodObject, ZodType> | undefined;
 
+/** ReDoc HTML attributes in kebab-case. Undefined values are omitted. */
+export type ReDocOptions = Record<string, string | number | boolean | undefined>;
+
 export interface RouterOptions {
   base?: string;
   schema?: Partial<OpenAPIObjectConfigV31 | OpenAPIObjectConfig>;
   docs_url?: string | null;
   redoc_url?: string | null;
+  /** ReDoc attributes in kebab-case, e.g. { "show-extensions": "x-filter-fields" }. */
+  redoc_options?: ReDocOptions;
   openapi_url?: string | null;
   raiseUnknownParameters?: boolean;
   generateOperationIds?: boolean;

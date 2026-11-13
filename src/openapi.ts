@@ -138,7 +138,7 @@ export class OpenAPIHandler {
     if (!redocDisabled && !openapiDisabled) {
       const redocPath = this.options?.redoc_url || "/redocs";
       this.router.get(redocPath, () => {
-        return new Response(getReDocUI(base + openapiUrl), {
+        return new Response(getReDocUI(base + openapiUrl, this.options.redoc_options), {
           headers: {
             "content-type": "text/html; charset=UTF-8",
           },
