@@ -197,7 +197,7 @@ class MyListEndpoint extends ListEndpoint {
 **Query Parameters:**
 
 *   `page`: (integer, default: 1) Page number to retrieve.
-*   `per_page`: (integer, default: 20, max: 100) Number of items per page.
+*   `per_page`: (integer, default: 20, max: 100) Number of items per page. Override the `defaultPerPage` and `maxPerPage` class properties to change these values; requests above `maxPerPage` are rejected with a 400.
 
 Chanfana automatically documents these query parameters in your OpenAPI specification and makes them available in the `filters.options` object within your `list` method.
 
