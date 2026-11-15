@@ -2,8 +2,8 @@ import { getReDocUI, type ReDocOptions, type RouterOptions } from "../../src";
 
 export const redocOptions: ReDocOptions = {
   "show-extensions": "x-filter-fields",
-  "disable-search": false,
-  "scroll-y-offset": 0,
+  "disable-telemetry": false,
+  "max-displayed-enum-values": 0,
   "hide-loading": undefined,
 };
 
