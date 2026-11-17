@@ -1,5 +1,19 @@
 # chanfana
 
+## 4.0.0
+
+### Major Changes
+
+- [#393](https://github.com/cloudflare/chanfana/pull/393) [`3271503`](https://github.com/cloudflare/chanfana/commit/3271503f7081656e6fd126727e928f3155f28364) Thanks [@rafamolina1](https://github.com/rafamolina1)! - Upgrade the bundled documentation page from Redoc 2.1.5 to Redoc 3.1.0, loading the pinned CDN bundle as an ES module with updated subresource integrity.
+  
+  Redoc 3 changes the documentation layout, deep links, and supported configuration options. Update `redoc_options` using the Redoc migration guide: https://redocly.com/docs/redoc/config-migration. For example, `disable-search` was removed, `hide-download-button` became `hide-download-buttons`, and `json-sample-expand-level` became `json-samples-expand-level`. Legacy options are passed through without translation.
+  
+  Disable Redoc telemetry by default. To enable it explicitly, set `redoc_options: { "disable-telemetry": false }` or pass the same option to `getReDocUI()`.
+
+### Patch Changes
+
+- [#396](https://github.com/cloudflare/chanfana/pull/396) [`ca9b21a`](https://github.com/cloudflare/chanfana/commit/ca9b21a9cb472ae2acdb8c04d314869e3f54f577) Thanks [@G4brym](https://github.com/G4brym)! - Bump Swagger UI to 5.35.0
+
 ## 3.6.0
 
 ### Minor Changes
