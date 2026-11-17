@@ -6,29 +6,43 @@ import { fromHono, fromIttyRouter, getReDocUI, type ReDocOptions, type RouterOpt
 describe("ReDoc configuration attributes", () => {
   it("preserves the default tag and normalizes schema paths with no options", () => {
     const html = getReDocUI("/api//openapi.json/");
-    expect(html).toContain('<redoc spec-url="/api/openapi.json"></redoc>');
+    expect(html).toContain('<redoc spec-url="/api/openapi.json" disable-telemetry="true"></redoc>');
     expect(getReDocUI("/api//openapi.json/", {})).toBe(html);
+  });
+
+  it("loads the pinned Redoc 3 bundle as a module with subresource integrity", () => {
+    expect(getReDocUI("/openapi.json")).toContain(
+      '<script type="module" src="https://cdn.jsdelivr.net/npm/redoc@3.1.0/bundles/redoc.standalone.js" integrity="sha256-2ZgTsExo1fgFhcLxMZ7RaxbcoqhPMs8bXhBacTVnVis=" crossorigin="anonymous"></script>',
+    );
+  });
+
+  it.each([undefined, true, false])("renders telemetry exactly once for option %j", (value) => {
+    const options = Object.freeze({ "disable-telemetry": value });
+    const html = getReDocUI("/openapi.json", options);
+    expect(html).toContain(`disable-telemetry="${value ?? true}"`);
+    expect(html.match(/ disable-telemetry=/g)).toHaveLength(1);
+    expect(options["disable-telemetry"]).toBe(value);
   });
 
   it("renders the extension filter requested in issue #376", () => {
     expect(getReDocUI("/openapi.json", { "show-extensions": "x-filter-fields" })).toContain(
-      '<redoc spec-url="/openapi.json" show-extensions="x-filter-fields"></redoc>',
+      '<redoc spec-url="/openapi.json" show-extensions="x-filter-fields" disable-telemetry="true"></redoc>',
     );
   });
 
   it("preserves primitive values and omits undefined options", () => {
     const options: ReDocOptions = {
       "show-extensions": false,
-      "disable-search": true,
-      "scroll-y-offset": 0,
+      "hide-download-buttons": true,
+      "max-displayed-enum-values": 0,
       "schema-definitions-tag-name": "",
       "only-required-in-samples": true,
       "hide-loading": undefined,
     };
     const html = getReDocUI("/openapi.json", options);
     expect(html).toContain('show-extensions="false"');
-    expect(html).toContain('disable-search="true"');
-    expect(html).toContain('scroll-y-offset="0"');
+    expect(html).toContain('hide-download-buttons="true"');
+    expect(html).toContain('max-displayed-enum-values="0"');
     expect(html).toContain('schema-definitions-tag-name=""');
     expect(html).toContain('only-required-in-samples="true"');
     expect(html).not.toContain("hide-loading");
@@ -76,9 +90,20 @@ describe.each(["hono", "itty-router"] as const)("ReDoc routes with %s", (adapter
     const response = await router.fetch(new Request("http://localhost/redocs"));
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("text/html; charset=UTF-8");
-    expect(await response.text()).toContain(
-      '<redoc spec-url="/openapi.json" show-extensions="x-filter-fields"></redoc>',
+    const html = await response.text();
+    expect(html).toContain(
+      '<redoc spec-url="/openapi.json" show-extensions="x-filter-fields" disable-telemetry="true"></redoc>',
     );
+    expect(html).toContain('<script type="module" src="https://cdn.jsdelivr.net/npm/redoc@3.1.0/');
+  });
+
+  it("allows explicitly enabling telemetry", async () => {
+    const router = createRouter({ redoc_options: { "disable-telemetry": false } });
+    const response = await router.fetch(new Request("http://localhost/redocs"));
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('disable-telemetry="false"');
+    expect(html.match(/ disable-telemetry=/g)).toHaveLength(1);
   });
 
   it("preserves the schema URL with a base path and custom documentation URLs", async () => {
@@ -91,7 +116,9 @@ describe.each(["hono", "itty-router"] as const)("ReDoc routes with %s", (adapter
     const path = adapter === "hono" ? "/api/reference" : "/reference";
     const response = await router.fetch(new Request(`http://localhost${path}`));
     expect(response.status).toBe(200);
-    expect(await response.text()).toContain('<redoc spec-url="/api/schema.json" show-extensions="true"></redoc>');
+    expect(await response.text()).toContain(
+      '<redoc spec-url="/api/schema.json" show-extensions="true" disable-telemetry="true"></redoc>',
+    );
     expect((await router.fetch(new Request("http://localhost/api/schema.json"))).status).toBe(200);
   });
 

@@ -354,12 +354,12 @@ Pass ReDoc configuration attributes through `redoc_options` when initializing ei
 const openapi = fromHono(new Hono(), {
     redoc_options: {
         'show-extensions': 'x-filter-fields',
-        'disable-search': true,
+        'hide-download-buttons': true,
     },
 });
 ```
 
-Use kebab-case attribute names, as expected by the ReDoc HTML element. Values may be strings, numbers, or booleans. Boolean values are rendered explicitly as `"true"` or `"false"`; `undefined` values are omitted. With no options, the default ReDoc configuration is preserved.
+Use kebab-case attribute names, as expected by the ReDoc HTML element. Values may be strings, numbers, or booleans. Boolean values are rendered explicitly as `"true"` or `"false"`; `undefined` values are omitted. Chanfana uses Redoc 3.1.0 and disables its anonymous telemetry by default, including when `disable-telemetry` is `undefined`. To enable telemetry explicitly, set `redoc_options: { 'disable-telemetry': false }`.
 
 For `show-extensions`, use `true` to display all supported custom extensions, `false` to hide them, or a comma-separated string such as `'x-filter-fields,x-other'` to select extensions.
 
@@ -374,12 +374,25 @@ const html = getReDocUI('/openapi.json', options);
 
 Attribute values are HTML-escaped. Invalid attribute names, event handler attributes such as `onclick`, and `spec-url` throw an error. Set the schema URL through `openapi_url` (for automatic routes) or the first argument to `getReDocUI()`. Objects and functions are not accepted as attribute values.
 
+#### Migrating from Redoc 2
+
+Redoc 3 uses a new renderer, so the appearance and some configuration options differ. Chanfana passes attributes through without translating legacy options. Update your configuration using the [Redoc migration guide](https://redocly.com/docs/redoc/config-migration):
+
+* `disable-search` was removed; search is always available.
+* `hide-download-button` is now `hide-download-buttons`.
+* `json-sample-expand-level` is now `json-samples-expand-level`.
+* `schema-expansion-level` is now `schemas-expansion-level`.
+
+Standalone pages continue to use hash navigation by default. Redoc redirects older operation and tag links to the new format, but links to individual schemas (`#schema/<name>`) and security schemes (`#section/Authentication/<scheme>`) have no equivalent page. Theme customization now uses CSS variables. The HTML helpers and router option signatures remain the same; there is no Redoc 2 version selector.
+
+The generated page loads the pinned Redoc bundle with `type="module"` and subresource integrity. If you maintain a separate HTML template, its script must also load as a module; a classic script tag does not work with Redoc 3.
+
 ## Serving OpenAPI Documentation (Swagger UI, ReDoc)
 
 Chanfana makes it easy to serve interactive API documentation using Swagger UI and ReDoc. By default, if you provide `docs_url` and `openapi_url` (or `redoc_url` and `openapi_url`) in `RouterOptions`, Chanfana automatically sets up routes to serve these documentation UIs.
 
 *   **Swagger UI:** Served at the URL specified in `docs_url` (default: `/docs`). Provides an interactive, visual interface for exploring and testing your API.
-*   **ReDoc:** Served at the URL specified in `redoc_url` (default: `/redocs`). Provides a clean, three-panel documentation layout, often preferred for its readability.
+*   **ReDoc:** Served at the URL specified in `redoc_url` (default: `/redocs`). Provides the Redoc 3 documentation interface with search and schema examples.
 
 Both Swagger UI and ReDoc are served as static HTML pages that fetch your OpenAPI schema from the `openapi_url` (default: `/openapi.json`) and render the documentation dynamically.
 

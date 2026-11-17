@@ -41,7 +41,7 @@ function escapeHtmlAttribute(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
-/** Render ReDoc with optional kebab-case HTML configuration attributes. */
+/** Render ReDoc with optional kebab-case HTML configuration attributes and telemetry disabled by default. */
 export function getReDocUI(rawSchemaUrl: string, options?: ReDocOptions): string {
   const schemaUrl = rawSchemaUrl.replace(/\/+(\/|$)/g, "$1"); // strip double & trailing splash
   const attributes: string[] = [];
@@ -52,6 +52,9 @@ export function getReDocUI(rawSchemaUrl: string, options?: ReDocOptions): string
     if (value !== undefined) {
       attributes.push(` ${name}="${escapeHtmlAttribute(String(value))}"`);
     }
+  }
+  if (options?.["disable-telemetry"] === undefined) {
+    attributes.push(' disable-telemetry="true"');
   }
   return `<!DOCTYPE html>
     <html>
@@ -76,7 +79,7 @@ export function getReDocUI(rawSchemaUrl: string, options?: ReDocOptions): string
     </head>
     <body>
     <redoc spec-url="${escapeHtmlAttribute(schemaUrl)}"${attributes.join("")}></redoc>
-    <script src="https://cdn.jsdelivr.net/npm/redoc@2.1.5/bundles/redoc.standalone.js" integrity="sha256-vlwzMMjDW4/OsppbdVKtRb/8L9lJT+LhqC+pQXnrX48=" crossorigin="anonymous"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/redoc@3.1.0/bundles/redoc.standalone.js" integrity="sha256-2ZgTsExo1fgFhcLxMZ7RaxbcoqhPMs8bXhBacTVnVis=" crossorigin="anonymous"></script>
     </body>
     </html>`;
 }

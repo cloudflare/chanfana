@@ -74,7 +74,7 @@ export interface RouterOptions {
   schema?: Partial<OpenAPIObjectConfigV31 | OpenAPIObjectConfig>;
   docs_url?: string | null;
   redoc_url?: string | null;
-  /** ReDoc attributes in kebab-case, e.g. { "show-extensions": "x-filter-fields" }. */
+  /** ReDoc 3 attributes in kebab-case. Telemetry is disabled unless "disable-telemetry" is explicitly false. */
   redoc_options?: ReDocOptions;
   openapi_url?: string | null;
   raiseUnknownParameters?: boolean;
