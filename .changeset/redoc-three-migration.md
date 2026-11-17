@@ -1,5 +1,5 @@
 ---
-"chanfana": major
+"chanfana": minor
 ---
 
 Upgrade the bundled documentation page from Redoc 2.1.5 to Redoc 3.1.0, loading the pinned CDN bundle as an ES module with updated subresource integrity.
