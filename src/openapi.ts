@@ -47,6 +47,14 @@ export function isValidatorMarker(value: unknown): boolean {
 export type ValidatorRegistration = Record<never, never>;
 
 /**
+ * Removes the regex pattern from Hono path parameters, e.g. `/posts/:id{[0-9]+}` becomes `/posts/:id`.
+ * The pattern only restricts which URLs match the route, it is not part of the parameter name.
+ */
+function stripParamPatterns(path: string): string {
+  return path.replaceAll(/(:\w+)\{[^}]+\}/g, "$1");
+}
+
+/**
  * Valid HTTP methods for OpenAPI routes.
  * These are the standard methods supported by the OpenAPI specification.
  */
@@ -258,7 +266,7 @@ export class OpenAPIHandler {
    * @returns The normalized path, or an empty string for the root route
    */
   private normalizePath(path: string): string {
-    return ((this.options.base || "") + path)
+    return stripParamPatterns((this.options.base || "") + path)
       .replaceAll(/\/+(\/|$)/g, "$1") // strip double & trailing slash
       .replaceAll(/:(\w+)/g, "{$1}"); // convert parameters into openapi compliant
   }
@@ -358,7 +366,7 @@ export class OpenAPIHandler {
   registerRoute(params: { method: string; path: string; handlers: unknown[]; doRegister?: boolean }): unknown[] {
     const parsedRoute = this.parseRoute(params.path);
 
-    const parsedParams = ((this.options.base || "") + params.path).match(/:(\w+)/g);
+    const parsedParams = stripParamPatterns((this.options.base || "") + params.path).match(/:(\w+)/g);
     let urlParams: string[] = [];
     if (parsedParams) {
       urlParams = parsedParams.map((obj) => obj.replace(":", ""));
