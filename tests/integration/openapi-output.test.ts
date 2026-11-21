@@ -193,6 +193,33 @@ describe("openapi schema generation", () => {
     expect(router.schema.paths["/"].get.operationId).toBe("get");
   });
 
+  it("documents hono path parameters that have a regex pattern", async () => {
+    class PostEndpoint extends OpenAPIRoute {
+      schema = {
+        request: {
+          params: z.object({ lang: z.string(), id: z.coerce.number() }),
+        },
+      };
+
+      async handle() {
+        const data = await this.getValidatedData();
+        return { lang: data.params.lang, id: data.params.id };
+      }
+    }
+
+    const router = fromHono(new Hono());
+    router.get("/:lang{(?:en|de)}/posts/:id{[0-9]+}", PostEndpoint);
+
+    expect(Object.keys(router.schema.paths)).toEqual(["/{lang}/posts/{id}"]);
+    const params = router.schema.paths["/{lang}/posts/{id}"].get.parameters;
+    expect(params.map((p: { name: string; in: string }) => `${p.in}:${p.name}`)).toEqual(["path:lang", "path:id"]);
+
+    const resp = await router.fetch(new Request("http://localhost/en/posts/42"));
+    expect(resp.status).toBe(200);
+    expect(await resp.json()).toEqual({ lang: "en", id: 42 });
+    expect((await router.fetch(new Request("http://localhost/en/posts/abc"))).status).toBe(404);
+  });
+
   it("documents zod v4 string formats", async () => {
     const router = fromHono(new Hono());
     router.get("/formats", StringFormatsEndpoint);
