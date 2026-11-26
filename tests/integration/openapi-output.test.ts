@@ -120,7 +120,42 @@ describe("openapi.yaml output", () => {
   });
 });
 
+class RegexPathParamEndpoint extends OpenAPIRoute {
+  schema = {
+    request: {
+      params: z.object({ id: z.number() }),
+    },
+    responses: {
+      "200": { description: "ok" },
+    },
+  };
+
+  async handle() {
+    const data = await this.getValidatedData<typeof this.schema>();
+    return { id: data.params.id };
+  }
+}
+
 describe("openapi schema generation", () => {
+  it("drops hono regex constraints from path parameters", async () => {
+    const child = fromHono(new Hono());
+    child.get("/:id{[0-9]+}", RegexPathParamEndpoint);
+
+    const router = fromHono(new Hono());
+    router.get("/posts/:id{[0-9]+}", RegexPathParamEndpoint);
+    router.get("/codes/:code{[a-z]{2,3}}/items", () => new Response("ok"));
+    router.route("/users/:userId{[0-9]+}/posts", child);
+
+    const schema = router.schema;
+    expect(Object.keys(schema.paths)).toEqual(["/posts/{id}", "/codes/{code}/items", "/users/{userId}/posts/{id}"]);
+    expect(schema.paths["/codes/{code}/items"].get.operationId).toBe("get_codes_code_items");
+    expect(schema.paths["/codes/{code}/items"].get.parameters.map((p: { name: string }) => p.name)).toEqual(["code"]);
+
+    const resp = await router.fetch(new Request("http://localhost/posts/12"));
+    expect(resp.status).toBe(200);
+    expect(await resp.json()).toEqual({ id: 12 });
+  });
+
   it("documents the root route as /", async () => {
     const child = fromHono(new Hono());
     child.get("/", YamlRoundTripEndpoint);

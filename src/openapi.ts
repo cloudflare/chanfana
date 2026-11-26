@@ -53,6 +53,12 @@ export type ValidatorRegistration = Record<never, never>;
 export type HttpMethod = "get" | "head" | "post" | "put" | "delete" | "patch";
 
 /**
+ * Matches a path parameter (`:id`), including an optional Hono regex constraint (`:id{[0-9]+}`).
+ * The constraint can contain one level of nested braces, like `:code{[a-z]{2}}`.
+ */
+const PATH_PARAM_PATTERN = /:(\w+)(?:\{(?:[^{}]|\{[^{}]*\})*\})?/g;
+
+/**
  * Handles the generation of OpenAPI schema and serves the documentation UI.
  *
  * Paths defined with `x-ignore: true` in their `OpenAPIRouteSchema`
@@ -260,7 +266,7 @@ export class OpenAPIHandler {
   private normalizePath(path: string): string {
     return ((this.options.base || "") + path)
       .replaceAll(/\/+(\/|$)/g, "$1") // strip double & trailing slash
-      .replaceAll(/:(\w+)/g, "{$1}"); // convert parameters into openapi compliant
+      .replaceAll(PATH_PARAM_PATTERN, "{$1}"); // convert parameters into openapi compliant, dropping regex constraints
   }
 
   /**
@@ -358,11 +364,10 @@ export class OpenAPIHandler {
   registerRoute(params: { method: string; path: string; handlers: unknown[]; doRegister?: boolean }): unknown[] {
     const parsedRoute = this.parseRoute(params.path);
 
-    const parsedParams = ((this.options.base || "") + params.path).match(/:(\w+)/g);
-    let urlParams: string[] = [];
-    if (parsedParams) {
-      urlParams = parsedParams.map((obj) => obj.replace(":", ""));
-    }
+    const urlParams = Array.from(
+      ((this.options.base || "") + params.path).matchAll(PATH_PARAM_PATTERN),
+      (m) => m[1] ?? "",
+    );
 
     const validatorIndex = this.findValidatorMarker(params.method, params.path, params.handlers);
 
